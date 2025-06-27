@@ -1,0 +1,80 @@
+/* Import 98.css for retro Windows 98 styling */
+@import '98.css';
+
+/* Import chessground CSS */
+@import 'chessground/assets/chessground.base.css';
+@import 'chessground/assets/chessground.brown.css';
+@import 'chessground/assets/chessground.cburnett.css';
+
+/* Override some 98.css defaults for better mobile support */
+body {
+  margin: 0;
+  padding: 8px;
+  font-family: 'MS Sans Serif', sans-serif;
+  background-color: #c0c0c0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 768px) {
+  body {
+    padding: 4px;
+  }
+  
+  .window {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+}
+
+/* Chess board container styling */
+.chess-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.chess-board-wrapper {
+  width: 100%;
+  max-width: 512px;
+  aspect-ratio: 1;
+  border: 2px inset #c0c0c0;
+  background: #c0c0c0;
+  padding: 4px;
+}
+
+.chess-board {
+  width: 100%;
+  height: 100%;
+}
+
+/* Status display styling */
+.game-status {
+  text-align: center;
+  padding: 8px;
+  background: #c0c0c0;
+  border: 1px inset #c0c0c0;
+  font-family: 'MS Sans Serif', sans-serif;
+  font-size: 12px;
+}
+
+/* Mobile responsiveness for chess board */
+@media (max-width: 600px) {
+  .chess-container {
+    gap: 8px;
+  }
+  
+  .chess-board-wrapper {
+    max-width: calc(100vw - 24px);
+  }
+}
