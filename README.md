@@ -1,69 +1,85 @@
-# React + TypeScript + Vite
+# Chess Potato AI 3000
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A retro-styled chess game built with React, TypeScript, and Vite, featuring the classic Windows 98 aesthetic.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Random Color Selection**: On each game start, the player is randomly assigned white or black pieces
+- **Interactive Chess Board**: Powered by Chessground from Lichess for smooth gameplay
+- **Simple AI Opponent**: Random move AI for casual play
+- **Retro UI**: Authentic Windows 98 styling using 98.css
+- **Mobile Responsive**: Optimized for both desktop and mobile devices
+- **Move History**: Track all moves in algebraic notation
+- **Game Status**: Real-time game state updates in the status bar
+- **Progress Indicator**: Visual feedback when AI is thinking
 
-## Expanding the ESLint configuration
+## Technologies Used
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **React 19** with TypeScript for the frontend framework
+- **Vite** for fast development and building
+- **chess.js** for chess game logic and move validation
+- **chessground** for the interactive chess board UI
+- **98.css** for retro Windows 98-style styling
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (version 16 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository or download the files
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Development
+
+Start the development server:
+```bash
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The application will be available at `http://localhost:5173/`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Building for Production
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Build the application:
+```bash
+npm run build
 ```
+
+Preview the production build:
+```bash
+npm run preview
+```
+
+## How to Play
+
+1. **Game Start**: When the page loads, you'll be randomly assigned white or black pieces
+2. **Making Moves**: Click and drag pieces to make your moves
+3. **AI Response**: The AI will automatically respond after your move
+4. **New Game**: Click "New Game" to start fresh with a new random color assignment
+5. **Resign**: Use the "Resign" button to concede the game (disabled until first move)
+
+## Project Structure
+
+- `src/ChessGame.tsx` - Main game component managing state and AI
+- `src/ChessBoard.tsx` - Chessground integration wrapper
+- `src/index.css` - Styling with 98.css and responsive design
+- `src/App.tsx` - Root application component
+
+## Future Enhancements
+
+This project is designed to be extended with:
+- REST API integration for more sophisticated AI engines
+- UCI protocol support for advanced chess engines
+- Player vs Player online functionality
+- Game analysis and position evaluation
+
+## License
+
+This project is open source and available under the MIT License.

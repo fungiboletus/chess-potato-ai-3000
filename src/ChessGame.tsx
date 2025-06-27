@@ -10,6 +10,9 @@ export const ChessGame: React.FC = () => {
   const [playerColor, setPlayerColor] = useState<PlayerColor>('white');
   const [gameStatus, setGameStatus] = useState<string>('Starting...');
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+  const [isAIThinking, setIsAIThinking] = useState(false);
+  const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  const [gameStarted, setGameStarted] = useState(false);
 
   // Get legal moves for current position
   const getLegalMoves = useCallback(() => {
@@ -29,34 +32,45 @@ export const ChessGame: React.FC = () => {
 
   // Handle player moves
   const handleMove = useCallback((from: string, to: string) => {
-    if (!isPlayerTurn) return;
+    if (!isPlayerTurn || isAIThinking) return;
 
     try {
       const move = chess.move({ from, to, promotion: 'q' });
       if (move) {
+        setGameStarted(true);
+        setMoveHistory(prev => [...prev, move.san]);
         setIsPlayerTurn(false);
+        setIsAIThinking(true);
         updateGameStatus();
         
         // Schedule AI move after a short delay
         setTimeout(() => {
           makeAIMove();
-        }, 500);
+        }, 800);
       }
     } catch (error) {
       console.error('Invalid move:', error);
     }
-  }, [chess, isPlayerTurn]);
+  }, [chess, isPlayerTurn, isAIThinking]);
 
   // Simple random AI move
   const makeAIMove = useCallback(() => {
-    if (chess.isGameOver()) return;
+    if (chess.isGameOver()) {
+      setIsAIThinking(false);
+      return;
+    }
 
     const moves = chess.moves({ verbose: true });
-    if (moves.length === 0) return;
+    if (moves.length === 0) {
+      setIsAIThinking(false);
+      return;
+    }
 
     const randomMove = moves[Math.floor(Math.random() * moves.length)];
-    chess.move(randomMove);
+    const move = chess.move(randomMove);
+    setMoveHistory(prev => [...prev, move.san]);
     setIsPlayerTurn(true);
+    setIsAIThinking(false);
     updateGameStatus();
   }, [chess]);
 
@@ -79,15 +93,17 @@ export const ChessGame: React.FC = () => {
   useEffect(() => {
     const randomColor: PlayerColor = Math.random() < 0.5 ? 'white' : 'black';
     setPlayerColor(randomColor);
+    setIsPlayerTurn(randomColor === 'white');
     
     if (randomColor === 'black') {
-      setIsPlayerTurn(false);
       setGameStatus('AI is thinking...');
+      setIsAIThinking(true);
       setTimeout(() => {
         makeAIMove();
       }, 1000);
     } else {
       setGameStatus('Your turn (White)');
+      setIsAIThinking(false);
     }
   }, [makeAIMove]);
 
@@ -97,21 +113,25 @@ export const ChessGame: React.FC = () => {
     orientation: playerColor,
     turnColor: chess.turn() === 'w' ? 'white' : 'black',
     movable: {
-      color: isPlayerTurn ? playerColor : undefined,
+      color: isPlayerTurn && !isAIThinking ? playerColor : undefined,
       free: false,
-      dests: isPlayerTurn ? getLegalMoves() : new Map(),
+      dests: isPlayerTurn && !isAIThinking ? getLegalMoves() : new Map(),
     },
     check: chess.isCheck(),
   };
 
   const handleNewGame = () => {
     chess.reset();
+    setMoveHistory([]);
+    setGameStarted(false);
+    setIsAIThinking(false);
     const randomColor: PlayerColor = Math.random() < 0.5 ? 'white' : 'black';
     setPlayerColor(randomColor);
     setIsPlayerTurn(randomColor === 'white');
     
     if (randomColor === 'black') {
       setGameStatus('AI is thinking...');
+      setIsAIThinking(true);
       setTimeout(() => {
         makeAIMove();
       }, 1000);
@@ -120,21 +140,40 @@ export const ChessGame: React.FC = () => {
     }
   };
 
+  const handleResign = () => {
+    setGameStatus(`You resigned! ${playerColor === 'white' ? 'Black' : 'White'} wins!`);
+    setIsPlayerTurn(false);
+    setIsAIThinking(false);
+  };
+
+  const formatMoveHistory = () => {
+    if (moveHistory.length === 0) return 'No moves yet...';
+    
+    let formatted = '';
+    for (let i = 0; i < moveHistory.length; i += 2) {
+      const moveNumber = Math.floor(i / 2) + 1;
+      const whiteMove = moveHistory[i] || '';
+      const blackMove = moveHistory[i + 1] || '';
+      formatted += `${moveNumber}. ${whiteMove}`;
+      if (blackMove) {
+        formatted += ` ${blackMove}`;
+      }
+      formatted += '\n';
+    }
+    return formatted.trim();
+  };
+
   return (
     <div className="window" style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}>
       <div className="title-bar">
         <div className="title-bar-text">Chess Potato AI 3000</div>
-        <div className="title-bar-controls">
-          <button aria-label="Minimize"></button>
-          <button aria-label="Maximize"></button>
-          <button aria-label="Close"></button>
-        </div>
       </div>
       <div className="window-body">
         <div className="chess-container">
-          <div className="game-status">
-            <p>Playing as: <strong>{playerColor}</strong></p>
-            <p>Status: {gameStatus}</p>
+          <div className="progress-container">
+            <div className={`progress-indicator ai-progress ${!isAIThinking ? 'hidden' : ''}`}>
+              <div className="progress-indicator-bar" style={{ width: '100%' }} />
+            </div>
           </div>
           
           <div className="chess-board-wrapper">
@@ -144,13 +183,22 @@ export const ChessGame: React.FC = () => {
             />
           </div>
           
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+          <div className="move-history">
+            {formatMoveHistory()}
+          </div>
+          
+          <div className="game-controls">
             <button onClick={handleNewGame}>New Game</button>
-            <button onClick={() => setGameStatus(`FEN: ${chess.fen()}`)}>
-              Show FEN
+            <button onClick={handleResign} disabled={!gameStarted}>
+              Resign
             </button>
           </div>
         </div>
+      </div>
+      <div className="status-bar">
+        <p className="status-bar-field">Playing as: {playerColor}</p>
+        <p className="status-bar-field">{gameStatus}</p>
+        <p className="status-bar-field">Moves: {moveHistory.length}</p>
       </div>
     </div>
   );
