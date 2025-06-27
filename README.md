@@ -32,6 +32,7 @@ A retro-styled chess game built with React, TypeScript, and Vite, featuring the 
 
 1. Clone the repository or download the files
 2. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -39,6 +40,7 @@ A retro-styled chess game built with React, TypeScript, and Vite, featuring the 
 ### Development
 
 Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -48,11 +50,13 @@ The application will be available at `http://localhost:5173/`
 ### Building for Production
 
 Build the application:
+
 ```bash
 npm run build
 ```
 
 Preview the production build:
+
 ```bash
 npm run preview
 ```
@@ -75,6 +79,7 @@ npm run preview
 ## Future Enhancements
 
 This project is designed to be extended with:
+
 - REST API integration for more sophisticated AI engines
 - UCI protocol support for advanced chess engines
 - Player vs Player online functionality

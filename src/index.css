@@ -25,7 +25,7 @@ body {
   body {
     padding: 4px;
   }
-  
+
   .window {
     width: 100% !important;
     max-width: none !important;
@@ -67,32 +67,88 @@ body {
   flex-wrap: wrap;
 }
 
+.game-controls button {
+  min-width: 80px;
+  padding: 4px 8px;
+}
+
 /* Move history styling */
 .move-history {
   background: white;
   border: 1px inset #c0c0c0;
   padding: 8px;
-  height: 120px;
+  height: 80px; /* Reduced height since it's now in a window */
   overflow-y: auto;
-  font-family: 'MS Sans Serif', monospace;
+  font-family: 'Consolas', 'Courier New', monospace;
   font-size: 11px;
   white-space: pre-wrap;
 }
 
-/* Progress bar styling - hidden by default */
+/* Progress bar styling - fixed height to prevent layout shift */
 .progress-container {
-  height: 20px; /* Reserve space to prevent layout shift */
+  height: 40px; /* Fixed height to prevent layout shift */
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 8px;
 }
 
 .ai-progress {
-  width: 200px;
+  /* Styles handled by AnimatedProgressBar component */
 }
 
-.ai-progress.hidden {
-  visibility: hidden;
+/* Draggable window styles */
+.draggable-window-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.game-result-window .window-body {
+  padding: 0 !important;
+}
+
+/* Mobile improvements for draggable windows */
+@media (max-width: 768px) {
+  .window {
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100vh - 32px) !important;
+  }
+
+  .draggable-window-container {
+    height: 100vh;
+    overflow: visible;
+  }
+
+  /* Make draggable windows more touch-friendly on mobile */
+  .title-bar {
+    min-height: 20px;
+    padding: 2px 4px;
+  }
+
+  .title-bar-controls button {
+    min-width: 20px !important;
+    min-height: 18px !important;
+    font-size: 12px !important;
+  }
+
+  /* Adjust move history window for mobile */
+  .move-history-window {
+    width: calc(100vw - 32px) !important;
+    height: 250px !important;
+  }
+
+  /* Adjust game result window for mobile */
+  .game-result-window {
+    width: calc(100vw - 32px) !important;
+    max-width: 320px !important;
+  }
+}
+
+/* Better font styling - no Comic Sans MS */
+body, .window, .window-body, .title-bar-text, .status-bar-field {
+  font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
 }
 
 /* Mobile responsiveness for chess board */
@@ -100,16 +156,16 @@ body {
   .chess-container {
     gap: 8px;
   }
-  
+
   .chess-board-wrapper {
     max-width: calc(100vw - 24px);
     padding: 4px;
   }
-  
+
   .game-controls {
     gap: 4px;
   }
-  
+
   .move-history {
     height: 100px;
     font-size: 10px;
