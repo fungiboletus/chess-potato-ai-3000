@@ -86,11 +86,11 @@ body {
 
 /* Progress bar styling - fixed height to prevent layout shift */
 .progress-container {
-  height: 40px; /* Fixed height to prevent layout shift */
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
+  width: 100%;
 }
 
 .ai-progress {

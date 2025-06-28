@@ -16,10 +16,11 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
     let formatted = '';
     for (let i = 0; i < moveHistory.length; i += 2) {
-      const moveNumber = Math.floor(i / 2) + 1;
+      //const moveNumber = Math.floor(i / 2) + 1;
       const whiteMove = moveHistory[i] || '';
       const blackMove = moveHistory[i + 1] || '';
-      formatted += `${moveNumber}. ${whiteMove}`;
+      //formatted += `${moveNumber}. ${whiteMove}`;
+      formatted += whiteMove;
       if (blackMove) {
         formatted += ` ${blackMove}`;
       }

@@ -36,25 +36,20 @@ export const ChessGame: React.FC = () => {
         <div className="window-body">
           <div className="chess-container">
             <div className="progress-container">
-              {isAIThinking && (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  <div style={{
-                    fontSize: '11px',
-                    fontFamily: 'MS Sans Serif, sans-serif',
-                    color: '#000080',
-                    fontWeight: 'bold'
-                  }}>
-                    🤖 AI is thinking...
-                  </div>
-                  <AnimatedProgressBar isVisible={isAIThinking} width={200} height={16} />
-                </div>
-              )}
-              {!isAIThinking && <div style={{ height: '40px' }} />}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                width: '100%',
+                maxWidth: '512px',
+                visibility: isAIThinking ? 'visible' : 'hidden'
+              }}>
+                <span>
+                  🤖 AI is thinking...
+                </span>
+                <AnimatedProgressBar isVisible={isAIThinking} width="100%" />
+              </div>
             </div>
 
             <div className="chess-board-wrapper">
