@@ -1,44 +1,67 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Chessground } from 'chessground';
 import type { Api } from 'chessground/api';
-import type { Config } from 'chessground/config';
+import useChessStore from './stores/chessStore';
+import { useChessgroundConfig } from './hooks/useChessgroundConfig';
 
-interface ChessBoardProps {
-  config: Config;
-  onMove?: (orig: string, dest: string) => void;
-}
-
-export const ChessBoard: React.FC<ChessBoardProps> = ({ config, onMove }) => {
+export const ChessBoard: React.FC = () => {
   const boardRef = useRef<HTMLDivElement>(null);
-  const apiRef = useRef<Api | null>(null);
+  const [api, setApi] = useState<Api | null>(null);
+  
+  const config = useChessgroundConfig();
+  const makePlayerMove = useChessStore(state => state.makePlayerMove);
 
+  // Initialize chessground
   useEffect(() => {
-    if (boardRef.current) {
-      const finalConfig: Config = {
+    if (boardRef.current && !api) {
+      const chessgroundApi = Chessground(boardRef.current, {
+        animation: { enabled: true, duration: 200 },
         ...config,
         movable: {
           ...config.movable,
           events: {
-            after: onMove,
+            after: (orig: string, dest: string) => {
+              makePlayerMove(orig, dest);
+            },
           },
         },
-      };
-
-      apiRef.current = Chessground(boardRef.current, finalConfig);
+      });
+      setApi(chessgroundApi);
+    } else if (boardRef.current && api) {
+      api.set({
+        ...config,
+        movable: {
+          ...config.movable,
+          events: {
+            after: (orig: string, dest: string) => {
+              makePlayerMove(orig, dest);
+            },
+          },
+        },
+      });
     }
+  }, [boardRef]);
 
-    return () => {
-      if (apiRef.current) {
-        apiRef.current.destroy();
-      }
-    };
-  }, []);
-
+  // Update configuration when it changes
   useEffect(() => {
-    if (apiRef.current) {
-      apiRef.current.set(config);
+    if (api) {
+      api.set({
+        ...config,
+        movable: {
+          ...config.movable,
+          events: {
+            after: (orig: string, dest: string) => {
+              makePlayerMove(orig, dest);
+            },
+          },
+        },
+      });
     }
-  }, [config]);
+  }, [api, config, makePlayerMove]);
 
-  return <div ref={boardRef} className="chess-board" />;
+  return (
+    <div style={{ height: '100%', width: '100%' }}>
+      <div ref={boardRef} style={{ height: '100%', width: '100%', display: 'table' }} />
+    </div>
+  );
 };

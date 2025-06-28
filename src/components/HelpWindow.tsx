@@ -17,9 +17,9 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
       windowId="help"
       defaultPosition={{ x: 100, y: 80 }}
       width={320}
-      height={280}
+      height={400}
       minWidth={280}
-      minHeight={200}
+      minHeight={350}
     >
       <div style={{
         padding: '12px',
