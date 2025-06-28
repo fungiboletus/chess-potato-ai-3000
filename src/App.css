@@ -4,14 +4,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
   box-sizing: border-box;
   overflow: hidden; /* Prevent any scrolling */
 }
 
 @media (max-width: 768px) {
   .app {
-    padding: 8px;
     align-items: flex-start;
   }
 }

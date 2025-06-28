@@ -15,7 +15,7 @@ html {
 /* Override some 98.css defaults for better mobile support */
 body {
   margin: 0;
-  padding: 8px;
+  padding: 0;
   background-color: #c0c0c0;
   height: 100vh;
   box-sizing: border-box;
@@ -35,10 +35,6 @@ body {
 
 /* Mobile-friendly adjustments */
 @media (max-width: 768px) {
-  body {
-    padding: 4px;
-  }
-
   .window {
     width: 100% !important;
     max-width: none !important;
@@ -276,7 +272,11 @@ body {
   position: relative;
   width: 100vw;
   height: 100vh;
-  overflow: hidden; /* Prevent scrolling */
+  /*overflow: hidden; /* Prevent scrolling */
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .game-result-window .window-body {
@@ -314,11 +314,6 @@ body {
   .window {
     max-width: calc(100vw - 16px) !important;
     max-height: calc(100vh - 32px) !important;
-  }
-
-  .draggable-window-container {
-    height: 100vh;
-    overflow: hidden; /* Keep overflow hidden on mobile too */
   }
 
   /* Make draggable windows more touch-friendly on mobile */
