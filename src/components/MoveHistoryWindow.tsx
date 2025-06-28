@@ -37,11 +37,11 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       windowId="move-history"
       responsivePosition="right-center"
       positionOffset={{ x: -300, y: 0 }}
-      width={280}
+      width={100}
       height={320}
-      minWidth={200}
+      minWidth={100}
       minHeight={200}
-      className="move-history-window"
+    /*className="move-history-window"*/
     >
       <div style={{
         background: 'white',

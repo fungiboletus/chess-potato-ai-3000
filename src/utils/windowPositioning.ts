@@ -29,11 +29,11 @@ export const getResponsivePosition = (
   offset: Position = { x: 0, y: 0 }
 ): Position => {
   const viewport = getViewportDimensions();
-  const margin = 20; // Minimum margin from viewport edges
+  const margin = 10; // Reduced margin for more flexible positioning
 
-  // Ensure window size doesn't exceed viewport
-  const effectiveWidth = Math.min(windowSize.width, viewport.width - 2 * margin);
-  const effectiveHeight = Math.min(windowSize.height, viewport.height - 2 * margin);
+  // Ensure window size doesn't exceed viewport, but allow some flexibility
+  const effectiveWidth = Math.min(windowSize.width, viewport.width - margin);
+  const effectiveHeight = Math.min(windowSize.height, viewport.height - margin);
 
   let x: number;
   let y: number;
@@ -76,9 +76,10 @@ export const getResponsivePosition = (
   x += offset.x;
   y += offset.y;
 
-  // Ensure the window stays within viewport bounds
-  x = Math.max(margin, Math.min(x, viewport.width - effectiveWidth - margin));
-  y = Math.max(margin, Math.min(y, viewport.height - effectiveHeight - margin));
+  // More lenient bounds checking - allow windows to go partially off-screen
+  const minVisibleArea = 50;
+  x = Math.max(-effectiveWidth + minVisibleArea, Math.min(x, viewport.width - minVisibleArea));
+  y = Math.max(-20, Math.min(y, viewport.height - minVisibleArea)); // Keep title bar accessible
 
   return { x, y };
 };
@@ -93,17 +94,17 @@ export const getStaggeredPosition = (
   staggerOffset: Position = { x: 30, y: 30 }
 ): Position => {
   const viewport = getViewportDimensions();
-  const margin = 20;
+  const minVisibleArea = 50;
 
   let x = basePosition.x + (index * staggerOffset.x);
   let y = basePosition.y + (index * staggerOffset.y);
 
-  // If staggered position goes outside viewport, wrap around
-  if (x + windowSize.width > viewport.width - margin) {
-    x = margin + ((x - margin) % (viewport.width - windowSize.width - 2 * margin));
+  // If staggered position goes outside viewport, wrap around more gracefully
+  if (x + windowSize.width > viewport.width - minVisibleArea) {
+    x = minVisibleArea + ((x - minVisibleArea) % (viewport.width - windowSize.width - minVisibleArea));
   }
-  if (y + windowSize.height > viewport.height - margin) {
-    y = margin + ((y - margin) % (viewport.height - windowSize.height - 2 * margin));
+  if (y + windowSize.height > viewport.height - minVisibleArea) {
+    y = minVisibleArea + ((y - minVisibleArea) % (viewport.height - windowSize.height - minVisibleArea));
   }
 
   return { x, y };

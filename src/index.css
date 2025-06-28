@@ -6,18 +6,32 @@
 @import 'chessground/assets/chessground.brown.css';
 @import 'chessground/assets/chessground.cburnett.css';
 
+/* Prevent any scrolling at the document level */
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Override some 98.css defaults for better mobile support */
 body {
   margin: 0;
   padding: 8px;
   font-family: 'MS Sans Serif', sans-serif;
   background-color: #c0c0c0;
-  min-height: 100vh;
+  height: 100vh;
   box-sizing: border-box;
+  overflow: hidden; /* Prevent unnecessary scrolling */
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Ensure root element doesn't cause scrolling */
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Mobile-friendly adjustments */
@@ -100,9 +114,9 @@ body {
 /* Draggable window styles */
 .draggable-window-container {
   position: relative;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow: hidden; /* Prevent scrolling */
 }
 
 .game-result-window .window-body {
@@ -118,7 +132,7 @@ body {
 
   .draggable-window-container {
     height: 100vh;
-    overflow: visible;
+    overflow: hidden; /* Keep overflow hidden on mobile too */
   }
 
   /* Make draggable windows more touch-friendly on mobile */
@@ -131,18 +145,6 @@ body {
     min-width: 20px !important;
     min-height: 18px !important;
     font-size: 12px !important;
-  }
-
-  /* Adjust move history window for mobile */
-  .move-history-window {
-    width: calc(100vw - 32px) !important;
-    height: 250px !important;
-  }
-
-  /* Adjust game result window for mobile */
-  .game-result-window {
-    width: calc(100vw - 32px) !important;
-    max-width: 320px !important;
   }
 }
 

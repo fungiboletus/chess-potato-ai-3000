@@ -87,12 +87,13 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
   if (!isOpen) return null;
 
   const handleDrag = (_e: any, data: any) => {
-    // Ensure the window stays within viewport bounds during drag
+    // Allow more freedom in dragging - only prevent windows from going completely off-screen
     const viewport = { width: window.innerWidth, height: window.innerHeight };
-    const margin = 20;
+    const minVisibleArea = 50; // Minimum pixels that must remain visible
 
-    const constrainedX = Math.max(margin, Math.min(data.x, viewport.width - size.width - margin));
-    const constrainedY = Math.max(margin, Math.min(data.y, viewport.height - size.height - margin));
+    // Allow window to be dragged mostly off-screen but keep some visible for retrieval
+    const constrainedX = Math.max(-size.width + minVisibleArea, Math.min(data.x, viewport.width - minVisibleArea));
+    const constrainedY = Math.max(-20, Math.min(data.y, viewport.height - minVisibleArea)); // Keep title bar accessible
 
     setPosition({ x: constrainedX, y: constrainedY });
   };
@@ -116,7 +117,6 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
       position={position}
       onDrag={handleDrag}
       handle=".title-bar"
-      bounds="body"
       cancel=".title-bar-controls"
       enableUserSelectHack={false}
       nodeRef={nodeRef}
