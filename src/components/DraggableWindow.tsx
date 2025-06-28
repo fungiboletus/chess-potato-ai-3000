@@ -1,6 +1,7 @@
-import React, { type ReactNode, useRef } from 'react';
+import React, { type ReactNode, useRef, useMemo, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import useLocalStorageState from 'use-local-storage-state';
+import { getResponsivePosition } from '../utils/windowPositioning';
 
 interface DraggableWindowProps {
   title: string;
@@ -9,6 +10,8 @@ interface DraggableWindowProps {
   isOpen: boolean;
   windowId: string;
   defaultPosition?: { x: number; y: number };
+  responsivePosition?: 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'left-center' | 'right-center';
+  positionOffset?: { x: number; y: number };
   width?: number;
   height?: number;
   minWidth?: number;
@@ -25,7 +28,9 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
   onClose,
   isOpen,
   windowId,
-  defaultPosition = { x: 20, y: 20 },
+  defaultPosition,
+  responsivePosition,
+  positionOffset = { x: 0, y: 0 },
   width = 300,
   height = 400,
   minWidth = 200,
@@ -35,18 +40,61 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
   className = '',
 }) => {
   const nodeRef = useRef<HTMLDivElement>(null);
+
+  // Calculate responsive default position if specified
+  const calculatedDefaultPosition = useMemo(() => {
+    if (responsivePosition) {
+      return getResponsivePosition(
+        { width, height },
+        responsivePosition,
+        positionOffset
+      );
+    }
+    return defaultPosition || { x: 20, y: 20 };
+  }, [responsivePosition, positionOffset, width, height, defaultPosition]);
+
   const [position, setPosition] = useLocalStorageState(`${windowId}-position`, {
-    defaultValue: defaultPosition,
+    defaultValue: calculatedDefaultPosition,
   });
 
   const [size] = useLocalStorageState(`${windowId}-size`, {
     defaultValue: { width, height },
   });
 
+  // Handle window resize to keep windows in viewport
+  useEffect(() => {
+    if (!responsivePosition) return;
+
+    const handleResize = () => {
+      const newPosition = getResponsivePosition(
+        { width: size.width, height: size.height },
+        responsivePosition,
+        positionOffset
+      );
+
+      // Only update if position would be significantly different (avoid constant updates)
+      const threshold = 50;
+      if (Math.abs(position.x - newPosition.x) > threshold ||
+        Math.abs(position.y - newPosition.y) > threshold) {
+        setPosition(newPosition);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [responsivePosition, positionOffset, size, position, setPosition]);
+
   if (!isOpen) return null;
 
   const handleDrag = (_e: any, data: any) => {
-    setPosition({ x: data.x, y: data.y });
+    // Ensure the window stays within viewport bounds during drag
+    const viewport = { width: window.innerWidth, height: window.innerHeight };
+    const margin = 20;
+
+    const constrainedX = Math.max(margin, Math.min(data.x, viewport.width - size.width - margin));
+    const constrainedY = Math.max(margin, Math.min(data.y, viewport.height - size.height - margin));
+
+    setPosition({ x: constrainedX, y: constrainedY });
   };
 
   const windowStyle: React.CSSProperties = {

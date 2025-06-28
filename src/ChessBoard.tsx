@@ -7,7 +7,7 @@ import { useChessgroundConfig } from './hooks/useChessgroundConfig';
 export const ChessBoard: React.FC = () => {
   const boardRef = useRef<HTMLDivElement>(null);
   const [api, setApi] = useState<Api | null>(null);
-  
+
   const config = useChessgroundConfig();
   const makePlayerMove = useChessStore(state => state.makePlayerMove);
 

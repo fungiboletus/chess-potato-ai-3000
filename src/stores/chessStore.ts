@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Chess } from 'chess.js';
 
 // Game states following a state machine pattern
-export type GameState = 
+export type GameState =
   | 'initializing'
   | 'player_turn'
   | 'ai_turn'
@@ -23,34 +23,34 @@ export interface ChessGameStore {
   gameState: GameState;
   playerColor: PlayerColor;
   gameStarted: boolean;
-  
+
   // Move tracking
   moveHistory: string[];
-  
+
   // Game result
   gameResult: GameResult | null;
-  
+
   // UI state
   showMoveHistory: boolean;
   showHelp: boolean;
-  
+
   // Computed state
   isPlayerTurn: boolean;
   legalMoves: Map<string, string[]>;
   gameStatus: string;
-  
+
   // Actions
   initializeGame: (color?: PlayerColor) => void;
   makePlayerMove: (from: string, to: string) => boolean;
   makeAIMove: () => void;
   resetGame: () => void;
   resignGame: () => void;
-  
+
   // UI actions
   setShowMoveHistory: (show: boolean) => void;
   setShowHelp: (show: boolean) => void;
   closeGameResult: () => void;
-  
+
   // Internal helpers
   calculateLegalMoves: () => Map<string, string[]>;
   checkGameEnd: () => GameResult | null;
@@ -91,7 +91,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   // Check if the game has ended and return result
   checkGameEnd: () => {
     const { chess, playerColor } = get();
-    
+
     if (!chess.isGameOver()) {
       return null;
     }
@@ -99,8 +99,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     if (chess.isCheckmate()) {
       const winner = chess.turn() === 'w' ? 'Black' : 'White';
       const isPlayerWin = (winner === 'White' && playerColor === 'white') ||
-                         (winner === 'Black' && playerColor === 'black');
-      
+        (winner === 'Black' && playerColor === 'black');
+
       return {
         type: isPlayerWin ? 'win' : 'lose',
         message: isPlayerWin ? 'Congratulations! You won!' : 'Better luck next time!',
@@ -112,9 +112,9 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       return {
         type: 'draw',
         message: "It's a draw! Well played!",
-        reason: chess.isStalemate() ? 'stalemate' : 
-                chess.isThreefoldRepetition() ? 'threefold repetition' :
-                chess.isInsufficientMaterial() ? 'insufficient material' : 'fifty-move rule'
+        reason: chess.isStalemate() ? 'stalemate' :
+          chess.isThreefoldRepetition() ? 'threefold repetition' :
+            chess.isInsufficientMaterial() ? 'insufficient material' : 'fifty-move rule'
       } as GameResult;
     }
 
@@ -125,14 +125,14 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   updateTurnState: () => {
     const state = get();
     const { chess, playerColor } = state;
-    
+
     // First check if game is over
     const gameResult = state.checkGameEnd();
     if (gameResult) {
       const statusMessage = gameResult.type === 'win' ? `Checkmate! You win!` :
-                           gameResult.type === 'lose' ? `Checkmate! AI wins!` :
-                           `Game is a draw!`;
-      
+        gameResult.type === 'lose' ? `Checkmate! AI wins!` :
+          `Game is a draw!`;
+
       set({
         gameState: 'game_over',
         gameResult,
@@ -146,8 +146,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     // Game is ongoing - determine whose turn it is
     const currentTurn = chess.turn(); // 'w' or 'b'
     const isPlayerColorTurn = (currentTurn === 'w' && playerColor === 'white') ||
-                             (currentTurn === 'b' && playerColor === 'black');
-    
+      (currentTurn === 'b' && playerColor === 'black');
+
     if (isPlayerColorTurn) {
       // It's the player's turn
       const checkStatus = chess.isCheck() ? 'Check! ' : '';
@@ -166,7 +166,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         gameStatus: `${checkStatus}AI to move`,
         legalMoves: new Map()
       });
-      
+
       // Auto-trigger AI move after a short delay
       setTimeout(() => {
         if (get().gameState === 'ai_turn') {
@@ -180,7 +180,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   initializeGame: (color?: PlayerColor) => {
     const newColor = color || (Math.random() < 0.5 ? 'white' : 'black');
     const chess = new Chess();
-    
+
     set({
       chess,
       playerColor: newColor,
@@ -202,7 +202,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   // Make a player move
   makePlayerMove: (from: string, to: string) => {
     const { chess, gameState, isPlayerTurn } = get();
-    
+
     // Validate that it's the player's turn
     if (gameState !== 'player_turn' || !isPlayerTurn) {
       console.log('Not player turn:', { gameState, isPlayerTurn });
@@ -224,33 +224,33 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     } catch (error) {
       console.error('Invalid move:', error);
     }
-    
+
     return false;
   },
 
   // Make an AI move
   makeAIMove: () => {
     const { gameState } = get();
-    
+
     // Only make AI move if it's AI's turn
     if (gameState !== 'ai_turn') {
       console.log('Not AI turn:', gameState);
       return;
     }
 
-    set({ 
+    set({
       gameState: 'ai_thinking',
-      gameStatus: '🤖 AI is thinking...' 
+      gameStatus: '🤖 AI is thinking...'
     });
 
     setTimeout(() => {
       const currentState = get();
       const moves = currentState.chess.moves({ verbose: true });
-      
+
       if (moves.length > 0) {
         const randomMove = moves[Math.floor(Math.random() * moves.length)];
         const move = currentState.chess.move(randomMove);
-        
+
         if (move) {
           set(state => ({
             moveHistory: [...state.moveHistory, move.san],
@@ -274,7 +274,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   resignGame: () => {
     const { playerColor } = get();
     const winnerColor = playerColor === 'white' ? 'Black' : 'White';
-    
+
     set({
       gameState: 'game_over',
       gameStatus: `You resigned! ${winnerColor} wins!`,

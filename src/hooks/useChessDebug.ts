@@ -2,7 +2,7 @@ import useChessStore from '../stores/chessStore';
 
 export const useChessDebug = () => {
   const store = useChessStore();
-  
+
   // Log current state to console
   const logState = () => {
     console.group('Chess Game State');
