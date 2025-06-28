@@ -122,31 +122,21 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
       nodeRef={nodeRef}
     >
       <div ref={nodeRef} className={`window ${className}`} style={windowStyle}>
-        <div className="title-bar" style={{ cursor: 'move', touchAction: 'none' }}>
+        <div className="title-bar draggable-title-bar">
           <div className="title-bar-text">{title}</div>
-          <div className="title-bar-controls" style={{ touchAction: 'auto' }}>
+          <div className="title-bar-controls draggable-title-bar-controls">
             {onClose && (
               <button
                 aria-label="Close"
                 onClick={onClose}
-                style={{
-                  background: '#c0c0c0',
-                  border: '1px outset #c0c0c0',
-                  width: '16px',
-                  height: '14px',
-                  fontSize: '11px',
-                  padding: 0,
-                  margin: 0,
-                  cursor: 'pointer',
-                  touchAction: 'manipulation',
-                }}
+                className="draggable-close-button"
               >
                 ✕
               </button>
             )}
           </div>
         </div>
-        <div className="window-body" style={{ height: 'calc(100% - 18px)', overflow: 'auto' }}>
+        <div className="window-body draggable-window-body">
           {children}
         </div>
       </div>

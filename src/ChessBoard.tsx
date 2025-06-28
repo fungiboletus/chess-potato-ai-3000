@@ -60,8 +60,8 @@ export const ChessBoard: React.FC = () => {
   }, [api, config, makePlayerMove]);
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
-      <div ref={boardRef} style={{ height: '100%', width: '100%', display: 'table' }} />
+    <div className="chess-board-container">
+      <div ref={boardRef} className="chess-board" />
     </div>
   );
 };

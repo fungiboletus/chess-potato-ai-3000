@@ -43,17 +43,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       minHeight={200}
     /*className="move-history-window"*/
     >
-      <div style={{
-        background: 'white',
-        border: '1px inset #c0c0c0',
-        padding: '8px',
-        height: 'calc(100% - 16px)',
-        overflow: 'auto',
-        fontFamily: 'Consolas, "Courier New", monospace',
-        fontSize: '12px',
-        whiteSpace: 'pre-wrap',
-        lineHeight: '1.4',
-      }}>
+      <div className="move-history-content">
         {formatMoveHistory()}
       </div>
     </DraggableWindow>

@@ -36,15 +36,7 @@ export const ChessGame: React.FC = () => {
         <div className="window-body">
           <div className="chess-container">
             <div className="progress-container">
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '4px',
-                width: '100%',
-                maxWidth: '512px',
-                visibility: isAIThinking ? 'visible' : 'hidden'
-              }}>
+              <div className={`ai-thinking-container ${isAIThinking ? 'visible' : 'hidden'}`}>
                 <span>
                   🤖 AI is thinking...
                 </span>

@@ -16,7 +16,6 @@ html {
 body {
   margin: 0;
   padding: 8px;
-  font-family: 'MS Sans Serif', sans-serif;
   background-color: #c0c0c0;
   height: 100vh;
   box-sizing: border-box;
@@ -67,10 +66,15 @@ body {
   padding: 8px;
 }
 
-.chess-board {
-  width: 100%;
+.chess-board-container {
   height: 100%;
-  border: 2px outset #c0c0c0;
+  width: 100%;
+}
+
+.chess-board {
+  height: 100%;
+  width: 100%;
+  display: table;
 }
 
 /* Game controls styling */
@@ -93,7 +97,6 @@ body {
   padding: 8px;
   height: 80px; /* Reduced height since it's now in a window */
   overflow-y: auto;
-  font-family: 'Consolas', 'Courier New', monospace;
   font-size: 11px;
   white-space: pre-wrap;
 }
@@ -111,6 +114,163 @@ body {
   /* Styles handled by AnimatedProgressBar component */
 }
 
+/* AI thinking container */
+.ai-thinking-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 512px;
+}
+
+.ai-thinking-container.hidden {
+  visibility: hidden;
+}
+
+.ai-thinking-container.visible {
+  visibility: visible;
+}
+
+/* Debug panel styles */
+.debug-panel {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: #f0f0f0;
+  border: 2px inset #c0c0c0;
+  padding: 8px;
+  font-size: 11px;
+  max-width: 200px;
+  z-index: 9999;
+}
+
+.debug-panel-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.debug-panel-viewport {
+  margin-top: 8px;
+  font-size: 10px;
+}
+
+.debug-panel-button {
+  margin-top: 4px;
+  font-size: 10px;
+  padding: 2px 4px;
+  width: 100%;
+}
+
+/* Game result window content */
+.game-result-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 16px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.game-result-gif-placeholder {
+  width: 120px;
+  height: 120px;
+  background: #f0f0f0;
+  border: 2px inset #c0c0c0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  flex-direction: column;
+}
+
+.game-result-gif-placeholder small {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.game-result-message {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.game-result-sound {
+  font-size: 12px;
+  font-style: italic;
+  margin-bottom: 16px;
+  color: #666;
+}
+
+.game-result-button {
+  padding: 6px 16px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.game-result-content.win {
+  background: #90EE90;
+  border: 2px solid #32CD32;
+}
+
+.game-result-content.lose {
+  background: #FFB6C1;
+  border: 2px solid #DC143C;
+}
+
+.game-result-content.draw {
+  background: #FFE4B5;
+  border: 2px solid #DEB887;
+}
+
+/* Help window content */
+.help-content {
+  padding: 12px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.help-heading {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: #000080;
+}
+
+.help-section {
+  margin-bottom: 16px;
+}
+
+.help-shortcuts {
+  background: #f0f0f0;
+  border: 1px inset #c0c0c0;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+.help-footer {
+  text-align: center;
+  font-size: 10px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Move history window content */
+.move-history-content {
+  background: white;
+  border: 1px inset #c0c0c0;
+  padding: 8px;
+  height: calc(100% - 16px);
+  overflow: auto;
+  font-size: 12px;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
 /* Draggable window styles */
 .draggable-window-container {
   position: relative;
@@ -121,6 +281,32 @@ body {
 
 .game-result-window .window-body {
   padding: 0 !important;
+}
+
+.draggable-title-bar {
+  cursor: move;
+  touch-action: none;
+}
+
+.draggable-title-bar-controls {
+  touch-action: auto;
+}
+
+.draggable-close-button {
+  background: #c0c0c0;
+  border: 1px outset #c0c0c0;
+  width: 16px;
+  height: 14px;
+  font-size: 11px;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.draggable-window-body {
+  height: calc(100% - 18px);
+  overflow: auto;
 }
 
 /* Mobile improvements for draggable windows */
@@ -146,11 +332,6 @@ body {
     min-height: 18px !important;
     font-size: 12px !important;
   }
-}
-
-/* Better font styling - no Comic Sans MS */
-body, .window, .window-body, .title-bar-text, .status-bar-field {
-  font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
 }
 
 /* Mobile responsiveness for chess board */
