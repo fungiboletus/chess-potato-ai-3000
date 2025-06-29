@@ -254,7 +254,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
     set({
       gameState: 'ai_thinking',
-      gameStatus: '🤖 AI is thinking...'
+      gameStatus: 'AI is thinking...'
     });
 
     // Only allow one AI move timeout at a time

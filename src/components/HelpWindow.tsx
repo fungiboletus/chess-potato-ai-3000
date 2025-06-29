@@ -9,16 +9,25 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
   isOpen,
   onClose,
 }) => {
+  const WINDOW_WIDTH = 350;
   // Position window on the left side of the screen
   const getLeftSidePosition = () => {
+
+    // 50px from the right edge
+    const innerWidth = window.innerWidth;
+    const innerHeight = window.innerHeight;
+    const leftEdge = Math.max(0, innerWidth - WINDOW_WIDTH - 100);
+    const topEdge = Math.max(0, (innerHeight - 500) / 2);
+
     return {
-      x: 50,
-      y: Math.max(50, (window.innerHeight - 450) / 2)
+      x: leftEdge,
+      y: topEdge,
     };
   };
 
   return (
     <DraggableWindow
+      className="help-window"
       title="Chess Potato AI 3000 - Help"
       isOpen={isOpen}
       onClose={onClose}

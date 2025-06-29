@@ -1,47 +1,105 @@
-.app {
-  width: 100vw;
-  height: 100vh;
+.chess-game {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.main-window-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  overflow: auto; /* Allow scrolling if content is too tall */
+  overflow: auto;
   background-image: url('./public/clouds_perso.webp');
   background-size: cover;
   background-position: center;
 }
 
-@media (max-width: 768px) {
-  .app {
-    align-items: flex-start;
-  }
+.chess-game-main-window {
+  /*width: 512px;
+  max-width: 100vw;
+  margin: 0 auto;*/
 }
 
-/* Make the main chess board window non-selectable */
-.chess-container {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+/* In case we want to feel modern */
+/*.window {
+  box-shadow: inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px gray,inset 2px 2px #fff, 0 5px 10px rgba(0,0,0,0.2), 0 15px 40px rgba(0,0,0,0.1)
+}*/
+
+/* Make the status bar items equal width */
+.chess-game .status-bar-field {
+  flex: 1;
 }
 
-/* Allow text selection in draggable windows */
-.draggable-window-body {
-  user-select: text;
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-}
-
-/* Handle potential overflow and scrolling */
-.draggable-window-container {
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
-}
-
-/* Ensure the main chess window is scrollable if needed */
-.window {
+.move-history-window {
+  width: 200px;
+  height: 300px;
+  max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
+  position: absolute;
+}
+
+.help-window {
+  position: absolute;
+  width: 350px;
+  height: 500px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.chess-container {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  width: 510px;
+  max-width: calc(100vw - 48px);
+}
+
+.chess-board-wrapper {
+  width: 100%;
+  aspect-ratio: 1;
+  /*box-sizing: border-box;*/
+  padding: 2px;
+}
+
+/*.chess-board-wrapper * {
+  box-sizing: border-box;
+}*/
+
+.chess-board-container,
+.chess-board {
+  height: 100%;
+  width: 100%;
+}
+
+.chess-board {
+  padding: 2px;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px gray, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+}
+
+.chess-board cg-container {
+  top: 2px;
+}
+
+.progress-container {
+  width: 100%;
+  text-align: center;
+}
+
+.move-history-content {
+  height: 220px;
 }
