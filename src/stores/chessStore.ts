@@ -57,6 +57,9 @@ export interface ChessGameStore {
   updateTurnState: () => void;
 }
 
+// Internal variable to track AI move timeout
+let aiMoveTimeout: ReturnType<typeof setTimeout> | null = null;
+
 const useChessStore = create<ChessGameStore>((set, get) => ({
   // Initial state
   chess: new Chess(),
@@ -148,6 +151,12 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     const isPlayerColorTurn = (currentTurn === 'w' && playerColor === 'white') ||
       (currentTurn === 'b' && playerColor === 'black');
 
+    // Always clear any pending AI move timeout before proceeding
+    if (aiMoveTimeout) {
+      clearTimeout(aiMoveTimeout);
+      aiMoveTimeout = null;
+    }
+
     if (isPlayerColorTurn) {
       // It's the player's turn
       const checkStatus = chess.isCheck() ? 'Check! ' : '';
@@ -166,18 +175,19 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         gameStatus: `${checkStatus}AI to move`,
         legalMoves: new Map()
       });
-
-      // Auto-trigger AI move after a short delay
-      setTimeout(() => {
-        if (get().gameState === 'ai_turn') {
-          get().makeAIMove();
-        }
-      }, 100);
+      // Now, schedule the AI move
+      get().makeAIMove();
     }
   },
 
   // Initialize a new game
   initializeGame: (color?: PlayerColor) => {
+    // Clear any pending AI move timeout
+    if (aiMoveTimeout) {
+      clearTimeout(aiMoveTimeout);
+      aiMoveTimeout = null;
+    }
+
     const newColor = color || (Math.random() < 0.5 ? 'white' : 'black');
     const chess = new Chess();
 
@@ -234,6 +244,10 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
     // Only make AI move if it's AI's turn
     if (gameState !== 'ai_turn') {
+      if (aiMoveTimeout) {
+        clearTimeout(aiMoveTimeout);
+        aiMoveTimeout = null;
+      }
       console.log('Not AI turn:', gameState);
       return;
     }
@@ -243,7 +257,13 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       gameStatus: '🤖 AI is thinking...'
     });
 
-    setTimeout(() => {
+    // Only allow one AI move timeout at a time
+    if (aiMoveTimeout) {
+      clearTimeout(aiMoveTimeout);
+      aiMoveTimeout = null;
+    }
+    aiMoveTimeout = setTimeout(() => {
+      aiMoveTimeout = null;
       const currentState = get();
       const moves = currentState.chess.moves({ verbose: true });
 

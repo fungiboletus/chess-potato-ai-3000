@@ -1,19 +1,12 @@
 import useChessStore from '../stores/chessStore';
-import { resetAllWindowPositions, getViewportDimensions } from '../utils/windowPositioning';
 
 export const DebugPanel: React.FC = () => {
   const { gameState, playerColor, isPlayerTurn, moveHistory, chess } = useChessStore();
-  const viewport = getViewportDimensions();
 
   // Only show in development (simple check for localhost)
   if (!window.location.hostname.includes('localhost')) {
     return null;
   }
-
-  const handleResetPositions = () => {
-    resetAllWindowPositions();
-    window.location.reload(); // Simple way to reset positions
-  };
 
   return (
     <div className="debug-panel">
@@ -25,14 +18,8 @@ export const DebugPanel: React.FC = () => {
       <div>Moves: {moveHistory.length}</div>
       <div>Last Move: {moveHistory[moveHistory.length - 1] || 'None'}</div>
       <div className="debug-panel-viewport">
-        Viewport: {viewport.width}x{viewport.height}
+        Viewport: {window.innerWidth}x{window.innerHeight}
       </div>
-      <button
-        onClick={handleResetPositions}
-        className="debug-panel-button"
-      >
-        Reset Window Positions
-      </button>
     </div>
   );
 };

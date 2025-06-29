@@ -38,18 +38,22 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
 
   const config = getResultConfig();
 
+  // Calculate center position more safely
+  const getCenterPosition = () => {
+    const windowWidth = 350; // estimated window width
+    const windowHeight = 280; // estimated window height
+    return {
+      x: Math.max(0, (window.innerWidth - windowWidth) / 2),
+      y: Math.max(0, (window.innerHeight - windowHeight) / 2)
+    };
+  };
+
   return (
     <DraggableWindow
       title={config.title}
       isOpen={isOpen}
       onClose={onClose}
-      windowId={`game-result-${result}`}
-      responsivePosition="center"
-      positionOffset={{ x: 0, y: -50 }}
-      width={350}
-      height={280}
-      minWidth={300}
-      minHeight={200}
+      defaultPosition={getCenterPosition()}
       className="game-result-window"
     >
       <div className={`game-result-content ${result}`}>

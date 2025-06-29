@@ -23,5 +23,6 @@ export const useChessgroundConfig = (): Config => {
       enabled: true,
       duration: 200,
     },
+    coordinates: false,
   }), [chess, playerColor, isPlayerTurn, legalMoves]);
 };

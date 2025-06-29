@@ -1,115 +1,51 @@
-import React, { type ReactNode, useRef, useMemo, useEffect } from 'react';
+import React, { type ReactNode, useRef, useState } from 'react';
 import Draggable from 'react-draggable';
-import useLocalStorageState from 'use-local-storage-state';
-import { getResponsivePosition } from '../utils/windowPositioning';
 
 interface DraggableWindowProps {
   title: string;
   children: ReactNode;
   onClose?: () => void;
   isOpen: boolean;
-  windowId: string;
   defaultPosition?: { x: number; y: number };
-  responsivePosition?: 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'left-center' | 'right-center';
-  positionOffset?: { x: number; y: number };
-  width?: number;
-  height?: number;
-  minWidth?: number;
-  minHeight?: number;
-  maxWidth?: number;
-  maxHeight?: number;
-  resizable?: boolean;
   className?: string;
 }
+
+// Helper function to calculate smart default positions
+const getSmartPosition = (defaultPos: { x: number; y: number } | undefined) => {
+  if (!defaultPos) {
+    return { x: 20, y: 20 };
+  }
+
+  // Ensure position is within viewport bounds
+  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const constrainedX = Math.max(0, Math.min(defaultPos.x, viewport.width - 300));
+  const constrainedY = Math.max(0, Math.min(defaultPos.y, viewport.height - 200));
+
+  return { x: constrainedX, y: constrainedY };
+};
 
 export const DraggableWindow: React.FC<DraggableWindowProps> = ({
   title,
   children,
   onClose,
   isOpen,
-  windowId,
-  defaultPosition,
-  responsivePosition,
-  positionOffset = { x: 0, y: 0 },
-  width = 300,
-  height = 400,
-  minWidth = 200,
-  minHeight = 150,
-  maxWidth,
-  maxHeight,
+  defaultPosition = { x: 20, y: 20 },
   className = '',
 }) => {
   const nodeRef = useRef<HTMLDivElement>(null);
-
-  // Calculate responsive default position if specified
-  const calculatedDefaultPosition = useMemo(() => {
-    if (responsivePosition) {
-      return getResponsivePosition(
-        { width, height },
-        responsivePosition,
-        positionOffset
-      );
-    }
-    return defaultPosition || { x: 20, y: 20 };
-  }, [responsivePosition, positionOffset, width, height, defaultPosition]);
-
-  const [position, setPosition] = useLocalStorageState(`${windowId}-position`, {
-    defaultValue: calculatedDefaultPosition,
-  });
-
-  const [size] = useLocalStorageState(`${windowId}-size`, {
-    defaultValue: { width, height },
-  });
-
-  // Handle window resize to keep windows in viewport
-  useEffect(() => {
-    if (!responsivePosition) return;
-
-    const handleResize = () => {
-      const newPosition = getResponsivePosition(
-        { width: size.width, height: size.height },
-        responsivePosition,
-        positionOffset
-      );
-
-      // Only update if position would be significantly different (avoid constant updates)
-      const threshold = 50;
-      if (Math.abs(position.x - newPosition.x) > threshold ||
-        Math.abs(position.y - newPosition.y) > threshold) {
-        setPosition(newPosition);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [responsivePosition, positionOffset, size, position, setPosition]);
+  const [position, setPosition] = useState(() => getSmartPosition(defaultPosition));
 
   if (!isOpen) return null;
 
   const handleDrag = (_e: any, data: any) => {
-    // Allow more freedom in dragging - only prevent windows from going completely off-screen
+    // Keep window title bar accessible - prevent it from being dragged completely off-screen
     const viewport = { width: window.innerWidth, height: window.innerHeight };
-    const minVisibleArea = 50; // Minimum pixels that must remain visible
+    const minVisibleArea = 50;
 
-    // Allow window to be dragged mostly off-screen but keep some visible for retrieval
-    const constrainedX = Math.max(-size.width + minVisibleArea, Math.min(data.x, viewport.width - minVisibleArea));
-    const constrainedY = Math.max(-20, Math.min(data.y, viewport.height - minVisibleArea)); // Keep title bar accessible
+    const constrainedX = Math.max(-200, Math.min(data.x, viewport.width - minVisibleArea));
+    const constrainedY = Math.max(0, Math.min(data.y, viewport.height - minVisibleArea));
 
     setPosition({ x: constrainedX, y: constrainedY });
-  };
-
-  const windowStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: size.width,
-    minWidth,
-    maxWidth,
-    height: size.height,
-    minHeight,
-    maxHeight,
-    zIndex: 1000,
-    userSelect: 'none',
   };
 
   return (
@@ -121,7 +57,7 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
       enableUserSelectHack={false}
       nodeRef={nodeRef}
     >
-      <div ref={nodeRef} className={`window ${className}`} style={windowStyle}>
+      <div ref={nodeRef} className={`window ${className}`} style={{ position: 'absolute', zIndex: 1000 }}>
         <div className="title-bar draggable-title-bar">
           <div className="title-bar-text">{title}</div>
           <div className="title-bar-controls draggable-title-bar-controls">

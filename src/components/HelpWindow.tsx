@@ -9,18 +9,20 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
   isOpen,
   onClose,
 }) => {
+  // Position window on the left side of the screen
+  const getLeftSidePosition = () => {
+    return {
+      x: 50,
+      y: Math.max(50, (window.innerHeight - 450) / 2)
+    };
+  };
+
   return (
     <DraggableWindow
       title="Chess Potato AI 3000 - Help"
       isOpen={isOpen}
       onClose={onClose}
-      windowId="help"
-      responsivePosition="left-center"
-      positionOffset={{ x: 50, y: -50 }}
-      width={320}
-      height={400}
-      minWidth={280}
-      minHeight={350}
+      defaultPosition={getLeftSidePosition()}
     >
       <div className="help-content">
         <h3 className="help-heading">

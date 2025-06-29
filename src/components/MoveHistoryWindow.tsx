@@ -29,19 +29,21 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     return formatted.trim();
   };
 
+  // Position window on the right side of the screen
+  const getRightSidePosition = () => {
+    const windowWidth = 250; // estimated window width
+    return {
+      x: Math.max(0, window.innerWidth - windowWidth - 20),
+      y: 100
+    };
+  };
+
   return (
     <DraggableWindow
       title="Move History"
       isOpen={isOpen}
       onClose={onClose}
-      windowId="move-history"
-      responsivePosition="right-center"
-      positionOffset={{ x: -300, y: 0 }}
-      width={100}
-      height={320}
-      minWidth={100}
-      minHeight={200}
-    /*className="move-history-window"*/
+      defaultPosition={getRightSidePosition()}
     >
       <div className="move-history-content">
         {formatMoveHistory()}

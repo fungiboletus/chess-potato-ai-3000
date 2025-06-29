@@ -5,11 +5,43 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  overflow: hidden; /* Prevent any scrolling */
+  overflow: auto; /* Allow scrolling if content is too tall */
+  background-image: url('./public/clouds_perso.webp');
+  background-size: cover;
+  background-position: center;
 }
 
 @media (max-width: 768px) {
   .app {
     align-items: flex-start;
   }
+}
+
+/* Make the main chess board window non-selectable */
+.chess-container {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Allow text selection in draggable windows */
+.draggable-window-body {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Handle potential overflow and scrolling */
+.draggable-window-container {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+/* Ensure the main chess window is scrollable if needed */
+.window {
+  max-height: 90vh;
+  overflow-y: auto;
 }
