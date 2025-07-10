@@ -1,8 +1,10 @@
+import useChessStore from '../stores/chessStore';
 import { DraggableWindow } from './DraggableWindow';
 
 interface MoveHistoryWindowProps {
   isOpen: boolean;
   onClose: () => void;
+  onMouseDown?: () => void;
   moveHistory: string[];
 }
 
@@ -10,6 +12,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   isOpen,
   onClose,
   moveHistory,
+  onMouseDown,
 }) => {
   const generateMoveRows = () => {
     if (moveHistory.length === 0) {
@@ -52,26 +55,37 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
   };
 
+  // computed property for current FEN
+  const currentFen = useChessStore(state => state.chessgroundApi?.getFen() || 'N/A');
+
   return (
     <DraggableWindow
       className="move-history-window"
       title="Move History"
       isOpen={isOpen}
       onClose={onClose}
+      onMouseDown={onMouseDown}
       defaultPosition={getRightSidePosition()}
     >
-      <div className="move-history-content sunken-panel">
-        <table className="interactive" style={{ tableLayout: 'fixed', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ width: '90px' }}>White</th>
-              <th style={{ width: '90px' }}>Black</th>
-            </tr>
-          </thead>
-          <tbody>
-            {generateMoveRows()}
-          </tbody>
-        </table>
+      <div className="move-history-content">
+        <div className="sunken-panel move-history-scrollable">
+          <table className="interactive">
+            <thead>
+              <tr>
+                <th>White</th>
+                <th>Black</th>
+              </tr>
+            </thead>
+            <tbody>
+              {generateMoveRows()}
+            </tbody>
+          </table>
+        </div>
+
+        <dl className="fen-section">
+          <dt>Current FEN:</dt>
+          <dd>{currentFen}</dd>
+        </dl>
       </div>
     </DraggableWindow>
   );

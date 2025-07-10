@@ -3,11 +3,13 @@ import { DraggableWindow } from './DraggableWindow';
 interface HelpWindowProps {
   isOpen: boolean;
   onClose: () => void;
+  onMouseDown?: () => void;
 }
 
 export const HelpWindow: React.FC<HelpWindowProps> = ({
   isOpen,
   onClose,
+  onMouseDown,
 }) => {
   const WINDOW_WIDTH = 350;
   // Position window on the left side of the screen
@@ -31,6 +33,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
       title="Chess Potato AI 3000 - Help"
       isOpen={isOpen}
       onClose={onClose}
+      onMouseDown={onMouseDown}
       defaultPosition={getLeftSidePosition()}
     >
       <div className="help-content">

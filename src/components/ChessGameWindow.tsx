@@ -15,6 +15,7 @@ export const ChessGameWindow: React.FC = () => {
     resignGame,
     setShowMoveHistory,
     setShowHelp,
+    redrawChessground,
   } = useChessStore();
 
   const isAIThinking = gameState === 'ai_thinking';
@@ -32,15 +33,19 @@ export const ChessGameWindow: React.FC = () => {
       title="Chess Potato AI 3000"
       isOpen={true}
       statusBar={statusBarContent}
+      onDragStop={redrawChessground}
     >
       <div className="chess-game-main-window">
         <div className="chess-container">
-          <div className="progress-container">
-            <div className={`ai-thinking-container`} style={{ visibility: isAIThinking ? 'visible' : 'hidden' }}>
-              <span>
-                🤖 AI is thinking...
-              </span>
-              <AnimatedProgressBar isVisible={isAIThinking} width="100%" />
+          <div className="chess-header">
+            <img src="./public/art.png" alt="" className="pixelated" />
+            <div className="progress-container">
+              <div className={`ai-thinking-container`} style={{ visibility: isAIThinking ? 'visible' : 'hidden' }}>
+                <p>
+                  Chess Potato AI 3000 is thinking...
+                </p>
+                <AnimatedProgressBar isVisible={isAIThinking} width="100%" />
+              </div>
             </div>
           </div>
 

@@ -10,6 +10,7 @@ export const ChessBoard: React.FC = () => {
 
   const config = useChessgroundConfig();
   const makePlayerMove = useChessStore(state => state.makePlayerMove);
+  const setChessgroundApi = useChessStore(state => state.setChessgroundApi);
 
   // Initialize chessground
   useEffect(() => {
@@ -27,6 +28,7 @@ export const ChessBoard: React.FC = () => {
         },
       });
       setApi(chessgroundApi);
+      setChessgroundApi(chessgroundApi);
     } else if (boardRef.current && api) {
       api.set({
         ...config,
@@ -41,6 +43,12 @@ export const ChessBoard: React.FC = () => {
       });
     }
   }, [boardRef]);
+
+  // Update API reference in store
+  useEffect(() => {
+    setChessgroundApi(api);
+    return () => setChessgroundApi(null);
+  }, [api, setChessgroundApi]);
 
   // Update configuration when it changes
   useEffect(() => {

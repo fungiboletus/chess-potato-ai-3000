@@ -9,12 +9,35 @@ export const ChessGame: React.FC = () => {
   const {
     showMoveHistory,
     showHelp,
+    showHelpLast,
     gameResult,
     moveHistory,
     setShowMoveHistory,
     setShowHelp,
+    setShowHelpLast,
     closeGameResult,
   } = useChessStore();
+
+  const windowComponents = [
+    <MoveHistoryWindow
+      key="moveHistory"
+      isOpen={showMoveHistory}
+      onClose={() => setShowMoveHistory(false)}
+      onMouseDown={() => setShowHelpLast(false)}
+      moveHistory={moveHistory}
+    />,
+    <HelpWindow
+      key="help"
+      isOpen={showHelp}
+      onClose={() => setShowHelp(false)}
+      onMouseDown={() => setShowHelpLast(true)}
+    />,
+  ];
+
+  console.log(showHelpLast);
+  // Order windows based on which was shown last - most recent on top
+  const orderedWindows = showHelpLast ? windowComponents : windowComponents.reverse();
+  console.log(orderedWindows);
 
   return (
     <div className="chess-game">
@@ -22,11 +45,7 @@ export const ChessGame: React.FC = () => {
         <ChessGameWindow />
       </div>
 
-      <MoveHistoryWindow
-        isOpen={showMoveHistory}
-        onClose={() => setShowMoveHistory(false)}
-        moveHistory={moveHistory}
-      />
+      {orderedWindows}
 
       <GameResultWindow
         isOpen={!!gameResult}
@@ -35,10 +54,6 @@ export const ChessGame: React.FC = () => {
         message={gameResult?.message || ''}
       />
 
-      <HelpWindow
-        isOpen={showHelp}
-        onClose={() => setShowHelp(false)}
-      />
     </div>
   );
 };

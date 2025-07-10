@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Chess } from 'chess.js';
+import type { Api } from 'chessground/api';
 
 // Game states following a state machine pattern
 export type GameState =
@@ -33,11 +34,16 @@ export interface ChessGameStore {
   // UI state
   showMoveHistory: boolean;
   showHelp: boolean;
+  showHelpLast: boolean; // Whether help or move history was last shown
 
   // Computed state
   isPlayerTurn: boolean;
   legalMoves: Map<string, string[]>;
   gameStatus: string;
+  currentFen: string;
+
+  // Chessground API reference
+  chessgroundApi: Api | null;
 
   // Actions
   initializeGame: (color?: PlayerColor) => void;
@@ -49,7 +55,12 @@ export interface ChessGameStore {
   // UI actions
   setShowMoveHistory: (show: boolean) => void;
   setShowHelp: (show: boolean) => void;
+  setShowHelpLast: (show: boolean) => void;
   closeGameResult: () => void;
+
+  // Chessground integration
+  setChessgroundApi: (api: Api | null) => void;
+  redrawChessground: () => void;
 
   // Internal helpers
   calculateLegalMoves: () => Map<string, string[]>;
@@ -70,9 +81,12 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   gameResult: null,
   showMoveHistory: false,
   showHelp: false,
+  showHelpLast: false,
   isPlayerTurn: false,
   legalMoves: new Map(),
   gameStatus: 'Initializing...',
+  chessgroundApi: null,
+  currentFen: '',
 
   // Calculate legal moves for the current position
   calculateLegalMoves: () => {
@@ -200,7 +214,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       gameState: 'initializing',
       isPlayerTurn: false,
       legalMoves: new Map(),
-      gameStatus: 'Starting new game...'
+      gameStatus: 'Starting new game...',
     });
 
     // Update turn state after initialization
@@ -309,9 +323,19 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   },
 
   // UI state setters
-  setShowMoveHistory: (show: boolean) => set({ showMoveHistory: show }),
-  setShowHelp: (show: boolean) => set({ showHelp: show }),
+  setShowMoveHistory: (show: boolean) => set({ showMoveHistory: show, showHelpLast: false }),
+  setShowHelp: (show: boolean) => set({ showHelp: show, showHelpLast: show }),
+  setShowHelpLast: (show: boolean) => set({ showHelpLast: show }),
   closeGameResult: () => set({ gameResult: null }),
+
+  // Chessground integration
+  setChessgroundApi: (api: Api | null) => set({ chessgroundApi: api }),
+  redrawChessground: () => {
+    const { chessgroundApi } = get();
+    if (chessgroundApi) {
+      chessgroundApi.redrawAll();
+    }
+  },
 }));
 
 export default useChessStore;

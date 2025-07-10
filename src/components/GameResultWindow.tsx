@@ -17,21 +17,18 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
     switch (result) {
       case 'win':
         return {
-          title: '🎉 Victory! 🎉',
+          title: 'Victory!',
           gifPlaceholder: '🏆 WINNER! 🏆',
-          sound: '🔊 *victory fanfare*',
         };
       case 'lose':
         return {
-          title: '💀 Defeat 💀',
+          title: 'Defeat',
           gifPlaceholder: '😵 GAME OVER 😵',
-          sound: '🔊 *sad trombone*',
         };
       case 'draw':
         return {
-          title: '🤝 Draw 🤝',
+          title: 'Draw',
           gifPlaceholder: '🤷 IT\'S A TIE 🤷',
-          sound: '🔊 *neutral beep*',
         };
     }
   };
@@ -67,10 +64,6 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
 
         <div className="game-result-message">
           {message}
-        </div>
-
-        <div className="game-result-sound">
-          {config.sound}
         </div>
 
         <button

@@ -6,9 +6,11 @@ interface DraggableWindowProps {
   children: ReactNode;
   statusBar?: ReactNode;
   onClose?: () => void;
+  onMouseDown?: () => void;
   isOpen: boolean;
   defaultPosition?: { x: number; y: number };
   className?: string;
+  onDragStop?: () => void;
 }
 
 // Helper function to calculate smart default positions
@@ -30,9 +32,11 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
   children,
   statusBar,
   onClose,
+  onMouseDown,
   isOpen,
   defaultPosition = { x: 0, y: 0 },
   className = '',
+  onDragStop,
 }) => {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(() => getSmartPosition(defaultPosition));
@@ -60,7 +64,7 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
 
   if (!isOpen) return null;
 
-  const handleDrag = (_e: any, data: any) => {
+  const handleDrag = (_e: unknown, data: { x: number; y: number }) => {
     // Keep window title bar accessible - prevent it from being dragged completely off-screen
     //const viewport = { width: window.innerWidth, height: window.innerHeight };
     //const minVisibleArea = 50;
@@ -72,17 +76,23 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
     setPosition({ x, y });
   };
 
+  const handleStop = (/*_e: unknown, _data: unknown*/) => {
+    if (onDragStop) {
+      onDragStop();
+    }
+  };
 
   return (
     <Draggable
       position={position}
       onDrag={handleDrag}
+      onStop={handleStop}
       handle=".title-bar"
       cancel=".title-bar-controls"
       nodeRef={nodeRef}
       bounds="parent"
     >
-      <div ref={nodeRef} className={`window ${className}`}>
+      <div ref={nodeRef} className={`window ${className}`} onMouseDownCapture={onMouseDown}>
         <div className="title-bar draggable-title-bar">
           <div className="title-bar-text">{title}</div>
           <div className="title-bar-controls draggable-title-bar-controls">
