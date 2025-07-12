@@ -1,13 +1,17 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChessBoard } from '../ChessBoard';
 import { AnimatedProgressBar } from './AnimatedProgressBar';
 import useChessStore from '../stores/chessStore';
+import { useGameStatus } from '../hooks/useGameStatus';
 import { DraggableWindow } from './DraggableWindow';
 
 export const ChessGameWindow: React.FC = () => {
+  const { t } = useTranslation();
+  const gameStatus = useGameStatus();
+
   const {
     playerColor,
-    gameStatus,
     gameState,
     moveHistory,
     gameStarted,
@@ -15,6 +19,7 @@ export const ChessGameWindow: React.FC = () => {
     resignGame,
     setShowMoveHistory,
     setShowHelp,
+    setShowLanguageWindow,
     redrawChessground,
   } = useChessStore();
 
@@ -22,15 +27,15 @@ export const ChessGameWindow: React.FC = () => {
 
   const statusBarContent = (
     <>
-      <p className="status-bar-field">Playing as: {playerColor}</p>
+      <p className="status-bar-field">{t('game.playing_as', { color: t(`colors.${playerColor}`) })}</p>
       <p className="status-bar-field">{gameStatus}</p>
-      <p className="status-bar-field">Moves: {moveHistory.length}</p>
+      <p className="status-bar-field">{t('game.moves', { count: moveHistory.length })}</p>
     </>
   );
 
   return (
     <DraggableWindow
-      title="Chess Potato AI 3000"
+      title={t('game.title')}
       isOpen={true}
       statusBar={statusBarContent}
       onDragStop={redrawChessground}
@@ -38,15 +43,17 @@ export const ChessGameWindow: React.FC = () => {
       <div className="chess-game-main-window">
         <div className="chess-container">
           <div className="chess-header">
-            <img src="./public/art.png" alt="" className="pixelated" />
+            <img src="./public/art.png" alt="" className="pixelated" style={{ display: isAIThinking ? 'none' : 'block' }} />
+            <img src="./public/art.apng" alt="" className="pixelated" style={{ display: isAIThinking ? 'block' : 'none' }} />
             <div className="progress-container">
               <div className={`ai-thinking-container`} style={{ visibility: isAIThinking ? 'visible' : 'hidden' }}>
                 <p>
-                  Chess Potato AI 3000 is thinking...
+                  {t('game.thinking')}
                 </p>
                 <AnimatedProgressBar isVisible={isAIThinking} width="100%" />
               </div>
             </div>
+
           </div>
 
           <div className="chess-board-wrapper">
@@ -55,16 +62,24 @@ export const ChessGameWindow: React.FC = () => {
 
           <div className="game-controls">
             <button onClick={resetGame} disabled={gameStarted && gameState !== 'game_over'}>
-              New Game
+              {t('game.new_game')}
             </button>
             <button onClick={resignGame} disabled={!gameStarted || gameState === 'game_over'}>
-              Resign
+              {t('game.resign')}
             </button>
             <button onClick={() => setShowMoveHistory(true)}>
-              Show Moves
+              {t('game.show_moves')}
             </button>
             <button onClick={() => setShowHelp(true)}>
-              Help
+              {t('game.help')}
+            </button>
+            <button
+              onClick={() => setShowLanguageWindow(true)}
+              title={t('language.select')}
+              className="language-button"
+            >
+              <img src="/world.png" alt="" height="16" width="16" />
+              {t('language.lang')}
             </button>
           </div>
         </div>

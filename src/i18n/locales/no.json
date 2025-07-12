@@ -1,0 +1,84 @@
+{
+  "game": {
+    "title": "Chess Potato AI 3000",
+    "playing_as": "Spiller som {{color}}",
+    "moves": "Trekk: {{count}}",
+    "thinking": "Chess Potato AI 3000 tenker...",
+    "new_game": "Nytt Spill",
+    "resign": "Gi Opp",
+    "show_moves": "Vis Trekk",
+    "help": "Hjelp",
+    "victory": "Seier!",
+    "defeat": "Nederlag",
+    "draw": "Remis",
+    "close": "Lukk",
+    "checkmate_win": "Sjakkmatt! Du vant!",
+    "checkmate_lose": "Sjakkmatt! AI vinner!",
+    "game_draw": "Spillet er remis!",
+    "resigned": "Du ga opp spillet!",
+    "congratulations": "Gratulerer! Du vant!",
+    "better_luck": "Lykke til neste gang!",
+    "well_played": "Det er remis! Godt spilt!"
+  },
+  "help": {
+    "title": "Chess Potato AI 3000 - Hjelp",
+    "how_to_play": "🎮 Hvordan Spille",
+    "goal": "🎯 Mål:",
+    "goal_text": "Sjakkmatt AI-motstanderen!",
+    "ai": "🤖 AI:",
+    "ai_text": "Tilfeldige men utfordrende trekk",
+    "color": "🎲 Farge:",
+    "color_text": "Tilfeldig tildelt hver kamp",
+    "keyboard_shortcuts": "⌨️ Hurtigtaster",
+    "shortcut_h": "H - Veksle trekkhistorikk",
+    "shortcut_n": "N - Nytt spill",
+    "shortcut_help": "? - Vis denne hjelpen",
+    "windows": "🪟 Vinduer",
+    "move_history": "Trekkhistorikk:",
+    "move_history_text": "Viser alle spilltrekk",
+    "result_window": "Resultatvindu:",
+    "result_window_text": "Feirer seire/remis/nederlag",
+    "draggable": "Drabar:",
+    "draggable_text": "Flytt vinduer rundt!",
+    "persistent": "Persistent:",
+    "persistent_text": "Vinduposisjoner lagres",
+    "footer": "Laget med ❤️ og Windows 98 nostalgi"
+  },
+  "move_history": {
+    "title": "Trekkhistorikk",
+    "no_moves": "Ingen trekk ennå",
+    "clear_history": "Tøm Historikk",
+    "current_fen": "Nåværende FEN:"
+  },
+  "result": {
+    "winner": "🏆 VINNER! 🏆",
+    "game_over": "😵 SPILL OVER 😵",
+    "tie": "🤷 DET ER UAVGJORT 🤷",
+    "gif_placeholder": "(GIF-plassholder)"
+  },
+  "language": {
+    "title": "Langue | Language | Språk | Idioma",
+    "select": "Velg Språk",
+    "lang": "Språk",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "norwegian": "Norsk"
+  },
+  "colors": {
+    "white": "hvit",
+    "black": "svart"
+  },
+  "status": {
+    "initializing": "Starter...",
+    "starting_game": "Starter nytt spill...",
+    "your_turn": "Din tur",
+    "ai_to_move": "AIs tur",
+    "ai_thinking": "AI tenker...",
+    "check": "Sjakk!",
+    "checkmate_you_win": "Sjakkmatt! Du vinner!",
+    "checkmate_ai_wins": "Sjakkmatt! AI vinner!",
+    "draw": "Spillet er remis!",
+    "you_resigned": "Du ga opp!"
+  }
+}

@@ -1,3 +1,5 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import useChessStore from '../stores/chessStore';
 import { DraggableWindow } from './DraggableWindow';
 
@@ -14,11 +16,13 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   moveHistory,
   onMouseDown,
 }) => {
+  const { t } = useTranslation();
+
   const generateMoveRows = () => {
     if (moveHistory.length === 0) {
       return (
         <tr>
-          <td colSpan={2}>No moves yet...</td>
+          <td colSpan={2}>{t('move_history.no_moves')}</td>
         </tr>
       );
     }
@@ -61,7 +65,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   return (
     <DraggableWindow
       className="move-history-window"
-      title="Move History"
+      title={t('move_history.title')}
       isOpen={isOpen}
       onClose={onClose}
       onMouseDown={onMouseDown}
@@ -72,8 +76,8 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
           <table className="interactive">
             <thead>
               <tr>
-                <th>White</th>
-                <th>Black</th>
+                <th>{t('colors.white')}</th>
+                <th>{t('colors.black')}</th>
               </tr>
             </thead>
             <tbody>
@@ -83,7 +87,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
         </div>
 
         <dl className="fen-section">
-          <dt>Current FEN:</dt>
+          <dt>{t('move_history.current_fen')}</dt>
           <dd>{currentFen}</dd>
         </dl>
       </div>

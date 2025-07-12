@@ -20,7 +20,7 @@
   justify-content: center;
   box-sizing: border-box;
   overflow: auto;
-  background-image: url('./public/clouds_perso.webp');
+  background-image: url('./clouds_perso.webp');
   background-size: cover;
   background-position: center;
 }
@@ -43,7 +43,7 @@
 
 .move-history-window {
   width: 200px;
-  height: 284px;
+  height: 290px;
   max-width: 90dvw;
   max-height: 90vh;
   overflow-y: auto;
@@ -110,6 +110,31 @@ img.pixelated {
   flex-direction: row;
   width: 100%;
   gap: 16px;
+  align-items: flex-start;
+}
+
+.language-selector-container {
+  display: flex;
+  align-items: flex-start;
+}
+
+.language-selector-button {
+  padding: 2px 6px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 50px;
+}
+
+.language-selector-button .fi {
+  width: 16px;
+  height: 12px;
+}
+
+.language-code {
+  font-size: 10px;
+  font-weight: bold;
 }
 
 .chess-board-wrapper {
@@ -195,9 +220,9 @@ button:disabled {
 
 .game-controls button {
   flex: 0 0 auto;
-  width: 90px;
+  min-width: 90px;
   /* Fixed width for all buttons */
-  min-width: 0;
+  /*min-width: 0;*/
 }
 
 /* if screen width < 510px, then use 100% width */
@@ -216,4 +241,49 @@ button:disabled {
     flex-direction: column;
     align-items: center;
   }
+}
+
+/* Language Window Styles */
+.language-window {
+  position: absolute;
+  width: 300px;
+  max-width: 90dvw;
+  max-height: 90dvh;
+}
+
+.language-content {
+  padding: 16px;
+}
+
+.language-content legend {
+  height: 16px;
+}
+
+.language-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-name {
+  flex: 1;
+}
+
+/* Flag icons */
+.fi {
+  width: 16px;
+  height: 12px;
+  border: 1px solid #666;
+  flex-shrink: 0;
+}
+
+.language-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.language-button img {
+  display: block;
 }

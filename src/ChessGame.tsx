@@ -3,6 +3,7 @@ import { ChessGameWindow } from './components/ChessGameWindow';
 import { MoveHistoryWindow } from './components/MoveHistoryWindow';
 import { GameResultWindow } from './components/GameResultWindow';
 import { HelpWindow } from './components/HelpWindow';
+import { LanguageWindow } from './components/LanguageWindow';
 import useChessStore from './stores/chessStore';
 
 export const ChessGame: React.FC = () => {
@@ -10,11 +11,13 @@ export const ChessGame: React.FC = () => {
     showMoveHistory,
     showHelp,
     showHelpLast,
+    showLanguageWindow,
     gameResult,
     moveHistory,
     setShowMoveHistory,
     setShowHelp,
     setShowHelpLast,
+    setShowLanguageWindow,
     closeGameResult,
   } = useChessStore();
 
@@ -34,10 +37,8 @@ export const ChessGame: React.FC = () => {
     />,
   ];
 
-  console.log(showHelpLast);
   // Order windows based on which was shown last - most recent on top
   const orderedWindows = showHelpLast ? windowComponents : windowComponents.reverse();
-  console.log(orderedWindows);
 
   return (
     <div className="chess-game">
@@ -52,6 +53,11 @@ export const ChessGame: React.FC = () => {
         onClose={closeGameResult}
         result={gameResult?.type || 'draw'}
         message={gameResult?.message || ''}
+      />
+
+      <LanguageWindow
+        isOpen={showLanguageWindow}
+        onClose={() => setShowLanguageWindow(false)}
       />
 
     </div>

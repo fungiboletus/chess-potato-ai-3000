@@ -35,11 +35,11 @@ export interface ChessGameStore {
   showMoveHistory: boolean;
   showHelp: boolean;
   showHelpLast: boolean; // Whether help or move history was last shown
+  showLanguageWindow: boolean;
 
   // Computed state
   isPlayerTurn: boolean;
   legalMoves: Map<string, string[]>;
-  gameStatus: string;
   currentFen: string;
 
   // Chessground API reference
@@ -56,6 +56,7 @@ export interface ChessGameStore {
   setShowMoveHistory: (show: boolean) => void;
   setShowHelp: (show: boolean) => void;
   setShowHelpLast: (show: boolean) => void;
+  setShowLanguageWindow: (show: boolean) => void;
   closeGameResult: () => void;
 
   // Chessground integration
@@ -82,9 +83,9 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   showMoveHistory: false,
   showHelp: false,
   showHelpLast: false,
+  showLanguageWindow: false,
   isPlayerTurn: false,
   legalMoves: new Map(),
-  gameStatus: 'Initializing...',
   chessgroundApi: null,
   currentFen: '',
 
@@ -146,14 +147,9 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     // First check if game is over
     const gameResult = state.checkGameEnd();
     if (gameResult) {
-      const statusMessage = gameResult.type === 'win' ? `Checkmate! You win!` :
-        gameResult.type === 'lose' ? `Checkmate! AI wins!` :
-          `Game is a draw!`;
-
       set({
         gameState: 'game_over',
         gameResult,
-        gameStatus: statusMessage,
         isPlayerTurn: false,
         legalMoves: new Map()
       });
@@ -173,20 +169,16 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
     if (isPlayerColorTurn) {
       // It's the player's turn
-      const checkStatus = chess.isCheck() ? 'Check! ' : '';
       set({
         gameState: 'player_turn',
         isPlayerTurn: true,
-        gameStatus: `${checkStatus}Your turn (${playerColor})`,
         legalMoves: state.calculateLegalMoves()
       });
     } else {
       // It's the AI's turn
-      const checkStatus = chess.isCheck() ? 'Check! ' : '';
       set({
         gameState: 'ai_turn',
         isPlayerTurn: false,
-        gameStatus: `${checkStatus}AI to move`,
         legalMoves: new Map()
       });
       // Now, schedule the AI move
@@ -214,7 +206,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       gameState: 'initializing',
       isPlayerTurn: false,
       legalMoves: new Map(),
-      gameStatus: 'Starting new game...',
     });
 
     // Update turn state after initialization
@@ -267,8 +258,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     }
 
     set({
-      gameState: 'ai_thinking',
-      gameStatus: 'AI is thinking...'
+      gameState: 'ai_thinking'
     });
 
     // Only allow one AI move timeout at a time
@@ -306,12 +296,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
   // Resign the current game
   resignGame: () => {
-    const { playerColor } = get();
-    const winnerColor = playerColor === 'white' ? 'Black' : 'White';
-
     set({
       gameState: 'game_over',
-      gameStatus: `You resigned! ${winnerColor} wins!`,
       gameResult: {
         type: 'lose',
         message: 'You resigned the game!',
@@ -326,6 +312,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   setShowMoveHistory: (show: boolean) => set({ showMoveHistory: show, showHelpLast: false }),
   setShowHelp: (show: boolean) => set({ showHelp: show, showHelpLast: show }),
   setShowHelpLast: (show: boolean) => set({ showHelpLast: show }),
+  setShowLanguageWindow: (show: boolean) => set({ showLanguageWindow: show }),
   closeGameResult: () => set({ gameResult: null }),
 
   // Chessground integration

@@ -1,3 +1,5 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
 
 interface GameResultWindowProps {
@@ -13,22 +15,24 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
   result,
   message,
 }) => {
+  const { t } = useTranslation();
+
   const getResultConfig = () => {
     switch (result) {
       case 'win':
         return {
-          title: 'Victory!',
-          gifPlaceholder: '🏆 WINNER! 🏆',
+          title: t('game.victory'),
+          gifPlaceholder: t('result.winner'),
         };
       case 'lose':
         return {
-          title: 'Defeat',
-          gifPlaceholder: '😵 GAME OVER 😵',
+          title: t('game.defeat'),
+          gifPlaceholder: t('result.game_over'),
         };
       case 'draw':
         return {
-          title: 'Draw',
-          gifPlaceholder: '🤷 IT\'S A TIE 🤷',
+          title: t('game.draw'),
+          gifPlaceholder: t('result.tie'),
         };
     }
   };
@@ -58,7 +62,7 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
         <div className="game-result-gif-placeholder">
           {config.gifPlaceholder}
           <small>
-            (GIF placeholder)
+            {t('result.gif_placeholder')}
           </small>
         </div>
 
@@ -70,7 +74,7 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
           onClick={onClose}
           className="game-result-button"
         >
-          Close
+          {t('game.close')}
         </button>
       </div>
     </DraggableWindow>

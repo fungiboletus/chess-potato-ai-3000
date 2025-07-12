@@ -1,3 +1,5 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
 
 interface HelpWindowProps {
@@ -11,6 +13,8 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
   onClose,
   onMouseDown,
 }) => {
+  const { t } = useTranslation();
+
   const WINDOW_WIDTH = 350;
   // Position window on the left side of the screen
   const getLeftSidePosition = () => {
@@ -30,7 +34,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
   return (
     <DraggableWindow
       className="help-window"
-      title="Chess Potato AI 3000 - Help"
+      title={t('help.title')}
       isOpen={isOpen}
       onClose={onClose}
       onMouseDown={onMouseDown}
@@ -38,38 +42,38 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
     >
       <div className="help-content">
         <h3 className="help-heading">
-          🎮 How to Play
+          {t('help.how_to_play')}
         </h3>
 
         <div className="help-section">
-          <strong>🎯 Goal:</strong> Checkmate the AI opponent!<br />
-          <strong>🤖 AI:</strong> Random but challenging moves<br />
-          <strong>🎲 Color:</strong> Randomly assigned each game
+          <strong>{t('help.goal')}</strong> {t('help.goal_text')}<br />
+          <strong>{t('help.ai')}</strong> {t('help.ai_text')}<br />
+          <strong>{t('help.color')}</strong> {t('help.color_text')}
         </div>
 
         <h3 className="help-heading">
-          ⌨️ Keyboard Shortcuts
+          {t('help.keyboard_shortcuts')}
         </h3>
 
         <div className="help-shortcuts">
-          <strong>H</strong> - Toggle Move History<br />
-          <strong>N</strong> - Start New Game<br />
-          <strong>?</strong> - Show this Help
+          <strong>H</strong> - {t('help.shortcut_h')}<br />
+          <strong>N</strong> - {t('help.shortcut_n')}<br />
+          <strong>?</strong> - {t('help.shortcut_help')}
         </div>
 
         <h3 className="help-heading">
-          🪟 Windows
+          {t('help.windows')}
         </h3>
 
         <div className="help-section">
-          • <strong>Move History:</strong> Shows all game moves<br />
-          • <strong>Result Window:</strong> Celebrates wins/draws/losses<br />
-          • <strong>Draggable:</strong> Move windows around!<br />
-          • <strong>Persistent:</strong> Window positions are saved
+          • <strong>{t('help.move_history')}</strong> {t('help.move_history_text')}<br />
+          • <strong>{t('help.result_window')}</strong> {t('help.result_window_text')}<br />
+          • <strong>{t('help.draggable')}</strong> {t('help.draggable_text')}<br />
+          • <strong>{t('help.persistent')}</strong> {t('help.persistent_text')}
         </div>
 
         <div className="help-footer">
-          Made with ❤️ and Windows 98 nostalgia
+          {t('help.footer')}
         </div>
       </div>
     </DraggableWindow>

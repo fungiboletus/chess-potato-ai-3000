@@ -1,0 +1,84 @@
+{
+  "game": {
+    "title": "Chess Potato AI 3000",
+    "playing_as": "Jouer en tant que {{color}}",
+    "moves": "Coups : {{count}}",
+    "thinking": "Chess Potato AI 3000 réfléchit...",
+    "new_game": "Nouvelle Partie",
+    "resign": "Abandonner",
+    "show_moves": "Afficher les Coups",
+    "help": "Aide",
+    "victory": "Victoire !",
+    "defeat": "Défaite",
+    "draw": "Match Nul",
+    "close": "Fermer",
+    "checkmate_win": "Échec et mat ! Vous avez gagné !",
+    "checkmate_lose": "Échec et mat ! L'IA gagne !",
+    "game_draw": "La partie est nulle !",
+    "resigned": "Vous avez abandonné la partie !",
+    "congratulations": "Félicitations ! Vous avez gagné !",
+    "better_luck": "Plus de chance la prochaine fois !",
+    "well_played": "C'est un match nul ! Bien joué !"
+  },
+  "help": {
+    "title": "Chess Potato AI 3000 - Aide",
+    "how_to_play": "🎮 Comment Jouer",
+    "goal": "🎯 Objectif :",
+    "goal_text": "Mater l'adversaire IA !",
+    "ai": "🤖 IA :",
+    "ai_text": "Coups aléatoires mais challengeants",
+    "color": "🎲 Couleur :",
+    "color_text": "Attribuée au hasard à chaque partie",
+    "keyboard_shortcuts": "⌨️ Raccourcis Clavier",
+    "shortcut_h": "H - Basculer l'historique des coups",
+    "shortcut_n": "N - Nouvelle partie",
+    "shortcut_help": "? - Afficher cette aide",
+    "windows": "🪟 Fenêtres",
+    "move_history": "Historique des coups :",
+    "move_history_text": "Affiche tous les coups de la partie",
+    "result_window": "Fenêtre de résultat :",
+    "result_window_text": "Célèbre les victoires/nuls/défaites",
+    "draggable": "Glissable :",
+    "draggable_text": "Déplacez les fenêtres !",
+    "persistent": "Persistant :",
+    "persistent_text": "Les positions des fenêtres sont sauvegardées",
+    "footer": "Fait avec ❤️ et nostalgie Windows 98"
+  },
+  "move_history": {
+    "title": "Historique des Coups",
+    "no_moves": "Aucun coup pour le moment",
+    "clear_history": "Effacer l'Historique",
+    "current_fen": "FEN actuel :"
+  },
+  "result": {
+    "winner": "🏆 GAGNANT ! 🏆",
+    "game_over": "😵 PARTIE TERMINÉE 😵",
+    "tie": "🤷 C'EST UN NUL 🤷",
+    "gif_placeholder": "(GIF temporaire)"
+  },
+  "language": {
+    "title": "Langue | Language | Språk | Idioma",
+    "select": "Sélectionner la Langue",
+    "lang": "Langue",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "norwegian": "Norsk"
+  },
+  "colors": {
+    "white": "blancs",
+    "black": "noirs"
+  },
+  "status": {
+    "initializing": "Initialisation...",
+    "starting_game": "Démarrage d'une nouvelle partie...",
+    "your_turn": "À votre tour",
+    "ai_to_move": "Tour de l'IA",
+    "ai_thinking": "L'IA réfléchit...",
+    "check": "Échec !",
+    "checkmate_you_win": "Échec et mat ! Vous gagnez !",
+    "checkmate_ai_wins": "Échec et mat ! L'IA gagne !",
+    "draw": "La partie est nulle !",
+    "you_resigned": "Vous avez abandonné !"
+  }
+}

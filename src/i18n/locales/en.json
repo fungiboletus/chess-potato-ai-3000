@@ -1,0 +1,84 @@
+{
+  "game": {
+    "title": "Chess Potato AI 3000",
+    "playing_as": "Playing as {{color}}",
+    "moves": "Moves: {{count}}",
+    "thinking": "Chess Potato AI 3000 is thinking...",
+    "new_game": "New Game",
+    "resign": "Resign",
+    "show_moves": "Show Moves",
+    "help": "Help",
+    "victory": "Victory!",
+    "defeat": "Defeat",
+    "draw": "Draw",
+    "close": "Close",
+    "checkmate_win": "Checkmate! You won!",
+    "checkmate_lose": "Checkmate! AI wins!",
+    "game_draw": "Game is a draw!",
+    "resigned": "You resigned the game!",
+    "congratulations": "Congratulations! You won!",
+    "better_luck": "Better luck next time!",
+    "well_played": "It's a draw! Well played!"
+  },
+  "help": {
+    "title": "Chess Potato AI 3000 - Help",
+    "how_to_play": "🎮 How to Play",
+    "goal": "🎯 Goal:",
+    "goal_text": "Checkmate the AI opponent!",
+    "ai": "🤖 AI:",
+    "ai_text": "Random but challenging moves",
+    "color": "🎲 Color:",
+    "color_text": "Randomly assigned each game",
+    "keyboard_shortcuts": "⌨️ Keyboard Shortcuts",
+    "shortcut_h": "H - Toggle Move History",
+    "shortcut_n": "N - Start New Game",
+    "shortcut_help": "? - Show this Help",
+    "windows": "🪟 Windows",
+    "move_history": "Move History:",
+    "move_history_text": "Shows all game moves",
+    "result_window": "Result Window:",
+    "result_window_text": "Celebrates wins/draws/losses",
+    "draggable": "Draggable:",
+    "draggable_text": "Move windows around!",
+    "persistent": "Persistent:",
+    "persistent_text": "Window positions are saved",
+    "footer": "Made with ❤️ and Windows 98 nostalgia"
+  },
+  "move_history": {
+    "title": "Move History",
+    "no_moves": "No moves yet",
+    "clear_history": "Clear History",
+    "current_fen": "Current FEN:"
+  },
+  "result": {
+    "winner": "🏆 WINNER! 🏆",
+    "game_over": "😵 GAME OVER 😵",
+    "tie": "🤷 IT'S A TIE 🤷",
+    "gif_placeholder": "(GIF placeholder)"
+  },
+  "language": {
+    "title": "Langue | Language | Språk | Idioma",
+    "select": "Select Language",
+    "lang": "Language",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "norwegian": "Norsk"
+  },
+  "colors": {
+    "white": "white",
+    "black": "black"
+  },
+  "status": {
+    "initializing": "Initializing...",
+    "starting_game": "Starting new game...",
+    "your_turn": "Your turn",
+    "ai_to_move": "AI to move",
+    "ai_thinking": "AI is thinking...",
+    "check": "Check!",
+    "checkmate_you_win": "Checkmate! You win!",
+    "checkmate_ai_wins": "Checkmate! AI wins!",
+    "draw": "Game is a draw!",
+    "you_resigned": "You resigned!"
+  }
+}

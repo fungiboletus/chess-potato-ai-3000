@@ -1,0 +1,77 @@
+{
+  "game": {
+    "title": "Chess Potato AI 3000",
+    "playing_as": "Jugando como {{color}}",
+    "moves": "Movimientos: {{count}}",
+    "thinking": "Chess Potato AI 3000 está pensando...",
+    "new_game": "Nueva Partida",
+    "resign": "Rendirse",
+    "show_moves": "Mostrar Movimientos",
+    "help": "Ayuda",
+    "victory": "¡Victoria!",
+    "defeat": "Derrota",
+    "draw": "Empate",
+    "close": "Cerrar"
+  },
+  "help": {
+    "title": "Chess Potato AI 3000 - Ayuda",
+    "how_to_play": "🎮 Cómo Jugar",
+    "goal": "🎯 Objetivo:",
+    "goal_text": "¡Hacer jaque mate al oponente IA!",
+    "ai": "🤖 IA:",
+    "ai_text": "Movimientos aleatorios pero desafiantes",
+    "color": "🎲 Color:",
+    "color_text": "Asignado al azar en cada juego",
+    "keyboard_shortcuts": "⌨️ Atajos de Teclado",
+    "shortcut_h": "H - Alternar historial de movimientos",
+    "shortcut_n": "N - Nueva partida",
+    "shortcut_help": "? - Mostrar esta ayuda",
+    "windows": "🪟 Ventanas",
+    "move_history": "Historial de movimientos:",
+    "move_history_text": "Muestra todos los movimientos del juego",
+    "result_window": "Ventana de resultados:",
+    "result_window_text": "Celebra victorias/empates/derrotas",
+    "draggable": "Arrastrable:",
+    "draggable_text": "¡Mueve las ventanas!",
+    "persistent": "Persistente:",
+    "persistent_text": "Las posiciones de las ventanas se guardan",
+    "footer": "Hecho con ❤️ y nostalgia de Windows 98"
+  },
+  "move_history": {
+    "title": "Historial de Movimientos",
+    "no_moves": "Aún no hay movimientos",
+    "clear_history": "Limpiar Historial",
+    "current_fen": "FEN actual:"
+  },
+  "result": {
+    "winner": "🏆 ¡GANADOR! 🏆",
+    "game_over": "😵 JUEGO TERMINADO 😵",
+    "tie": "🤷 ES UN EMPATE 🤷",
+    "gif_placeholder": "(GIF temporal)"
+  },
+  "language": {
+    "title": "Langue | Language | Språk | Idioma",
+    "select": "Seleccionar Idioma",
+    "lang": "Idioma",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "norwegian": "Norsk"
+  },
+  "colors": {
+    "white": "blancas",
+    "black": "negras"
+  },
+  "status": {
+    "initializing": "Inicializando...",
+    "starting_game": "Iniciando nueva partida...",
+    "your_turn": "Tu turno",
+    "ai_to_move": "Turno de la IA",
+    "ai_thinking": "La IA está pensando...",
+    "check": "¡Jaque!",
+    "checkmate_you_win": "¡Jaque mate! ¡Ganaste!",
+    "checkmate_ai_wins": "¡Jaque mate! ¡La IA gana!",
+    "draw": "¡La partida es un empate!",
+    "you_resigned": "¡Te rendiste!"
+  }
+}
