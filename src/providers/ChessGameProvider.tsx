@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import useChessStore from '../stores/chessStore';
 
 interface ChessGameProviderProps {

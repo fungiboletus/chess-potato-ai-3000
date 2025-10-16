@@ -16,7 +16,6 @@ export const AnimatedProgressBar: React.FC<AnimatedProgressBarProps> = ({
 
   useEffect(() => {
     if (!isVisible) {
-      setProgress(0);
       return;
     }
 
@@ -33,8 +32,6 @@ export const AnimatedProgressBar: React.FC<AnimatedProgressBarProps> = ({
 
     return () => clearInterval(interval);
   }, [isVisible]);
-
-  //if (!isVisible) return null;
 
   if (typeof width === 'number') {
     width = `${width}px`;

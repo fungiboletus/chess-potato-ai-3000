@@ -269,6 +269,13 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     aiMoveTimeout = setTimeout(() => {
       aiMoveTimeout = null;
       const currentState = get();
+
+      // Guard: Only process AI move if game is still in AI thinking state
+      if (currentState.gameState !== 'ai_thinking') {
+        console.log('AI move completed but game state has changed to:', currentState.gameState);
+        return; // Game ended (resignation, etc) while AI was thinking
+      }
+
       const moves = currentState.chess.moves({ verbose: true });
 
       if (moves.length > 0) {
@@ -290,7 +297,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
   // Reset the current game
   resetGame: () => {
-    const newColor = Math.random() < 0.5 ? 'white' : 'black';
+    const newColor = get().playerColor === 'white' ? 'black' : 'white';
     get().initializeGame(newColor);
   },
 

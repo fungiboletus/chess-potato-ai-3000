@@ -43,14 +43,14 @@ export const ChessGameWindow: React.FC = () => {
       <div className="chess-game-main-window">
         <div className="chess-container">
           <div className="chess-header">
-            <img src="./public/art.png" alt="" className="pixelated" style={{ display: isAIThinking ? 'none' : 'block' }} />
-            <img src="./public/art.apng" alt="" className="pixelated" style={{ display: isAIThinking ? 'block' : 'none' }} />
+            <img src="./art.png" alt="" className="pixelated" style={{ display: isAIThinking ? 'none' : 'block' }} />
+            <img src="./art.apng" alt="" className="pixelated" style={{ display: isAIThinking ? 'block' : 'none' }} />
             <div className="progress-container">
               <div className={`ai-thinking-container`} style={{ visibility: isAIThinking ? 'visible' : 'hidden' }}>
                 <p>
                   {t('game.thinking')}
                 </p>
-                <AnimatedProgressBar isVisible={isAIThinking} width="100%" />
+                <AnimatedProgressBar isVisible={isAIThinking} width="100%" key={moveHistory.length} />
               </div>
             </div>
 
@@ -64,7 +64,7 @@ export const ChessGameWindow: React.FC = () => {
             <button onClick={resetGame} disabled={gameStarted && gameState !== 'game_over'}>
               {t('game.new_game')}
             </button>
-            <button onClick={resignGame} disabled={!gameStarted || gameState === 'game_over'}>
+            <button onClick={resignGame} disabled={gameState === 'initializing' || gameState === 'game_over'}>
               {t('game.resign')}
             </button>
             <button onClick={() => setShowMoveHistory(true)}>
