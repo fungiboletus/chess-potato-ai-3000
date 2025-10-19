@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Chess } from 'chess.js';
 import type { Api } from 'chessground/api';
+import { mcpClient } from '../services/mcpClient';
 
 // Game states following a state machine pattern
 export type GameState =
@@ -194,6 +195,9 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       aiMoveTimeout = null;
     }
 
+    // Reset MCP token for the new game
+    mcpClient.resetToken();
+
     const newColor = color || (Math.random() < 0.5 ? 'white' : 'black');
     const chess = new Chess();
 
@@ -243,7 +247,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     return false;
   },
 
-  // Make an AI move
+  // Make an AI move using MCP service
   makeAIMove: () => {
     const { gameState } = get();
 
@@ -266,33 +270,94 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       clearTimeout(aiMoveTimeout);
       aiMoveTimeout = null;
     }
-    aiMoveTimeout = setTimeout(() => {
-      aiMoveTimeout = null;
-      const currentState = get();
 
-      // Guard: Only process AI move if game is still in AI thinking state
-      if (currentState.gameState !== 'ai_thinking') {
-        console.log('AI move completed but game state has changed to:', currentState.gameState);
-        return; // Game ended (resignation, etc) while AI was thinking
-      }
+    // Use async function to handle MCP call
+    const computeMove = async () => {
+      try {
+        const currentState = get();
 
-      const moves = currentState.chess.moves({ verbose: true });
+        // Guard: Only process AI move if game is still in AI thinking state
+        if (currentState.gameState !== 'ai_thinking') {
+          console.log('AI move cancelled, game state changed to:', currentState.gameState);
+          return;
+        }
 
-      if (moves.length > 0) {
-        const randomMove = moves[Math.floor(Math.random() * moves.length)];
-        const move = currentState.chess.move(randomMove);
+        // Get current position in FEN format
+        const fen = currentState.chess.fen();
+        console.log('[AI] Computing move for FEN:', fen);
+
+        // Call MCP service to get the best move
+        const uciMove = await mcpClient.computeNextMove(fen);
+        console.log('[AI] MCP returned move:', uciMove);
+
+        // Check state again after async operation
+        const stateAfterMCP = get();
+        if (stateAfterMCP.gameState !== 'ai_thinking') {
+          console.log('AI move cancelled after MCP call');
+          return;
+        }
+
+        // Parse UCI move (e.g., "e2e4" or "e7e8q" for promotion)
+        const from = uciMove.slice(0, 2);
+        const to = uciMove.slice(2, 4);
+        const promotion = uciMove.length > 4 ? uciMove[4] : 'q'; // default to queen
+
+        // Make the move
+        const move = stateAfterMCP.chess.move({
+          from,
+          to,
+          promotion
+        });
 
         if (move) {
+          console.log('[AI] Move executed:', move.san);
           set(state => ({
             moveHistory: [...state.moveHistory, move.san],
             gameStarted: true
           }));
-        }
-      }
 
-      // Update turn state after AI move
-      get().updateTurnState();
-    }, 800);
+          // Update turn state after AI move
+          get().updateTurnState();
+        } else {
+          console.error('[AI] Invalid move from MCP:', uciMove);
+          // Fallback to random move
+          throw new Error('Invalid move from MCP');
+        }
+
+      } catch (error) {
+        console.error('[AI] Error computing move with MCP:', error);
+
+        // Fallback: use random move
+        const currentState = get();
+        if (currentState.gameState !== 'ai_thinking') {
+          return;
+        }
+
+        console.log('[AI] Falling back to random move');
+        const moves = currentState.chess.moves({ verbose: true });
+
+        if (moves.length > 0) {
+          const randomMove = moves[Math.floor(Math.random() * moves.length)];
+          const move = currentState.chess.move(randomMove);
+
+          if (move) {
+            set(state => ({
+              moveHistory: [...state.moveHistory, move.san],
+              gameStarted: true
+            }));
+          }
+        }
+
+        // Update turn state after fallback move
+        get().updateTurnState();
+      }
+    };
+
+    // Add a small delay to make the AI feel more natural
+    aiMoveTimeout = setTimeout(() => {
+      aiMoveTimeout = null;
+      computeMove();
+    }, 500);
   },
 
   // Reset the current game

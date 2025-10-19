@@ -27,8 +27,13 @@ export const AnimatedProgressBar: React.FC<AnimatedProgressBarProps> = ({
     const maxBlocks = containerWidth / block_width;
 
     const interval = setInterval(() => {
-      setProgress((prev) => (prev + 100 / maxBlocks) % 100);
-    }, 100);
+      setProgress((prev) => {
+        if (prev >= 100) {
+          return 0;
+        }
+        return Math.min(prev + 100 / maxBlocks, 100);
+      });
+    }, 250);
 
     return () => clearInterval(interval);
   }, [isVisible]);

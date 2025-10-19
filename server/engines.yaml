@@ -1,0 +1,72 @@
+# Chess Engine Configuration
+# Configure UCI chess engines and their profiles for the MCP server
+#
+# Each engine profile requires:
+#   key: Unique identifier for this engine profile
+#   path: Executable path (e.g., "stockfish" for PATH-available engines or "/path/to/engine")
+#   display_name: Human-readable name shown to users
+#   description: Brief description of the engine's characteristics
+#
+# Optional settings:
+#   depth: Search depth limit (integer, e.g., 12, 18, 24)
+#   time_limit: Time limit in seconds (float, e.g., 1.5, 2.0, 5.0)
+#   options: UCI engine options (dict with int/bool/str values)
+#
+# Common UCI options:
+#   Skill Level: 0-20 (Stockfish strength, 0=weakest, 20=strongest)
+#   UCI_LimitStrength: true/false (enable ELO limiting)
+#   UCI_Elo: 800-3000 (target ELO rating when UCI_LimitStrength is true)
+#   Hash: Memory for transposition table in MB (e.g., 128, 512)
+#   Threads: Number of CPU threads to use (e.g., 1, 2, 4)
+
+engines:
+  - key: chess-potato-ai-3000
+    path: stockfish
+    display_name: Chess Potato AI 3000
+    description: The one and only Chess Potato AI 3000, ready to challenge you!
+    time_limit: 10
+    options: {}
+
+  - key: alphabet
+    path: /Users/antoinep/fun/llm-chess-bot/potato-alphabet-3000/target/debug/potato-alphabet-3000
+    display_name: Potato Alphabet 3000
+    description: A humourously weak chess engine that plays the move in the middle of the alphabetical list of legal moves.
+    time_limit: 10
+    options: {}
+
+  - key: badfish
+    path: /Users/antoinep/fun/llm-chess-bot/worstfish/worstfish
+    display_name: Badfish
+    description: A modified Sourcefish engine designed to play as bad as it can.
+    depth: 1
+    time_limit: 1
+    options: {}
+
+  - key: stockfish_level_0
+    path: stockfish
+    display_name: Stockfish (Level 0)
+    description: Stockfish with minimum strength for casual play.
+    depth: 12
+    time_limit: 1.5
+    options:
+      Skill Level: 0
+      UCI_LimitStrength: true
+      UCI_Elo: 800
+
+  - key: stockfish_default
+    path: stockfish
+    display_name: Stockfish (Default)
+    description: Stockfish using its default strength configuration.
+    # No depth, time_limit, or options - uses engine defaults
+
+  - key: stockfish_unbeatable
+    path: stockfish
+    display_name: Stockfish (Unbeatable)
+    description: Stockfish tuned for maximum strength to challenge top players.
+    depth: 24
+    time_limit: 5.0
+    options:
+      Skill Level: 20
+      UCI_LimitStrength: false
+      Hash: 512
+      Threads: 4

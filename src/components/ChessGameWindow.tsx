@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChessBoard } from '../ChessBoard';
 import { AnimatedProgressBar } from './AnimatedProgressBar';
+import { GameEngineButton } from './GameEngineButton';
 import useChessStore from '../stores/chessStore';
 import { useGameStatus } from '../hooks/useGameStatus';
 import { DraggableWindow } from './DraggableWindow';
@@ -43,14 +44,13 @@ export const ChessGameWindow: React.FC = () => {
       <div className="chess-game-main-window">
         <div className="chess-container">
           <div className="chess-header">
-            <img src="./art.png" alt="" className="pixelated" style={{ display: isAIThinking ? 'none' : 'block' }} />
-            <img src="./art.apng" alt="" className="pixelated" style={{ display: isAIThinking ? 'block' : 'none' }} />
+            <GameEngineButton isAIThinking={isAIThinking} />
             <div className="progress-container">
               <div className={`ai-thinking-container`} style={{ visibility: isAIThinking ? 'visible' : 'hidden' }}>
                 <p>
                   {t('game.thinking')}
                 </p>
-                <AnimatedProgressBar isVisible={isAIThinking} width="100%" key={moveHistory.length} />
+                <AnimatedProgressBar isVisible={isAIThinking} width="100%" key={moveHistory.length << 1 + (isAIThinking ? 1 : 0)} />
               </div>
             </div>
 
