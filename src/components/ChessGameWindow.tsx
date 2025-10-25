@@ -16,15 +16,25 @@ export const ChessGameWindow: React.FC = () => {
     gameState,
     moveHistory,
     gameStarted,
+    selectedEngine,
+    engineFetchState,
     resetGame,
     resignGame,
     setShowMoveHistory,
     setShowHelp,
     setShowLanguageWindow,
+    setShowEngineWindow,
     redrawChessground,
+    getSelectedEngineDisplayName,
   } = useChessStore();
 
   const isAIThinking = gameState === 'ai_thinking';
+
+  // Get engine display name and create window title
+  const engineDisplayName = getSelectedEngineDisplayName();
+  const windowTitle = selectedEngine && selectedEngine !== 'chess-potato-ai-3000'
+    ? `${t('game.title')} - ${engineDisplayName} Edition`
+    : t('game.title');
 
   const statusBarContent = (
     <>
@@ -36,7 +46,7 @@ export const ChessGameWindow: React.FC = () => {
 
   return (
     <DraggableWindow
-      title={t('game.title')}
+      title={windowTitle}
       isOpen={true}
       statusBar={statusBarContent}
       onDragStop={redrawChessground}
@@ -44,11 +54,16 @@ export const ChessGameWindow: React.FC = () => {
       <div className="chess-game-main-window">
         <div className="chess-container">
           <div className="chess-header">
-            <GameEngineButton isAIThinking={isAIThinking} />
+            <GameEngineButton
+              isAIThinking={isAIThinking}
+              engineFetchState={engineFetchState}
+              selectedEngine={selectedEngine}
+              onClick={() => setShowEngineWindow(true)}
+            />
             <div className="progress-container">
               <div className={`ai-thinking-container`} style={{ visibility: isAIThinking ? 'visible' : 'hidden' }}>
                 <p>
-                  {t('game.thinking')}
+                  {t('game.thinking', { engineName: engineDisplayName })}
                 </p>
                 <AnimatedProgressBar isVisible={isAIThinking} width="100%" key={moveHistory.length << 1 + (isAIThinking ? 1 : 0)} />
               </div>

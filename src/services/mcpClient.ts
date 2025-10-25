@@ -11,11 +11,30 @@ import { z } from 'zod';
 // Connection states
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
 
+// Engine info from MCP server
+export interface EngineInfo {
+  name: string;
+  display_name: string;
+  description: string;
+  default: boolean;
+}
+
 const NextMoveResultSchema = CallToolResultSchema.extend({
   structuredContent: z.object({
     move: z.string(),
     fen: z.string(),
     token: z.string()
+  }).passthrough().optional()
+});
+
+const ListEnginesResultSchema = CallToolResultSchema.extend({
+  structuredContent: z.object({
+    engines: z.array(z.object({
+      name: z.string(),
+      display_name: z.string(),
+      description: z.string(),
+      default: z.boolean()
+    }))
   }).passthrough().optional()
 });
 
@@ -34,7 +53,7 @@ class MCPClientService {
   private transport: StreamableHTTPClientTransport | null = null;
   private connectionState: ConnectionState = 'disconnected';
   private connectionError: string | null = null;
-  private connectionPromise: Promise<void> | null = null;
+  private connectionPromise: Promise<Client> | null = null;
   private currentToken: string | null = null;
 
   // Configuration
@@ -65,73 +84,121 @@ class MCPClientService {
   private readonly USE_EXPONENTIAL_BACKOFF = true;
 
   /**
-   * Initialize and connect to the MCP server
-   * Implements connection promise deduplication to prevent race conditions
+   * Initialize the MCP server connection.
+   * Uses promise deduplication so concurrent callers share a single connection attempt.
    */
   async connect(): Promise<void> {
-    // If already connecting, return the existing promise to prevent duplicate connections
+    await this.ensureClient();
+  }
+
+  /**
+   * Ensure we have a connected client.
+   * If a connection is being established, reuse the in-flight promise.
+   */
+  private async ensureClient(): Promise<Client> {
+    if (this.client && this.connectionState === 'connected') {
+      return this.client;
+    }
+
     if (this.connectionPromise) {
       return this.connectionPromise;
     }
 
-    // If already connected, return immediately
-    if (this.connectionState === 'connected' && this.client) {
-      return Promise.resolve();
-    }
-
-    // Create and execute connection promise
-    this.connectionPromise = (async () => {
+    let connectionTask: Promise<Client>;
+    connectionTask = (async () => {
       try {
-        this.connectionState = 'connecting';
-        this.connectionError = null;
-
-        // Create transport
-        this.transport = new StreamableHTTPClientTransport(
-          new URL(this.SERVER_URL)
-        );
-
-        // Create client
-        this.client = new Client({
-          name: this.CLIENT_NAME,
-          version: this.CLIENT_VERSION
-        });
-
-        // Connect to server
-        await this.client.connect(this.transport);
-
-        this.connectionState = 'connected';
-        console.log('[MCP] Connected to server at', this.SERVER_URL);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        this.connectionState = 'error';
-        this.connectionError = errorMsg;
-
-        this.handleConnectionError(error);
-        throw new Error(`Failed to connect to MCP server: ${errorMsg}`);
+        return await this.establishConnection();
       } finally {
-        this.connectionPromise = null;
+        if (this.connectionPromise === connectionTask) {
+          this.connectionPromise = null;
+        }
       }
     })();
 
-    return this.connectionPromise;
+    this.connectionPromise = connectionTask;
+    return connectionTask;
   }
 
   /**
-   * Handle connection errors with helpful logging
+   * Establish a brand new connection to the MCP server.
    */
-  private handleConnectionError(error: unknown): void {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    const isConnectionRefused = errorMsg.includes('Not connected') ||
-      errorMsg.includes('ECONNREFUSED') ||
-      errorMsg.includes('Failed to fetch') ||
-      errorMsg.includes('connection') ||
-      errorMsg.includes('network');
+  private async establishConnection(): Promise<Client> {
+    this.connectionState = 'connecting';
+    this.connectionError = null;
 
-    if (isConnectionRefused) {
-      console.warn('[MCP] Could not connect to server at', this.SERVER_URL, '- is the server running?');
-    } else {
-      console.error('[MCP] Connection failed:', error);
+    const transport = new StreamableHTTPClientTransport(new URL(this.SERVER_URL));
+    const client = new Client({
+      name: this.CLIENT_NAME,
+      version: this.CLIENT_VERSION
+    });
+
+    try {
+      await client.connect(transport);
+      this.transport = transport;
+      this.client = client;
+      this.connectionState = 'connected';
+      console.log('[MCP] Connected to server at', this.SERVER_URL);
+      return client;
+    } catch (error) {
+      const message = this.getErrorMessage(error);
+      console.error('[MCP] Connection attempt failed:', error);
+      this.resetClientState();
+      this.connectionState = 'error';
+      this.connectionError = `Unable to connect: ${message}`;
+      throw new Error(`Failed to connect to MCP server: ${message}`);
     }
+  }
+
+  private resetClientState(): void {
+    this.client = null;
+    this.transport = null;
+    this.currentToken = null;
+  }
+
+  private getErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return 'Unknown error';
+    }
+  }
+
+  private isConnectionIssue(message: string): boolean {
+    const normalized = message.toLowerCase();
+    return normalized.includes('not connected') ||
+      normalized.includes('econnrefused') ||
+      normalized.includes('failed to fetch') ||
+      normalized.includes('network') ||
+      normalized.includes('connection') ||
+      normalized.includes('timeout');
+  }
+
+  private handleConnectionDrop(context: string, error: unknown): void {
+    const message = this.getErrorMessage(error);
+    console.warn(`[MCP] Connection lost during ${context}: ${message}`);
+
+    if (this.client) {
+      this.client.close().catch(closeError => {
+        console.debug('[MCP] Error closing client after connection loss:', closeError);
+      });
+    }
+
+    if (this.currentToken) {
+      console.log('[MCP] Dropping continuation token after connection loss');
+    }
+
+    this.resetClientState();
+    this.connectionState = 'disconnected';
+    this.connectionError = 'Connection lost. Retrying...';
+    this.connectionPromise = null;
   }
 
   /**
@@ -194,8 +261,7 @@ class MCPClientService {
         console.error('[MCP] Error disconnecting:', error);
       }
     }
-    this.client = null;
-    this.transport = null;
+    this.resetClientState();
     this.connectionState = 'disconnected';
     this.connectionError = null;
     this.connectionPromise = null;
@@ -205,20 +271,17 @@ class MCPClientService {
    * Compute the next best move for a given chess position
    * Automatically retries up to 3 times on failure with exponential backoff
    * @param fen - The chess position in FEN notation
+   * @param engineName - The engine to use for computation
    * @returns The best move in UCI format (e.g., "e2e4")
    * @throws Error if not connected or move computation fails after all retries
    */
-  async computeNextMove(fen: string): Promise<string> {
+  async computeNextMove(fen: string, engineName: string): Promise<string> {
     return this.retryOperation(async () => {
-      // Ensure we're connected
-      if (this.connectionState !== 'connected' || !this.client) {
-        console.log('[MCP] Not connected, attempting to connect...');
-        await this.connect();
+      if (this.connectionState !== 'connected') {
+        console.log('[MCP] Establishing connection before computing move...');
       }
 
-      if (!this.client) {
-        throw new Error('MCP client not initialized');
-      }
+      const client = await this.ensureClient();
 
       try {
         console.log('[MCP] Computing move for position:', fen);
@@ -227,12 +290,11 @@ class MCPClientService {
         }
 
         // Call the MCP tool with optional token from previous move
-        const result = await this.client.callTool({
+        const result = await client.callTool({
           name: 'compute_next_move',
           arguments: {
             fen: fen,
-            //engine: 'worstfish',
-            engine_name: 'alphabet',
+            engine_name: engineName,
             ...(this.currentToken && { token: this.currentToken })
           }
         }, NextMoveResultSchema);
@@ -260,19 +322,11 @@ class MCPClientService {
         return uciMove;
 
       } catch (error) {
+        const errorMsg = this.getErrorMessage(error);
         console.error('[MCP] Error computing move:', error);
 
-        // Check if this is a connection error and update state
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        const isConnectionError = errorMsg.includes('Not connected') ||
-          errorMsg.includes('ECONNREFUSED') ||
-          errorMsg.includes('Failed to fetch') ||
-          errorMsg.includes('connection') ||
-          errorMsg.includes('network');
-
-        if (isConnectionError) {
-          this.connectionState = 'error';
-          this.connectionError = 'Connection lost';
+        if (this.isConnectionIssue(errorMsg)) {
+          this.handleConnectionDrop('compute_next_move', error);
         }
 
         throw new Error(`Failed to compute move: ${errorMsg}`);
@@ -310,6 +364,47 @@ class MCPClientService {
       console.log('[MCP] Clearing continuation token for new game');
     }
     this.currentToken = null;
+  }
+
+  /**
+   * List all available chess engines from the MCP server
+   * @returns Array of engine information
+   * @throws Error if not connected or listing fails
+   */
+  async listEngines(): Promise<EngineInfo[]> {
+    if (this.connectionState !== 'connected') {
+      console.log('[MCP] Establishing connection before listing engines...');
+    }
+
+    const client = await this.ensureClient();
+
+    try {
+      console.log('[MCP] Fetching available engines...');
+
+      const result = await client.callTool({
+        name: 'list_engines',
+        arguments: {}
+      }, ListEnginesResultSchema);
+
+      const content = result.structuredContent as typeof ListEnginesResultSchema['_output']['structuredContent'];
+
+      if (!content || !content.engines) {
+        throw new Error('Empty response from MCP server');
+      }
+
+      console.log(`[MCP] Found ${content.engines.length} engines`);
+      return content.engines;
+
+    } catch (error) {
+      const errorMsg = this.getErrorMessage(error);
+      console.error('[MCP] Error listing engines:', error);
+
+      if (this.isConnectionIssue(errorMsg)) {
+        this.handleConnectionDrop('list_engines', error);
+      }
+
+      throw new Error(`Failed to list engines: ${errorMsg}`);
+    }
   }
 }
 

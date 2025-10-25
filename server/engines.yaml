@@ -10,6 +10,7 @@
 # Optional settings:
 #   depth: Search depth limit (integer, e.g., 12, 18, 24)
 #   time_limit: Time limit in seconds (float, e.g., 1.5, 2.0, 5.0)
+#   default: Mark this engine as the default (boolean, true/false). Only one engine can be default.
 #   options: UCI engine options (dict with int/bool/str values)
 #
 # Common UCI options:
@@ -21,10 +22,11 @@
 
 engines:
   - key: chess-potato-ai-3000
-    path: stockfish
+    path: /Users/antoinep/fun/llm-chess-bot/app/chess_engine.py
     display_name: Chess Potato AI 3000
     description: The one and only Chess Potato AI 3000, ready to challenge you!
-    time_limit: 10
+    time_limit: 30
+    default: true
     options: {}
 
   - key: alphabet
@@ -37,19 +39,27 @@ engines:
   - key: badfish
     path: /Users/antoinep/fun/llm-chess-bot/worstfish/worstfish
     display_name: Badfish
-    description: A modified Sourcefish engine designed to play as bad as it can.
-    depth: 1
-    time_limit: 1
+    description: A modified Stockfish engine designed to play as bad as it can.
+    depth: 6
+    time_limit: 1.0
     options: {}
 
   - key: stockfish_level_0
     path: stockfish
     display_name: Stockfish (Level 0)
     description: Stockfish with minimum strength for casual play.
-    depth: 12
+    depth: 5
     time_limit: 1.5
     options:
       Skill Level: 0
+
+  - key: stockfish_elo_800
+    path: stockfish
+    display_name: Stockfish (ELO 800)
+    description: Stockfish pretending to be an 800 ELO player.
+    depth: 8
+    time_limit: 1.5
+    options:
       UCI_LimitStrength: true
       UCI_Elo: 800
 
@@ -57,7 +67,6 @@ engines:
     path: stockfish
     display_name: Stockfish (Default)
     description: Stockfish using its default strength configuration.
-    # No depth, time_limit, or options - uses engine defaults
 
   - key: stockfish_unbeatable
     path: stockfish
@@ -67,6 +76,3 @@ engines:
     time_limit: 5.0
     options:
       Skill Level: 20
-      UCI_LimitStrength: false
-      Hash: 512
-      Threads: 4

@@ -2,6 +2,7 @@
 
 import atexit
 import json
+import logging
 import os
 import secrets
 import time
@@ -11,6 +12,18 @@ import uvicorn
 from fastmcp import FastMCP
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+# Enable DEBUG for chess.engine to see UCI protocol info lines
+logging.getLogger("chess.engine").setLevel(logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 from chess_engine import compute_next_move_cached as engine_compute_move
 from chess_engine import ensure_valid_transition, get_available_engines, shutdown_engine
@@ -55,6 +68,7 @@ class EngineInfoModel(BaseModel):
     name: str
     display_name: str
     description: str
+    default: bool
 
 
 class EngineListResponse(BaseModel):
@@ -101,14 +115,6 @@ async def compute_next_move(
             if decoded.get("sub") != "compute_next_move":
                 raise ValueError(f"Invalid token subject: {decoded.get('sub')}")
 
-            # Check engine consistency (tokens default to chess-potato-ai-3000)
-            token_engine = decoded.get("engine", "chess-potato-ai-3000")
-            if token_engine != engine_name:
-                raise ValueError(
-                    f"Token was issued for engine '{token_engine}', "
-                    f"but '{engine_name}' was requested."
-                )
-
             # Check expiration
             current_time = int(time.time())
             exp = decoded.get("exp")
@@ -118,7 +124,7 @@ async def compute_next_move(
             if current_time > exp:
                 raise ValueError(f"Token expired (exp: {exp}, now: {current_time})")
 
-            # Extract old FEN for reference (could be used for validation)
+            # Extract old FEN for transition validation
             old_fen = decoded.get("fen")
 
         except json.JSONDecodeError as e:
@@ -143,7 +149,6 @@ async def compute_next_move(
             "sub": "compute_next_move",
             "exp": expiration,
             "fen": new_fen,
-            "engine": engine_name,
         }
     ).encode()
 
@@ -162,6 +167,7 @@ async def list_engines() -> EngineListResponse:
             name=profile.key,
             display_name=profile.display_name,
             description=profile.description,
+            default=profile.default,
         )
         for profile in get_available_engines()
     ]

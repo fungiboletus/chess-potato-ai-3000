@@ -1,6 +1,7 @@
 """Chess engine wrapper for computing moves using UCI engines."""
 
 import asyncio
+import logging
 import os
 import random
 from pathlib import Path
@@ -10,6 +11,8 @@ import chess
 import chess.engine
 import yaml
 from pydantic import BaseModel, Field, field_validator
+
+logger = logging.getLogger(__name__)
 
 # Move variation cache: stores up to 3 variations per FEN position
 _move_cache: dict[tuple[str, str], list["MoveData"]] = {}
@@ -30,6 +33,7 @@ class EngineProfile(BaseModel):
     options: dict[str, int | bool | str] = Field(
         default_factory=dict, description="UCI engine options"
     )
+    default: bool = Field(False, description="Whether this is the default engine")
 
     @field_validator("options")
     @classmethod
@@ -85,6 +89,15 @@ def _load_engine_profiles() -> dict[str, EngineProfile]:
         if not profiles:
             raise ValueError(f"No engines defined in {config_path}")
 
+        # Validate that at most one engine is marked as default
+        default_engines = [p for p in profiles.values() if p.default]
+        if len(default_engines) > 1:
+            default_names = ", ".join(f"'{p.key}'" for p in default_engines)
+            raise ValueError(
+                f"Multiple engines marked as default in {config_path}: {default_names}. "
+                "Only one engine can be marked as default."
+            )
+
         return profiles
 
     except yaml.YAMLError as e:
@@ -125,6 +138,7 @@ def get_engine(engine_name: str) -> chess.engine.SimpleEngine:
     profile = _get_engine_profile(engine_name)
     engine = _engines.get(engine_name)
     if engine is None:
+        logger.info(f"Initializing engine '{engine_name}' at {profile.path}")
         engine = chess.engine.SimpleEngine.popen_uci(profile.path)
         options = profile.options
         if options:
@@ -176,7 +190,9 @@ def compute_next_move(fen: str, engine_name: str) -> MoveData:
 
         # Get the best move with limits from the engine profile
         limit = chess.engine.Limit(depth=profile.depth, time=profile.time_limit)
+        logger.info(f"[{engine_name}] Computing move (depth={profile.depth}, time={profile.time_limit}s)")
 
+        # The chess.engine logger will show UCI "info" lines here at DEBUG level
         result = engine.play(board, limit)
 
         if result.move is None:
@@ -186,6 +202,8 @@ def compute_next_move(fen: str, engine_name: str) -> MoveData:
         move = result.move.uci()
         board.push_uci(move)
         new_fen = board.fen()
+
+        logger.info(f"[{engine_name}] Best move: {move}")
 
         # Return both the move and new FEN
         return {"move": move, "fen": new_fen}

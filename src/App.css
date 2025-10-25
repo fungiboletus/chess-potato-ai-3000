@@ -42,7 +42,7 @@
 }
 
 .move-history-window {
-  width: 200px;
+  width: 260px;
   height: 290px;
   max-width: 90dvw;
   max-height: 90vh;
@@ -61,9 +61,14 @@
   table-layout: fixed;
 }
 
-.move-history-content table th {
-  width: 80px;
-  /* Adjusted for better fit */
+.move-history-content table th:first-child {
+  width: 50px;
+  /* Narrower move column */
+}
+
+.move-history-content table th:last-child {
+  width: 50px;
+  /* Let other columns share remaining space */
 }
 
 .move-history-content dd {
@@ -110,7 +115,7 @@ img.pixelated {
   flex-direction: row;
   width: 100%;
   gap: 16px;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .language-selector-container {
@@ -216,6 +221,7 @@ button:disabled {
 .game-controls {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .game-controls button {
@@ -227,20 +233,96 @@ button:disabled {
 
 /* if screen width < 510px, then use 100% width */
 @media (max-height: 510px) {
+  .main-window-container .window-body {
+    margin: 4px 8px;
+  }
+
   .chess-container {
     flex-direction: row;
     width: 85dvw;
     max-width: calc(100dvw - 96px);
+    padding: 0 8px;
   }
 
   .game-controls {
     flex-direction: column;
+    white-space: nowrap;
   }
 
   .chess-header {
     flex-direction: column;
     align-items: center;
   }
+
+  .game-engine-button {
+    padding: 6px;
+    min-width: auto;
+  }
+}
+
+/* Engine Window Styles */
+.engine-window {
+  position: absolute;
+  width: 300px;
+  max-width: 90dvw;
+  max-height: 90dvh;
+}
+
+.engine-content {
+  padding: 8px;
+}
+
+/* Engine list - flexbox layout */
+.engine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.engine-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px;
+}
+
+.engine-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.engine-controls label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.engine-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.engine-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.engine-info label {
+  cursor: pointer;
+  display: block;
+}
+
+.engine-name {
+  font-weight: bold;
+}
+
+.engine-description {
+  font-size: 0.85em;
+  color: #333;
 }
 
 /* Language Window Styles */

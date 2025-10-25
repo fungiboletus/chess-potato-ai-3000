@@ -4,6 +4,7 @@ import { MoveHistoryWindow } from './components/MoveHistoryWindow';
 import { GameResultWindow } from './components/GameResultWindow';
 import { HelpWindow } from './components/HelpWindow';
 import { LanguageWindow } from './components/LanguageWindow';
+import { GameEnginesWindow } from './components/GameEnginesWindow';
 import useChessStore from './stores/chessStore';
 
 export const ChessGame: React.FC = () => {
@@ -12,12 +13,14 @@ export const ChessGame: React.FC = () => {
     showHelp,
     showHelpLast,
     showLanguageWindow,
+    showEngineWindow,
     gameResult,
     moveHistory,
     setShowMoveHistory,
     setShowHelp,
     setShowHelpLast,
     setShowLanguageWindow,
+    setShowEngineWindow,
     closeGameResult,
   } = useChessStore();
 
@@ -58,6 +61,11 @@ export const ChessGame: React.FC = () => {
       <LanguageWindow
         isOpen={showLanguageWindow}
         onClose={() => setShowLanguageWindow(false)}
+      />
+
+      <GameEnginesWindow
+        isOpen={showEngineWindow}
+        onClose={() => setShowEngineWindow(false)}
       />
 
     </div>

@@ -3,7 +3,7 @@
     "title": "Chess Potato AI 3000",
     "playing_as": "Playing as {{color}}",
     "moves": "Moves: {{count}}",
-    "thinking": "Chess Potato AI 3000 is thinking...",
+    "thinking": "{{engineName}} is thinking...",
     "new_game": "New Game",
     "resign": "Resign",
     "show_moves": "Show Moves",
@@ -48,7 +48,17 @@
     "title": "Move History",
     "no_moves": "No moves yet",
     "clear_history": "Clear History",
-    "current_fen": "Current FEN:"
+    "current_fen": "Current FEN:",
+    "move_column": "Move",
+    "player_column": "Player",
+    "eval_column": "Eval"
+  },
+  "player": {
+    "human": "Human"
+  },
+  "colors": {
+    "white": "white",
+    "black": "black"
   },
   "result": {
     "winner": "🏆 WINNER! 🏆",
@@ -65,10 +75,6 @@
     "spanish": "Español",
     "norwegian": "Norsk"
   },
-  "colors": {
-    "white": "white",
-    "black": "black"
-  },
   "status": {
     "initializing": "Initializing...",
     "starting_game": "Starting new game...",
@@ -80,5 +86,13 @@
     "checkmate_ai_wins": "Checkmate! AI wins!",
     "draw": "Game is a draw!",
     "you_resigned": "You resigned!"
+  },
+  "engine": {
+    "title": "Select Engine",
+    "select": "Choose your opponent",
+    "loading": "Loading available engines...",
+    "error": "Failed to load engines from server. Using offline mode.",
+    "none": "No engines available.",
+    "ok": "OK"
   }
 }

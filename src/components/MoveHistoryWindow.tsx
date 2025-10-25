@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useChessStore from '../stores/chessStore';
 import { DraggableWindow } from './DraggableWindow';
+import type { MoveRecord } from '../stores/chessStore';
 
 interface MoveHistoryWindowProps {
   isOpen: boolean;
   onClose: () => void;
   onMouseDown?: () => void;
-  moveHistory: string[];
+  moveHistory: MoveRecord[];
 }
 
 export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
@@ -17,32 +18,44 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   onMouseDown,
 }) => {
   const { t } = useTranslation();
+  const availableEngines = useChessStore(state => state.availableEngines);
+  const scrollableRef = useRef<HTMLDivElement>(null);
+
+  // Autoscroll to bottom when move history changes
+  useEffect(() => {
+    if (scrollableRef.current) {
+      scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
+    }
+  }, [moveHistory]);
+
+  const getPlayerDisplayName = (playerKey: string): string => {
+    if (playerKey === 'human') {
+      return t('player.human');
+    }
+    // Look up engine display name
+    const engine = availableEngines.find(e => e.name === playerKey);
+    return engine?.display_name || playerKey;
+  };
 
   const generateMoveRows = () => {
     if (moveHistory.length === 0) {
       return (
         <tr>
-          <td colSpan={2}>{t('move_history.no_moves')}</td>
+          <td colSpan={3}>{t('move_history.no_moves')}</td>
         </tr>
       );
     }
 
-    const rows = [];
-    for (let i = 0; i < moveHistory.length; i += 2) {
-      const whiteMove = moveHistory[i] || '';
-      const blackMove = moveHistory[i + 1] || '';
-
-      rows.push(
-        <tr key={i}>
-          <td>{whiteMove}</td>
-          <td>{blackMove}</td>
-        </tr>
-      );
-    }
-    return rows;
+    return moveHistory.map((moveRecord, index) => (
+      <tr key={index}>
+        <td>{moveRecord.san}</td>
+        <td>{getPlayerDisplayName(moveRecord.playerKey)}</td>
+        <td>{moveRecord.eval}</td>
+      </tr>
+    ));
   };
 
-  const WINDOW_WIDTH = 200;
+  const WINDOW_WIDTH = 260;
 
   // Position window on the right side of the screen
   const getRightSidePosition = () => {
@@ -72,12 +85,13 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       defaultPosition={getRightSidePosition()}
     >
       <div className="move-history-content">
-        <div className="sunken-panel move-history-scrollable">
+        <div className="sunken-panel move-history-scrollable" ref={scrollableRef}>
           <table className="interactive">
             <thead>
               <tr>
-                <th>{t('colors.white')}</th>
-                <th>{t('colors.black')}</th>
+                <th>{t('move_history.move_column')}</th>
+                <th>{t('move_history.player_column')}</th>
+                <th>{t('move_history.eval_column')}</th>
               </tr>
             </thead>
             <tbody>

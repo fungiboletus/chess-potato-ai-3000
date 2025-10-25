@@ -3,7 +3,7 @@
     "title": "Chess Potato AI 3000",
     "playing_as": "Jugando como {{color}}",
     "moves": "Movimientos: {{count}}",
-    "thinking": "Chess Potato AI 3000 está pensando...",
+    "thinking": "{{engineName}} está pensando...",
     "new_game": "Nueva Partida",
     "resign": "Rendirse",
     "show_moves": "Mostrar Movimientos",
@@ -41,7 +41,17 @@
     "title": "Historial de Movimientos",
     "no_moves": "Aún no hay movimientos",
     "clear_history": "Limpiar Historial",
-    "current_fen": "FEN actual:"
+    "current_fen": "FEN actual:",
+    "move_column": "Movimiento",
+    "player_column": "Jugador",
+    "eval_column": "Eval"
+  },
+  "player": {
+    "human": "Humano"
+  },
+  "colors": {
+    "white": "blancas",
+    "black": "negras"
   },
   "result": {
     "winner": "🏆 ¡GANADOR! 🏆",
@@ -58,10 +68,6 @@
     "spanish": "Español",
     "norwegian": "Norsk"
   },
-  "colors": {
-    "white": "blancas",
-    "black": "negras"
-  },
   "status": {
     "initializing": "Inicializando...",
     "starting_game": "Iniciando nueva partida...",
@@ -73,5 +79,13 @@
     "checkmate_ai_wins": "¡Jaque mate! ¡La IA gana!",
     "draw": "¡La partida es un empate!",
     "you_resigned": "¡Te rendiste!"
+  },
+  "engine": {
+    "title": "Seleccionar Motor",
+    "select": "Elige tu oponente",
+    "loading": "Cargando motores disponibles...",
+    "error": "Error al cargar motores desde el servidor. Usando modo sin conexión.",
+    "none": "No hay motores disponibles.",
+    "ok": "Aceptar"
   }
 }

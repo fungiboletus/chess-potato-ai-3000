@@ -3,7 +3,7 @@
     "title": "Chess Potato AI 3000",
     "playing_as": "Spiller som {{color}}",
     "moves": "Trekk: {{count}}",
-    "thinking": "Chess Potato AI 3000 tenker...",
+    "thinking": "{{engineName}} tenker...",
     "new_game": "Nytt Spill",
     "resign": "Gi Opp",
     "show_moves": "Vis Trekk",
@@ -48,7 +48,17 @@
     "title": "Trekkhistorikk",
     "no_moves": "Ingen trekk ennå",
     "clear_history": "Tøm Historikk",
-    "current_fen": "Nåværende FEN:"
+    "current_fen": "Nåværende FEN:",
+    "move_column": "Trekk",
+    "player_column": "Spiller",
+    "eval_column": "Eval"
+  },
+  "player": {
+    "human": "Menneske"
+  },
+  "colors": {
+    "white": "hvit",
+    "black": "svart"
   },
   "result": {
     "winner": "🏆 VINNER! 🏆",
@@ -65,10 +75,6 @@
     "spanish": "Español",
     "norwegian": "Norsk"
   },
-  "colors": {
-    "white": "hvit",
-    "black": "svart"
-  },
   "status": {
     "initializing": "Starter...",
     "starting_game": "Starter nytt spill...",
@@ -80,5 +86,13 @@
     "checkmate_ai_wins": "Sjakkmatt! AI vinner!",
     "draw": "Spillet er remis!",
     "you_resigned": "Du ga opp!"
+  },
+  "engine": {
+    "title": "Velg Motor",
+    "select": "Velg din motstander",
+    "loading": "Laster tilgjengelige motorer...",
+    "error": "Kunne ikke laste motorer fra serveren. Bruker frakoblet modus.",
+    "none": "Ingen motorer tilgjengelig.",
+    "ok": "OK"
   }
 }

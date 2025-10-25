@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { Chess } from 'chess.js';
 import type { Api } from 'chessground/api';
-import { mcpClient } from '../services/mcpClient';
+import { mcpClient, type EngineInfo } from '../services/mcpClient';
+import { computeRandomMove } from '../utils/offlineEngine';
 
 // Game states following a state machine pattern
 export type GameState =
@@ -13,11 +14,22 @@ export type GameState =
 
 export type PlayerColor = 'white' | 'black';
 
+export type EngineFetchState = 'idle' | 'loading' | 'success' | 'error';
+
 export interface GameResult {
   type: 'win' | 'lose' | 'draw';
   message: string;
   reason: string;
 }
+
+export interface MoveRecord {
+  san: string;        // Standard Algebraic Notation (e.g., "e4")
+  playerKey: string;  // Engine key or "human"
+  eval: string;       // Evaluation (hardcoded to "-" for now)
+}
+
+// Special offline engine constant
+export const OFFLINE_ENGINE = 'offline-random';
 
 export interface ChessGameStore {
   // Core game state
@@ -27,7 +39,7 @@ export interface ChessGameStore {
   gameStarted: boolean;
 
   // Move tracking
-  moveHistory: string[];
+  moveHistory: MoveRecord[];
 
   // Game result
   gameResult: GameResult | null;
@@ -37,6 +49,12 @@ export interface ChessGameStore {
   showHelp: boolean;
   showHelpLast: boolean; // Whether help or move history was last shown
   showLanguageWindow: boolean;
+  showEngineWindow: boolean;
+
+  // Engine state
+  selectedEngine: string | null;
+  availableEngines: EngineInfo[];
+  engineFetchState: EngineFetchState;
 
   // Computed state
   isPlayerTurn: boolean;
@@ -58,7 +76,12 @@ export interface ChessGameStore {
   setShowHelp: (show: boolean) => void;
   setShowHelpLast: (show: boolean) => void;
   setShowLanguageWindow: (show: boolean) => void;
+  setShowEngineWindow: (show: boolean) => void;
   closeGameResult: () => void;
+
+  // Engine actions
+  fetchEngines: () => Promise<void>;
+  setSelectedEngine: (engineName: string) => void;
 
   // Chessground integration
   setChessgroundApi: (api: Api | null) => void;
@@ -68,6 +91,7 @@ export interface ChessGameStore {
   calculateLegalMoves: () => Map<string, string[]>;
   checkGameEnd: () => GameResult | null;
   updateTurnState: () => void;
+  getSelectedEngineDisplayName: () => string;
 }
 
 // Internal variable to track AI move timeout
@@ -85,10 +109,14 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   showHelp: false,
   showHelpLast: false,
   showLanguageWindow: false,
+  showEngineWindow: false,
   isPlayerTurn: false,
   legalMoves: new Map(),
   chessgroundApi: null,
   currentFen: '',
+  selectedEngine: null,
+  availableEngines: [],
+  engineFetchState: 'idle',
 
   // Calculate legal moves for the current position
   calculateLegalMoves: () => {
@@ -231,8 +259,13 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     try {
       const move = chess.move({ from, to, promotion: 'q' });
       if (move) {
+        const moveRecord: MoveRecord = {
+          san: move.san,
+          playerKey: 'human',
+          eval: '-'
+        };
         set(state => ({
-          moveHistory: [...state.moveHistory, move.san],
+          moveHistory: [...state.moveHistory, moveRecord],
           gameStarted: true
         }));
 
@@ -286,9 +319,24 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         const fen = currentState.chess.fen();
         console.log('[AI] Computing move for FEN:', fen);
 
-        // Call MCP service to get the best move
-        const uciMove = await mcpClient.computeNextMove(fen);
-        console.log('[AI] MCP returned move:', uciMove);
+        // Determine which engine to use
+        const engineToUse = currentState.selectedEngine || OFFLINE_ENGINE;
+        let uciMove: string;
+
+        // If using offline engine or selectedEngine is the offline engine, use random move
+        if (engineToUse === OFFLINE_ENGINE) {
+          console.log('[AI] Using offline random engine');
+          uciMove = computeRandomMove(currentState.chess);
+        } else {
+          // Call MCP service to get the best move
+          try {
+            uciMove = await mcpClient.computeNextMove(fen, engineToUse);
+            console.log('[AI] MCP returned move:', uciMove);
+          } catch (mcpError) {
+            console.warn('[AI] MCP failed, falling back to offline engine:', mcpError);
+            uciMove = computeRandomMove(currentState.chess);
+          }
+        }
 
         // Check state again after async operation
         const stateAfterMCP = get();
@@ -311,8 +359,13 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
         if (move) {
           console.log('[AI] Move executed:', move.san);
+          const moveRecord: MoveRecord = {
+            san: move.san,
+            playerKey: engineToUse,
+            eval: '-'
+          };
           set(state => ({
-            moveHistory: [...state.moveHistory, move.san],
+            moveHistory: [...state.moveHistory, moveRecord],
             gameStarted: true
           }));
 
@@ -325,30 +378,38 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         }
 
       } catch (error) {
-        console.error('[AI] Error computing move with MCP:', error);
+        console.error('[AI] Unexpected error computing move:', error);
 
-        // Fallback: use random move
+        // Last resort fallback: use random move if we haven't made a move yet
         const currentState = get();
         if (currentState.gameState !== 'ai_thinking') {
           return;
         }
 
-        console.log('[AI] Falling back to random move');
-        const moves = currentState.chess.moves({ verbose: true });
+        console.log('[AI] Last resort: falling back to random move');
+        try {
+          const uciMove = computeRandomMove(currentState.chess);
+          const from = uciMove.slice(0, 2);
+          const to = uciMove.slice(2, 4);
+          const promotion = uciMove.length > 4 ? uciMove[4] : 'q';
 
-        if (moves.length > 0) {
-          const randomMove = moves[Math.floor(Math.random() * moves.length)];
-          const move = currentState.chess.move(randomMove);
-
+          const move = currentState.chess.move({ from, to, promotion });
           if (move) {
+            const moveRecord: MoveRecord = {
+              san: move.san,
+              playerKey: OFFLINE_ENGINE,
+              eval: '-'
+            };
             set(state => ({
-              moveHistory: [...state.moveHistory, move.san],
+              moveHistory: [...state.moveHistory, moveRecord],
               gameStarted: true
             }));
           }
+        } catch (fallbackError) {
+          console.error('[AI] Failed to compute fallback move:', fallbackError);
         }
 
-        // Update turn state after fallback move
+        // Update turn state after error handling
         get().updateTurnState();
       }
     };
@@ -385,6 +446,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   setShowHelp: (show: boolean) => set({ showHelp: show, showHelpLast: show }),
   setShowHelpLast: (show: boolean) => set({ showHelpLast: show }),
   setShowLanguageWindow: (show: boolean) => set({ showLanguageWindow: show }),
+  setShowEngineWindow: (show: boolean) => set({ showEngineWindow: show }),
   closeGameResult: () => set({ gameResult: null }),
 
   // Chessground integration
@@ -394,6 +456,78 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     if (chessgroundApi) {
       chessgroundApi.redrawAll();
     }
+  },
+
+  // Engine management
+  fetchEngines: async () => {
+    set({ engineFetchState: 'loading' });
+
+    try {
+      console.log('[Store] Fetching available engines...');
+      const engines = await mcpClient.listEngines();
+
+      // Find the default engine
+      const defaultEngine = engines.find(e => e.default);
+
+      // Try to get persisted engine from localStorage
+      const persistedEngine = localStorage.getItem('selected-engine');
+
+      // Determine which engine to use
+      let engineToSelect: string;
+
+      if (persistedEngine && engines.some(e => e.name === persistedEngine)) {
+        // Use persisted engine if it exists in the list
+        engineToSelect = persistedEngine;
+        console.log('[Store] Using persisted engine:', engineToSelect);
+      } else if (defaultEngine) {
+        // Use default engine from server
+        engineToSelect = defaultEngine.name;
+        console.log('[Store] Using default engine:', engineToSelect);
+      } else if (engines.length > 0) {
+        // Fallback to first engine if no default specified
+        engineToSelect = engines[0].name;
+        console.log('[Store] Using first available engine:', engineToSelect);
+      } else {
+        // No engines available - use offline
+        engineToSelect = OFFLINE_ENGINE;
+        console.log('[Store] No engines available, using offline engine');
+      }
+
+      // Update state
+      set({
+        availableEngines: engines,
+        selectedEngine: engineToSelect,
+        engineFetchState: 'success'
+      });
+
+      // Persist the selection
+      localStorage.setItem('selected-engine', engineToSelect);
+
+      console.log(`[Store] Successfully loaded ${engines.length} engines`);
+    } catch (error) {
+      console.error('[Store] Failed to fetch engines:', error);
+
+      // Fall back to offline engine
+      set({
+        availableEngines: [],
+        selectedEngine: OFFLINE_ENGINE,
+        engineFetchState: 'error'
+      });
+
+      localStorage.setItem('selected-engine', OFFLINE_ENGINE);
+    }
+  },
+
+  setSelectedEngine: (engineName: string) => {
+    console.log('[Store] Switching to engine:', engineName);
+    set({ selectedEngine: engineName });
+    localStorage.setItem('selected-engine', engineName);
+  },
+
+  getSelectedEngineDisplayName: () => {
+    const { selectedEngine, availableEngines } = get();
+    const engineInfo = availableEngines.find(e => e.name === selectedEngine);
+    return engineInfo?.display_name || 'Untitled Engine';
   },
 }));
 
