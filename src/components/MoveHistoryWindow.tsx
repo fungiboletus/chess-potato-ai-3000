@@ -28,6 +28,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   const enterRewindMode = useChessStore(state => state.enterRewindMode);
   const exitRewindMode = useChessStore(state => state.exitRewindMode);
   const scrollableRef = useRef<HTMLDivElement>(null);
+  const moveRowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
 
   const handleClose = () => {
     // Exit rewind mode when closing the window
@@ -54,6 +55,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   };
 
   const isEmpty = moveHistory.length === 0;
+  const highlightedIndex = rewindMode?.active ? rewindMode.moveIndex : moveHistory.length - 1;
 
   const handleRowClick = (index: number) => {
     // Disable clicks when AI is thinking
@@ -72,6 +74,71 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     }
   };
 
+  // Handle keyboard navigation for move history
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (moveHistory.length === 0 || gameState === 'ai_thinking') {
+      return;
+    }
+
+    const currentIndex = rewindMode?.active ? rewindMode.moveIndex : moveHistory.length - 1;
+    const maxIndex = moveHistory.length - 1;
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const newIndex = Math.max(0, currentIndex - 1);
+      if (newIndex !== currentIndex) {
+        enterRewindMode(newIndex);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const newIndex = Math.min(maxIndex, currentIndex + 1);
+
+      // If we're at the latest move, exit rewind mode
+      if (newIndex === maxIndex && rewindMode?.active) {
+        exitRewindMode();
+      } else if (newIndex !== currentIndex) {
+        enterRewindMode(newIndex);
+      }
+    }
+  };
+
+  // Auto-focus the scrollable div when window opens
+  useEffect(() => {
+    if (isOpen && scrollableRef.current) {
+      scrollableRef.current.focus();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    moveRowRefs.current.length = moveHistory.length;
+  }, [moveHistory.length]);
+
+  // Keep the highlighted row within the visible scroll region without forcing unwanted jumps
+  useEffect(() => {
+    if (!scrollableRef.current || highlightedIndex < 0) {
+      return;
+    }
+
+    const container = scrollableRef.current;
+    const highlightedRow = moveRowRefs.current[highlightedIndex];
+
+    if (!highlightedRow) {
+      return;
+    }
+
+    const rowTop = highlightedRow.offsetTop;
+    const rowBottom = rowTop + highlightedRow.offsetHeight;
+    const headerOffset = moveRowRefs.current[0]?.offsetTop ?? 0;
+    const viewportTop = container.scrollTop + headerOffset;
+    const viewportBottom = container.scrollTop + container.clientHeight;
+
+    if (rowTop < viewportTop) {
+      container.scrollTop = Math.max(rowTop - headerOffset, 0);
+    } else if (rowBottom > viewportBottom) {
+      container.scrollTop = rowBottom - container.clientHeight;
+    }
+  }, [highlightedIndex]);
+
   const generateMoveRows = () => {
     if (isEmpty) {
       return (
@@ -82,15 +149,16 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     }
 
     const isInteractive = gameState !== 'ai_thinking';
-    const currentIndex = rewindMode?.active ? rewindMode.moveIndex : moveHistory.length - 1;
-
     return moveHistory.map((moveRecord, index) => {
-      const isHighlighted = index === currentIndex;
+      const isHighlighted = index === highlightedIndex;
       const className = isHighlighted ? 'highlighted' : '';
 
       return (
         <tr
           key={index}
+          ref={el => {
+            moveRowRefs.current[index] = el;
+          }}
           className={className}
           onClick={isInteractive ? () => handleRowClick(index) : undefined}
           style={isInteractive ? { cursor: 'pointer' } : undefined}
@@ -137,7 +205,12 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       zIndex={zIndex}
     >
       <div className="move-history-content">
-        <div className="sunken-panel move-history-scrollable" ref={scrollableRef}>
+        <div
+          className="sunken-panel move-history-scrollable"
+          ref={scrollableRef}
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+        >
           <table className={`${isEmpty ? '' : 'interactive'} ${gameState === 'ai_thinking' ? 'disabled' : ''}`}>
             <thead>
               <tr>
