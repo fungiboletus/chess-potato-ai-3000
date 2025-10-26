@@ -44,10 +44,18 @@ engines:
     options: {}
 
   - key: badfish
-    path: /Users/antoinep/fun/llm-chess-bot/worstfish/worstfish
+    path: /Users/antoinep/fun/llm-chess-bot/Badfish/src/stockfish
     display_name: Badfish
     description: A modified Stockfish engine designed to play as bad as it can.
-    depth: 6
+    depth: 8
+    time_limit: 1.0
+    options: {}
+
+  - key: worstfish
+    path: /Users/antoinep/fun/llm-chess-bot/worstfish/worstfish
+    display_name: worstfish
+    description: Another modified Stockfish engine designed to play very poorly, but differently from Badfish.
+    depth: 8
     time_limit: 1.0
     options: {}
 

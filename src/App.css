@@ -71,6 +71,10 @@
   /* Let other columns share remaining space */
 }
 
+.move-history-content table td {
+  overflow: clip;
+}
+
 .move-history-content dd {
   word-break: break-all;
 }

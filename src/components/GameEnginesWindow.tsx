@@ -19,12 +19,13 @@ const getEngineIcon = (engineName: string): string => {
     case 'alphabet':
       return './icons/engine-alphabet.png';
     case 'stockfish_level_0':
-    case 'stockfish_default':
-    case 'stockfish_unbeatable':
-      return './icons/engine-stockfish.png';
+      return './engines/stockfish_level_0.png';
     case OFFLINE_ENGINE:
       return './icons/engine-offline.png';
     default:
+      if (engineName.includes('stockfish')) {
+        return './engines/stockfish.png';
+      }
       return './icons/engine-generic.png';
   }
 };
@@ -112,6 +113,8 @@ export const GameEnginesWindow: React.FC<GameEnginesWindowProps> = ({
                       <img
                         src={getEngineIcon(engine.name)}
                         alt=""
+                        height="32"
+                        width="32"
                         className="engine-icon pixelated"
                       />
                     </label>

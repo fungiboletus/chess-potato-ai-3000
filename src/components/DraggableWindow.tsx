@@ -1,4 +1,4 @@
-import React, { type ReactNode, useEffect, useRef, useState } from 'react';
+import React, { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import Draggable from 'react-draggable';
 import useChessStore from '../stores/chessStore';
 
@@ -57,7 +57,7 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // check that it's visible when it's opened
     if (isOpen && nodeRef.current) {
       const rect = nodeRef.current.getBoundingClientRect();
@@ -72,7 +72,8 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
         rect.top > viewport.height - minVisibleArea; // too far down
 
       if (isOutsideViewport) {
-        // Reset position to ensure it's visible
+        // Reset position to ensure it's visible - using useLayoutEffect to measure/update synchronously before paint
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPosition(getSmartPosition(defaultPosition));
       }
     }

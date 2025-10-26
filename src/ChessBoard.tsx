@@ -19,7 +19,7 @@ export const ChessBoard: React.FC = () => {
   const isAIThinking = gameState === 'ai_thinking';
   const isReadOnly = !isPlayerTurn || rewindMode?.active;
 
-  // Initialize chessground
+  // Initialize chessground once on mount
   useEffect(() => {
     if (boardRef.current && !api) {
       const chessgroundApi = Chessground(boardRef.current, {
@@ -37,20 +37,10 @@ export const ChessBoard: React.FC = () => {
       });
       setApi(chessgroundApi);
       setChessgroundApi(chessgroundApi);
-    } else if (boardRef.current && api) {
-      api.set({
-        ...config,
-        movable: {
-          ...config.movable,
-          events: {
-            after: (orig: string, dest: string) => {
-              makePlayerMove(orig, dest);
-            },
-          },
-        },
-      });
     }
-  }, [boardRef]);
+    // Only run once on mount - config updates are handled by separate useEffect below
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update API reference in store
   useEffect(() => {

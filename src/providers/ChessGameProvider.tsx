@@ -1,13 +1,12 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import useChessStore from '../stores/chessStore';
 import { mcpClient } from '../services/mcpClient';
+import { ChessGameContext } from '../contexts/ChessGameContext';
 
 interface ChessGameProviderProps {
   children: ReactNode;
 }
-
-const ChessGameContext = createContext<boolean>(false);
 
 export const ChessGameProvider: React.FC<ChessGameProviderProps> = ({ children }) => {
   const initializeGame = useChessStore(state => state.initializeGame);
@@ -75,12 +74,4 @@ export const ChessGameProvider: React.FC<ChessGameProviderProps> = ({ children }
       {children}
     </ChessGameContext.Provider>
   );
-};
-
-export const useChessGameContext = () => {
-  const context = useContext(ChessGameContext);
-  if (!context) {
-    throw new Error('useChessGameContext must be used within a ChessGameProvider');
-  }
-  return context;
 };

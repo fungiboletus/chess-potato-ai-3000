@@ -248,6 +248,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       const isHighlighted = index === highlightedIndex;
       const className = isHighlighted ? 'highlighted' : '';
       const evaluation = getEvaluationAttributes(moveRecord.fen);
+      const playerName = getPlayerDisplayName(moveRecord.playerKey);
 
       return (
         <tr
@@ -260,7 +261,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
           style={isInteractive ? { cursor: 'pointer' } : undefined}
         >
           <td>{moveRecord.san}</td>
-          <td>{getPlayerDisplayName(moveRecord.playerKey)}</td>
+          <td title={playerName}>{playerName}</td>
           <td title={evaluation.title}>{evaluation.display}</td>
         </tr>
       );
