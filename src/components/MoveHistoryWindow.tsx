@@ -27,8 +27,9 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   const rewindMode = useChessStore(state => state.rewindMode);
   const enterRewindMode = useChessStore(state => state.enterRewindMode);
   const exitRewindMode = useChessStore(state => state.exitRewindMode);
+  const moveHistoryFocusRequestId = useChessStore(state => state.moveHistoryFocusRequestId);
   const positionEvaluations = useChessStore(state => state.positionEvaluations);
-  const fetchPositionEvaluations = useChessStore(state => state.fetchPositionEvaluations);
+  const loadPositionEvaluations = useChessStore(state => state.loadPositionEvaluations);
   const scrollableRef = useRef<HTMLDivElement>(null);
   const moveRowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
 
@@ -167,26 +168,27 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     }
   };
 
-  // Auto-focus the scrollable div when window opens
+  // Auto-focus the scrollable div when the window is opened or refocus is requested
   useEffect(() => {
-    if (isOpen && scrollableRef.current) {
-      scrollableRef.current.focus();
+    if (!isOpen || !scrollableRef.current) {
+      return;
     }
-  }, [isOpen]);
+    scrollableRef.current.focus({ preventScroll: true });
+  }, [isOpen, moveHistoryFocusRequestId]);
 
   useEffect(() => {
     moveRowRefs.current.length = moveHistory.length;
   }, [moveHistory.length]);
 
   useEffect(() => {
-    if (moveHistory.length === 0) {
+    if (!isOpen || moveHistory.length === 0) {
       return;
     }
 
     const fens = moveHistory.map(move => move.fen);
     const tokens = moveHistory.map(move => move.evaluationToken ?? null);
-    void fetchPositionEvaluations(fens, tokens);
-  }, [moveHistory, fetchPositionEvaluations]);
+    void loadPositionEvaluations(fens, tokens);
+  }, [isOpen, moveHistory, loadPositionEvaluations]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -194,17 +196,17 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     }
 
     const handleOnline = () => {
-      if (moveHistory.length === 0) {
+      if (!isOpen || moveHistory.length === 0) {
         return;
       }
       const fens = moveHistory.map(move => move.fen);
       const tokens = moveHistory.map(move => move.evaluationToken ?? null);
-      void fetchPositionEvaluations(fens, tokens);
+      void loadPositionEvaluations(fens, tokens);
     };
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [moveHistory, fetchPositionEvaluations]);
+  }, [isOpen, moveHistory, loadPositionEvaluations]);
 
   // Keep the highlighted row within the visible scroll region without forcing unwanted jumps
   useEffect(() => {

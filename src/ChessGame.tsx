@@ -5,6 +5,7 @@ import { GameResultWindow } from './components/GameResultWindow';
 import { HelpWindow } from './components/HelpWindow';
 import { LanguageWindow } from './components/LanguageWindow';
 import { GameEnginesWindow } from './components/GameEnginesWindow';
+import { ConfettiParticles } from './components/ConfettiParticles';
 import useChessStore from './stores/chessStore';
 
 export const ChessGame: React.FC = () => {
@@ -75,6 +76,8 @@ export const ChessGame: React.FC = () => {
         windowId="engine"
         zIndex={getZIndex('engine')}
       />
+
+      <ConfettiParticles show={gameResult?.type === 'win'} />
 
     </div>
   );

@@ -50,7 +50,6 @@ export interface ChessGameStore {
   // Move tracking
   moveHistory: MoveRecord[];
   positionEvaluations: Record<string, PositionEvaluationState>;
-  evaluationConsumerMap: Record<string, true>;
 
   // Rewind mode (for reviewing past positions)
   rewindMode: {
@@ -67,6 +66,7 @@ export interface ChessGameStore {
   showHelp: boolean;
   showLanguageWindow: boolean;
   showEngineWindow: boolean;
+  moveHistoryFocusRequestId: number;
 
   // Window z-index management
   windowStack: string[]; // Window IDs in order, last = top
@@ -110,15 +110,11 @@ export interface ChessGameStore {
   setEngineLocked: (locked: boolean) => void;
 
   // Evaluation actions
-  fetchPositionEvaluations: (
+  loadPositionEvaluations: (
     fens: string[],
-    tokens?: (string | null)[],
-    options?: { force?: boolean }
-  ) => Promise<void>;
+    tokens?: (string | null)[]
+  ) => Promise<Record<string, PositionEvaluationState>>;
   prefetchEvaluationsForHistory: () => Promise<void>;
-  registerEvaluationConsumer: (id: string) => void;
-  unregisterEvaluationConsumer: (id: string) => void;
-  hasActiveEvaluationConsumer: () => boolean;
 
   // Chessground integration
   setChessgroundApi: (api: Api | null) => void;
@@ -148,6 +144,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   showHelp: false,
   showLanguageWindow: false,
   showEngineWindow: false,
+  moveHistoryFocusRequestId: 0,
   windowStack: [],
   isPlayerTurn: false,
   legalMoves: new Map(),
@@ -158,9 +155,12 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   engineFetchState: 'idle',
   engineLocked: false,
 
-  fetchPositionEvaluations: async (fens: string[], tokens?: (string | null)[]) => {
+  loadPositionEvaluations: async (
+    fens: string[],
+    tokens?: (string | null)[]
+  ) => {
     if (fens.length === 0) {
-      return;
+      return {};
     }
 
     const uniquePositions = new Map<string, string | null>();
@@ -170,19 +170,20 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       }
     });
 
-    const stateSnapshot = get();
-    const playerIsWhite = stateSnapshot.playerColor === 'white';
+    const snapshot = get();
+    const playerIsWhite = snapshot.playerColor === 'white';
     const isOnline = typeof navigator === 'undefined' ? true : navigator.onLine;
 
     const fensToFetch: string[] = [];
     const tokensToFetch: (string | null)[] = [];
 
     uniquePositions.forEach((token, fen) => {
-      const existing = stateSnapshot.positionEvaluations[fen];
-      const shouldRetryOffline = existing?.status === 'offline' && isOnline;
+      const cached = snapshot.positionEvaluations[fen];
+      const shouldRetryOffline = cached?.status === 'offline' && isOnline;
+      const needsFetch = !cached || cached.status === 'error' || shouldRetryOffline;
 
-      if (!existing || existing.status === 'error' || shouldRetryOffline) {
-        if (existing?.status === 'loading' || existing?.status === 'success') {
+      if (needsFetch) {
+        if (cached?.status === 'loading') {
           return;
         }
         fensToFetch.push(fen);
@@ -190,58 +191,81 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       }
     });
 
-    if (fensToFetch.length === 0) {
+    if (fensToFetch.length > 0) {
+      set(current => {
+        const updated = { ...current.positionEvaluations };
+        fensToFetch.forEach(fen => {
+          updated[fen] = { status: 'loading' };
+        });
+        return { positionEvaluations: updated };
+      });
+
+      try {
+        const evaluations = await mcpClient.evaluateFens(
+          fensToFetch,
+          tokensToFetch,
+          playerIsWhite
+        );
+
+        set(current => {
+          const updated = { ...current.positionEvaluations };
+          fensToFetch.forEach(fen => {
+            const evaluation = evaluations[fen];
+            if (evaluation) {
+              updated[fen] = { status: 'success', data: evaluation };
+            } else {
+              updated[fen] = {
+                status: 'error',
+                error: 'No evaluation returned for position'
+              };
+            }
+          });
+          return { positionEvaluations: updated };
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const normalized = message.toLowerCase();
+        const connectionIssue = normalized.includes('network') ||
+          normalized.includes('connect') ||
+          normalized.includes('offline') ||
+          normalized.includes('failed to fetch');
+        const offline = (typeof navigator !== 'undefined' && !navigator.onLine) || connectionIssue;
+        const status: PositionEvaluationStatus = offline ? 'offline' : 'error';
+
+        set(current => {
+          const updated = { ...current.positionEvaluations };
+          fensToFetch.forEach(fen => {
+            updated[fen] = { status, error: message };
+          });
+          return { positionEvaluations: updated };
+        });
+      }
+    }
+
+    const finalEvaluations = get().positionEvaluations;
+    const result: Record<string, PositionEvaluationState> = {};
+
+    uniquePositions.forEach((_, fen) => {
+      const evaluation = finalEvaluations[fen];
+      if (evaluation) {
+        result[fen] = evaluation;
+      }
+    });
+
+    return result;
+  },
+
+  prefetchEvaluationsForHistory: async () => {
+    const state = get();
+
+    if (state.moveHistory.length === 0) {
       return;
     }
 
-    set(current => {
-      const updated = { ...current.positionEvaluations };
-      fensToFetch.forEach(fen => {
-        updated[fen] = { status: 'loading' };
-      });
-      return { positionEvaluations: updated };
-    });
+    const fens = state.moveHistory.map(move => move.fen);
+    const tokens = state.moveHistory.map(move => move.evaluationToken ?? null);
 
-    try {
-      const evaluations = await mcpClient.evaluateFens(
-        fensToFetch,
-        tokensToFetch,
-        playerIsWhite
-      );
-
-      set(current => {
-        const updated = { ...current.positionEvaluations };
-        fensToFetch.forEach(fen => {
-          const evaluation = evaluations[fen];
-          if (evaluation) {
-            updated[fen] = { status: 'success', data: evaluation };
-          } else {
-            updated[fen] = {
-              status: 'error',
-              error: 'No evaluation returned for position'
-            };
-          }
-        });
-        return { positionEvaluations: updated };
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      const normalized = message.toLowerCase();
-      const connectionIssue = normalized.includes('network') ||
-        normalized.includes('connect') ||
-        normalized.includes('offline') ||
-        normalized.includes('failed to fetch');
-      const offline = (typeof navigator !== 'undefined' && !navigator.onLine) || connectionIssue;
-      const status: PositionEvaluationStatus = offline ? 'offline' : 'error';
-
-      set(current => {
-        const updated = { ...current.positionEvaluations };
-        fensToFetch.forEach(fen => {
-          updated[fen] = { status, error: message };
-        });
-        return { positionEvaluations: updated };
-      });
-    }
+    await state.loadPositionEvaluations(fens, tokens);
   },
 
   // Calculate legal moves for the current position
@@ -412,11 +436,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
           gameStarted: true
         }));
 
-        void get().fetchPositionEvaluations(
-          [moveRecord.fen],
-          [moveRecord.evaluationToken ?? null]
-        );
-
         // Update turn state after move
         get().updateTurnState();
         return true;
@@ -538,11 +557,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
             gameStarted: true
           }));
 
-          void get().fetchPositionEvaluations(
-            [moveRecord.fen],
-            [moveRecord.evaluationToken ?? null]
-          );
-
           // Update turn state after AI move
           get().updateTurnState();
         } else {
@@ -580,10 +594,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
               gameStarted: true
             }));
 
-            void get().fetchPositionEvaluations(
-              [moveRecord.fen],
-              [moveRecord.evaluationToken ?? null]
-            );
           }
         } catch (fallbackError) {
           console.error('[AI] Failed to compute fallback move:', fallbackError);
@@ -651,7 +661,12 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
   // UI state setters
   setShowMoveHistory: (show: boolean) => {
-    set({ showMoveHistory: show });
+    set(state => ({
+      showMoveHistory: show,
+      moveHistoryFocusRequestId: show
+        ? state.moveHistoryFocusRequestId + 1
+        : state.moveHistoryFocusRequestId
+    }));
     if (show) get().bringWindowToFront('moveHistory');
   },
   setShowHelp: (show: boolean) => {
