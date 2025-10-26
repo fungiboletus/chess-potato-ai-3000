@@ -6,12 +6,23 @@ import logging
 import os
 import secrets
 import time
+from types import FrameType
 
 import pyseto
 import uvicorn
 from fastmcp import FastMCP
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
+
+from chess_engine import (
+    compute_next_move_cached as engine_compute_move,
+)
+from chess_engine import (
+    ensure_valid_transition,
+    get_available_engines,
+    shutdown_engines,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -24,9 +35,6 @@ logging.basicConfig(
 logging.getLogger("chess.engine").setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
-
-from chess_engine import compute_next_move_cached as engine_compute_move
-from chess_engine import ensure_valid_transition, get_available_engines, shutdown_engine
 
 # CORS Configuration
 # Override in production with comma-separated origins (e.g., "https://app.example.com,https://chess.example.com")
@@ -53,7 +61,7 @@ SECRET_KEY: bytes = secrets.token_bytes(32)
 key = pyseto.Key.new(version=4, purpose="local", key=SECRET_KEY)
 
 # Register engine shutdown on exit
-atexit.register(shutdown_engine)
+atexit.register(shutdown_engines)
 
 
 class MoveResponse(BaseModel):
@@ -177,6 +185,24 @@ async def list_engines() -> EngineListResponse:
     return EngineListResponse(engines=engines)
 
 
+def force_exit_handler(signum: int, frame: FrameType | None) -> None:
+    """Aggressive shutdown - no waiting for graceful cleanup."""
+    logger.info("Received interrupt signal - forcing immediate exit")
+    # Try to shutdown engines, but don't wait
+    try:
+        shutdown_engines()
+    except Exception:
+        pass
+    # Hard exit
+    os._exit(0)
+
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request):
+    """Health check endpoint."""
+    return JSONResponse({"status": "healthy", "service": "mcp-server"})
+
+
 if __name__ == "__main__":
     app = mcp.http_app()
 
@@ -190,4 +216,14 @@ if __name__ == "__main__":
         max_age=86400,
     )
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Use Config and Server for better control over signal handling
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    server = uvicorn.Server(config)
+
+    # Override handle_exit to use our aggressive shutdown
+    def handle_exit_override(sig: int, frame: FrameType | None) -> None:
+        force_exit_handler(sig, frame)
+
+    server.handle_exit = handle_exit_override  # type: ignore[method-assign]
+
+    server.run()

@@ -155,7 +155,7 @@ def get_engine(engine_name: str) -> chess.engine.SimpleEngine:
     return engine
 
 
-def shutdown_engine():
+def shutdown_engines():
     """Gracefully shutdown all engine instances."""
     for _engine_name, engine in list(_engines.items()):
         try:
