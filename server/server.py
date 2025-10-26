@@ -8,6 +8,7 @@ import secrets
 import time
 from types import FrameType
 
+import chess
 import pyseto
 import uvicorn
 from fastmcp import FastMCP
@@ -201,13 +202,21 @@ class EvaluationResponse(BaseModel):
 
 
 @mcp.tool
-async def evaluate_fens(fens: list[str], tokens: list[str]) -> EvaluationResponse:
+async def evaluate_fens(
+    fens: list[str],
+    tokens: list[str] | None = None,
+    player_is_white: bool | None = None,
+    invert_turns: list[bool] | None = None,
+) -> EvaluationResponse:
     """
     Evaluate a list of FEN positions and return their scores using Stockfish's NNUE evaluation.
 
     Args:
         fens: List of chess positions in FEN format to evaluate
-        tokens: List of signed tokens corresponding to each FEN (for validation)
+        tokens: Optional list of signed tokens corresponding to each FEN (for validation)
+        player_is_white: If provided, orient evaluations from the human player's perspective
+        invert_turns: Optional list of flags (aligned with FEN list) that explicitly request
+            the evaluation be inverted relative to the active player in the FEN
 
     Returns:
         EvaluationResponse containing:
@@ -222,6 +231,11 @@ async def evaluate_fens(fens: list[str], tokens: list[str]) -> EvaluationRespons
     #    raise ValueError(
     #        f"Mismatch: {len(fens)} FENs provided but {len(tokens)} tokens provided"
     #    )
+
+    if invert_turns is not None and len(invert_turns) != len(fens):
+        raise ValueError(
+            f"Mismatch: {len(fens)} FENs provided but {len(invert_turns)} invert flags provided"
+        )
 
     evaluations: dict[str, PositionEvaluation] = {}
 
@@ -262,9 +276,22 @@ async def evaluate_fens(fens: list[str], tokens: list[str]) -> EvaluationRespons
     # except Exception as e:
     #     raise ValueError(f"Token validation failed for FEN '{fen}': {e}")
 
-    for fen in fens:
+    for idx, fen in enumerate(fens):
         # Evaluate the position
-        result = evaluate_position(fen)
+        inverse_turn = False
+
+        if invert_turns is not None:
+            inverse_turn = invert_turns[idx]
+        elif player_is_white is not None:
+            try:
+                board = chess.Board(fen)
+            except ValueError as exc:
+                raise ValueError(f"Invalid FEN string '{fen}': {exc}") from exc
+
+            board_turn_is_white = board.turn == chess.WHITE
+            inverse_turn = board_turn_is_white != player_is_white
+
+        result = evaluate_position(fen, inverse_turn=inverse_turn)
         evaluations[fen] = PositionEvaluation(
             expectation=result["expectation"], score=result["score"]
         )

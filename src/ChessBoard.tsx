@@ -24,7 +24,7 @@ export const ChessBoard: React.FC = () => {
     if (boardRef.current && !api) {
       const chessgroundApi = Chessground(boardRef.current, {
         animation: { enabled: true, duration: 200 },
-        
+
         ...config,
         movable: {
           ...config.movable,
@@ -77,7 +77,7 @@ export const ChessBoard: React.FC = () => {
 
   return (
     <div className={`chess-board-container ${rewindMode?.active ? 'rewind-mode' : ''} ${isReadOnly ? 'read-only' : ''} ${isAIThinking ? 'ai-thinking' : ''}`}>
-      <div ref={boardRef} className="chess-board" />
+      <div ref={boardRef} className="chess-board pixel-theme" />
     </div>
   );
 };

@@ -106,7 +106,7 @@
 }
 
 
-img.pixelated {
+img.pixel-theme.cg-wrapated {
   image-rendering: pixelated;
 }
 
@@ -387,8 +387,8 @@ button:disabled {
   bottom: 0;
   right: 0;
   /*background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.125) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));*/
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.150) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.012), rgba(0, 0, 255, 0.04));
-  z-index: 2;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.125) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.035), rgba(0, 255, 0, 0.012), rgba(0, 0, 255, 0.035));
+  z-index: 200;
   background-size: 100% 2px, 3px 100%;
   pointer-events: none;
 }
@@ -399,14 +399,14 @@ button:disabled {
 }
 
 /* Read-only board - change cursor to default */
-.chess-board-container.read-only .cg-wrap.manipulable cg-board,
+.chess-board-container.read-only .cg-wrap.manipulable .pixel-theme.cg-wrap,
 .chess-board-container.read-only .chess-board,
 .chess-board-container.read-only piece {
   cursor: default;
 }
 
 /* AI thinking - progress cursor (overrides read-only) */
-.chess-board-container.ai-thinking .cg-wrap.manipulable cg-board,
+.chess-board-container.ai-thinking .cg-wrap.manipulable .pixel-theme.cg-wrap,
 .chess-board-container.ai-thinking .chess-board,
 .chess-board-container.ai-thinking piece {
   cursor: progress;
@@ -431,4 +431,53 @@ button:disabled {
 .back-to-game-button {
   width: 100%;
   margin-top: 8px;
+}
+
+/** pixel theme */
+.pixel-theme.cg-wrap piece.pawn.white {
+  background-image: url("pieces/pixel/wP.svg");
+}
+
+.pixel-theme.cg-wrap piece.bishop.white {
+  background-image: url("pieces/pixel/wB.svg");
+}
+
+.pixel-theme.cg-wrap piece.knight.white {
+  background-image: url("pieces/pixel/wN.svg");
+}
+
+.pixel-theme.cg-wrap piece.rook.white {
+  background-image: url("pieces/pixel/wR.svg");
+}
+
+.pixel-theme.cg-wrap piece.queen.white {
+  background-image: url("pieces/pixel/wQ.svg");
+}
+
+.pixel-theme.cg-wrap piece.king.white {
+  background-image: url("pieces/pixel/wK.svg");
+}
+
+.pixel-theme.cg-wrap piece.pawn.black {
+  background-image: url("pieces/pixel/bP.svg");
+}
+
+.pixel-theme.cg-wrap piece.bishop.black {
+  background-image: url("pieces/pixel/bB.svg");
+}
+
+.pixel-theme.cg-wrap piece.knight.black {
+  background-image: url("pieces/pixel/bN.svg");
+}
+
+.pixel-theme.cg-wrap piece.rook.black {
+  background-image: url("pieces/pixel/bR.svg");
+}
+
+.pixel-theme.cg-wrap piece.queen.black {
+  background-image: url("pieces/pixel/bQ.svg");
+}
+
+.pixel-theme.cg-wrap piece.king.black {
+  background-image: url("pieces/pixel/bK.svg");
 }

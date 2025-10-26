@@ -364,10 +364,12 @@ class MCPClientService {
    * Evaluate a batch of positions and return their scores.
    * @param fens - Unique board positions in FEN notation.
    * @param tokens - Optional security tokens tied to each FEN.
+   * @param playerIsWhite - When provided, orient scores from the human player's perspective.
    */
   async evaluateFens(
     fens: string[],
-    tokens?: (string | null)[]
+    tokens?: (string | null)[],
+    playerIsWhite?: boolean
   ): Promise<Record<string, PositionEvaluation>> {
     if (fens.length === 0) {
       return {};
@@ -392,7 +394,8 @@ class MCPClientService {
           name: 'evaluate_fens',
           arguments: {
             fens,
-            tokens: tokenList
+            tokens: tokenList,
+            ...(typeof playerIsWhite === 'boolean' ? { player_is_white: playerIsWhite } : {})
           }
         }, EvaluateFensResultSchema);
 

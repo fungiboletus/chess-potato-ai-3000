@@ -50,6 +50,7 @@ export interface ChessGameStore {
   // Move tracking
   moveHistory: MoveRecord[];
   positionEvaluations: Record<string, PositionEvaluationState>;
+  evaluationConsumerMap: Record<string, true>;
 
   // Rewind mode (for reviewing past positions)
   rewindMode: {
@@ -109,7 +110,15 @@ export interface ChessGameStore {
   setEngineLocked: (locked: boolean) => void;
 
   // Evaluation actions
-  fetchPositionEvaluations: (fens: string[], tokens?: (string | null)[]) => Promise<void>;
+  fetchPositionEvaluations: (
+    fens: string[],
+    tokens?: (string | null)[],
+    options?: { force?: boolean }
+  ) => Promise<void>;
+  prefetchEvaluationsForHistory: () => Promise<void>;
+  registerEvaluationConsumer: (id: string) => void;
+  unregisterEvaluationConsumer: (id: string) => void;
+  hasActiveEvaluationConsumer: () => boolean;
 
   // Chessground integration
   setChessgroundApi: (api: Api | null) => void;
@@ -162,6 +171,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     });
 
     const stateSnapshot = get();
+    const playerIsWhite = stateSnapshot.playerColor === 'white';
     const isOnline = typeof navigator === 'undefined' ? true : navigator.onLine;
 
     const fensToFetch: string[] = [];
@@ -193,7 +203,11 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     });
 
     try {
-      const evaluations = await mcpClient.evaluateFens(fensToFetch, tokensToFetch);
+      const evaluations = await mcpClient.evaluateFens(
+        fensToFetch,
+        tokensToFetch,
+        playerIsWhite
+      );
 
       set(current => {
         const updated = { ...current.positionEvaluations };
