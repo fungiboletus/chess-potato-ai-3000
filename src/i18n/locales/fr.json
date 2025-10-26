@@ -51,6 +51,7 @@
     "current_fen": "FEN actuel :",
     "move_column": "Coup",
     "player_column": "Joueur",
+    "show_eval_checkbox": "Afficher les évaluations",
     "eval_column": "Éval",
     "eval_offline_hint": "Évaluation indisponible hors ligne.",
     "eval_error_hint": "Impossible d'évaluer la position.",

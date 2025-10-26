@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useChessStore from '../stores/chessStore';
 import { DraggableWindow } from './DraggableWindow';
@@ -32,6 +32,22 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   const loadPositionEvaluations = useChessStore(state => state.loadPositionEvaluations);
   const scrollableRef = useRef<HTMLDivElement>(null);
   const moveRowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
+  const [showEvaluations, setShowEvaluations] = useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return true;
+    }
+
+    const storedValue = window.localStorage.getItem('moveHistory.showEvaluations');
+    return storedValue === null ? true : storedValue === 'true';
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem('moveHistory.showEvaluations', showEvaluations ? 'true' : 'false');
+  }, [showEvaluations]);
 
   const handleClose = () => {
     // Exit rewind mode when closing the window
@@ -185,13 +201,17 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       return;
     }
 
+    if (!showEvaluations) {
+      return;
+    }
+
     const fens = moveHistory.map(move => move.fen);
     const tokens = moveHistory.map(move => move.evaluationToken ?? null);
     void loadPositionEvaluations(fens, tokens);
-  }, [isOpen, moveHistory, loadPositionEvaluations]);
+  }, [isOpen, moveHistory, loadPositionEvaluations, showEvaluations]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (!showEvaluations || typeof window === 'undefined') {
       return;
     }
 
@@ -206,7 +226,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [isOpen, moveHistory, loadPositionEvaluations]);
+  }, [isOpen, moveHistory, loadPositionEvaluations, showEvaluations]);
 
   // Keep the highlighted row within the visible scroll region without forcing unwanted jumps
   useEffect(() => {
@@ -234,11 +254,13 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     }
   }, [highlightedIndex]);
 
+  const columnCount = showEvaluations ? 3 : 2;
+
   const generateMoveRows = () => {
     if (isEmpty) {
       return (
         <tr>
-          <td colSpan={3}>{t('move_history.no_moves')}</td>
+          <td colSpan={columnCount}>{t('move_history.no_moves')}</td>
         </tr>
       );
     }
@@ -247,7 +269,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     return moveHistory.map((moveRecord, index) => {
       const isHighlighted = index === highlightedIndex;
       const className = isHighlighted ? 'highlighted' : '';
-      const evaluation = getEvaluationAttributes(moveRecord.fen);
+      const evaluation = showEvaluations ? getEvaluationAttributes(moveRecord.fen) : null;
       const playerName = getPlayerDisplayName(moveRecord.playerKey);
 
       return (
@@ -262,7 +284,9 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
         >
           <td>{moveRecord.san}</td>
           <td title={playerName}>{playerName}</td>
-          <td title={evaluation.title}>{evaluation.display}</td>
+          {showEvaluations ? (
+            <td title={evaluation?.title}>{evaluation?.display ?? '-'}</td>
+          ) : null}
         </tr>
       );
     });
@@ -302,6 +326,17 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       zIndex={zIndex}
     >
       <div className="move-history-content">
+        <div className="field-row">
+          <input
+            id="move-history-show-evaluations"
+            type="checkbox"
+            checked={showEvaluations}
+            onChange={event => setShowEvaluations(event.target.checked)}
+          />
+          <label htmlFor="move-history-show-evaluations">
+            {t('move_history.show_eval_checkbox', { defaultValue: 'Show evaluation' })}
+          </label>
+        </div>
         <div
           className="sunken-panel move-history-scrollable"
           ref={scrollableRef}
@@ -313,7 +348,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
               <tr>
                 <th>{t('move_history.move_column')}</th>
                 <th>{t('move_history.player_column')}</th>
-                <th>{t('move_history.eval_column')}</th>
+                {showEvaluations ? <th>{t('move_history.eval_column')}</th> : null}
               </tr>
             </thead>
             <tbody>

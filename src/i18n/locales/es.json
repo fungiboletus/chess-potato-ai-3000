@@ -44,6 +44,7 @@
     "current_fen": "FEN actual:",
     "move_column": "Movimiento",
     "player_column": "Jugador",
+    "show_eval_checkbox": "Mostrar evaluaciones",
     "eval_column": "Eval",
     "eval_offline_hint": "Evaluación no disponible sin conexión.",
     "eval_error_hint": "No se puede evaluar la posición.",

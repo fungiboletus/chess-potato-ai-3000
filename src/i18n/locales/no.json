@@ -51,6 +51,7 @@
     "current_fen": "Nåværende FEN:",
     "move_column": "Trekk",
     "player_column": "Spiller",
+    "show_eval_checkbox": "Vis evalueringer",
     "eval_column": "Eval",
     "eval_offline_hint": "Evaluering ikke tilgjengelig uten nett.",
     "eval_error_hint": "Kan ikke evaluere posisjonen.",

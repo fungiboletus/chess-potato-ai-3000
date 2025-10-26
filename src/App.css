@@ -43,17 +43,25 @@
 
 .move-history-window {
   width: 260px;
-  height: 330px;
+  height: 345px;
   max-width: 90dvw;
   max-height: 90vh;
   overflow-y: auto;
   position: absolute;
 }
 
+.move-history-window .field-row {
+  margin-bottom: 8px;
+}
+
 .move-history-scrollable {
   overflow-y: scroll;
   overflow-x: hidden;
   height: 200px;
+}
+
+.move-history-scrollable:focus-visible {
+  outline: none;
 }
 
 .move-history-content table {
