@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useChessStore from '../stores/chessStore';
 import { DraggableWindow } from './DraggableWindow';
@@ -24,6 +24,9 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   const { t } = useTranslation();
   const availableEngines = useChessStore(state => state.availableEngines);
   const gameState = useChessStore(state => state.gameState);
+  const isPlayerTurn = useChessStore(state => state.isPlayerTurn);
+  const gameStarted = useChessStore(state => state.gameStarted);
+  const undoLastPlayerMove = useChessStore(state => state.undoLastPlayerMove);
   const rewindMode = useChessStore(state => state.rewindMode);
   const enterRewindMode = useChessStore(state => state.enterRewindMode);
   const exitRewindMode = useChessStore(state => state.exitRewindMode);
@@ -196,6 +199,48 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     moveRowRefs.current.length = moveHistory.length;
   }, [moveHistory.length]);
 
+  const [now, setNow] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setNow(Date.now());
+    }, 30_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const lastPlayerMove = useMemo(() => {
+    for (let i = moveHistory.length - 1; i >= 0; i--) {
+      if (moveHistory[i].playerKey === 'human') {
+        return moveHistory[i];
+      }
+    }
+    return null;
+  }, [moveHistory]);
+
+  const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+  const hasRecentPlayerMove = Boolean(
+    lastPlayerMove && now - lastPlayerMove.timestamp <= THIRTY_MINUTES_MS
+  );
+
+  const canUndo = isPlayerTurn &&
+    gameState === 'player_turn' &&
+    gameStarted &&
+    hasRecentPlayerMove &&
+    !rewindMode?.active;
+
+  const undoDisabled = !canUndo;
+
+  const handleUndoLastMove = () => {
+    undoLastPlayerMove();
+  };
+
   useEffect(() => {
     if (!isOpen || moveHistory.length === 0) {
       return;
@@ -362,13 +407,22 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
           <dd>{displayFen}</dd>
         </dl>
 
-        <button
-          className="back-to-game-button"
-          disabled={!rewindMode?.active}
-          onClick={exitRewindMode}
-        >
-          {t('move_history.backToGame')}
-        </button>
+        <div className="move-history-actions">
+          <button
+            className="move-history-action-button undo-move-button"
+            onClick={handleUndoLastMove}
+            disabled={undoDisabled}
+          >
+            {t('move_history.undo', { defaultValue: 'Takeback' })}
+          </button>
+          <button
+            className="move-history-action-button back-to-game-button"
+            disabled={!rewindMode?.active}
+            onClick={exitRewindMode}
+          >
+            {t('move_history.backToGame')}
+          </button>
+        </div>
       </div>
     </DraggableWindow>
   );

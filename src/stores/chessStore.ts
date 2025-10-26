@@ -27,6 +27,8 @@ export interface MoveRecord {
   playerKey: string;  // Engine key or "human"
   fen: string;        // Position after this move
   evaluationToken?: string | null; // Token associated with the position for MCP evaluations
+  timestamp: number;  // Unix timestamp (ms) when the move was recorded
+  continuationToken?: string | null; // Engine continuation token after this move (AI moves only)
 }
 
 // Special offline engine constant
@@ -50,6 +52,9 @@ export interface ChessGameStore {
   // Move tracking
   moveHistory: MoveRecord[];
   positionEvaluations: Record<string, PositionEvaluationState>;
+  lastMoveAt: number | null;
+  engineContinuationToken: string | null;
+  hasUsedTakeback: boolean;
 
   // Rewind mode (for reviewing past positions)
   rewindMode: {
@@ -89,6 +94,7 @@ export interface ChessGameStore {
   initializeGame: (color?: PlayerColor) => void;
   makePlayerMove: (from: string, to: string) => boolean;
   makeAIMove: () => void;
+  undoLastPlayerMove: () => boolean;
   resetGame: () => void;
   resignGame: () => void;
 
@@ -138,6 +144,9 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   gameStarted: false,
   moveHistory: [],
   positionEvaluations: {},
+  lastMoveAt: null,
+  engineContinuationToken: null,
+  hasUsedTakeback: false,
   rewindMode: null,
   gameResult: null,
   showMoveHistory: false,
@@ -392,6 +401,9 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       gameStarted: false,
       moveHistory: [],
       positionEvaluations: {},
+      lastMoveAt: null,
+      engineContinuationToken: null,
+      hasUsedTakeback: false,
       rewindMode: null, // Exit rewind mode on new game
       gameResult: null,
       gameState: 'initializing',
@@ -425,15 +437,19 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     try {
       const move = chess.move({ from, to, promotion: 'q' });
       if (move) {
+        const timestamp = Date.now();
         const moveRecord: MoveRecord = {
           san: move.san,
           playerKey: 'human',
           fen: chess.fen(), // Store FEN after move
-          evaluationToken: null
+          evaluationToken: null,
+          timestamp,
+          continuationToken: null
         };
         set(state => ({
           moveHistory: [...state.moveHistory, moveRecord],
-          gameStarted: true
+          gameStarted: true,
+          lastMoveAt: timestamp
         }));
 
         // Update turn state after move
@@ -546,16 +562,23 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
         if (move) {
           console.log('[AI] Move executed:', move.san);
+          const timestamp = Date.now();
+          const continuationToken = evaluationToken ?? null;
           const moveRecord: MoveRecord = {
             san: move.san,
             playerKey: engineToUse,
             fen: stateAfterMCP.chess.fen(), // Store FEN after move
-            evaluationToken
+            evaluationToken,
+            timestamp,
+            continuationToken
           };
           set(state => ({
             moveHistory: [...state.moveHistory, moveRecord],
-            gameStarted: true
+            gameStarted: true,
+            lastMoveAt: timestamp,
+            engineContinuationToken: continuationToken
           }));
+          mcpClient.setToken(continuationToken);
 
           // Update turn state after AI move
           get().updateTurnState();
@@ -587,12 +610,17 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
               san: move.san,
               playerKey: OFFLINE_ENGINE,
               fen: currentState.chess.fen(), // Store FEN after move
-              evaluationToken: null
+              evaluationToken: null,
+              timestamp: Date.now(),
+              continuationToken: null
             };
             set(state => ({
               moveHistory: [...state.moveHistory, moveRecord],
-              gameStarted: true
+              gameStarted: true,
+              lastMoveAt: moveRecord.timestamp,
+              engineContinuationToken: null
             }));
+            mcpClient.setToken(null);
 
           }
         } catch (fallbackError) {
@@ -609,6 +637,87 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       aiMoveTimeout = null;
       computeMove();
     }, 500);
+  },
+
+  undoLastPlayerMove: () => {
+    const state = get();
+    const { chess, moveHistory, gameState, rewindMode } = state;
+
+    if (moveHistory.length === 0) {
+      console.log('[Store] Cannot undo - history is empty');
+      return false;
+    }
+
+    if (gameState === 'ai_thinking' || gameState === 'game_over') {
+      console.log('[Store] Cannot undo - invalid game state:', gameState);
+      return false;
+    }
+
+    if (rewindMode?.active) {
+      console.log('[Store] Cannot undo while in rewind mode');
+      return false;
+    }
+
+    const lastHumanIndex = (() => {
+      for (let i = moveHistory.length - 1; i >= 0; i--) {
+        if (moveHistory[i].playerKey === 'human') {
+          return i;
+        }
+      }
+      return -1;
+    })();
+
+    if (lastHumanIndex === -1) {
+      console.log('[Store] Cannot undo - no player moves recorded');
+      return false;
+    }
+
+    const movesToUndo = moveHistory.length - lastHumanIndex;
+    let appliedUndos = 0;
+
+    for (let i = 0; i < movesToUndo; i++) {
+      const undone = chess.undo();
+      if (!undone) {
+        console.warn('[Store] Failed to undo move at step', i);
+        break;
+      }
+      appliedUndos++;
+    }
+
+    if (appliedUndos === 0) {
+      console.warn('[Store] Undo aborted - no moves were reverted');
+      return false;
+    }
+
+    const remainingHistory = moveHistory.slice(0, moveHistory.length - appliedUndos);
+
+    const lastRemainingTimestamp = remainingHistory.length > 0
+      ? remainingHistory[remainingHistory.length - 1].timestamp
+      : null;
+
+    const lastEngineMove = [...remainingHistory].reverse().find(record => record.playerKey !== 'human');
+    const continuationToken = lastEngineMove?.continuationToken ?? null;
+    mcpClient.setToken(continuationToken ?? null);
+
+    // If we didn't undo all moves we expected, log to help debugging but continue with consistent state.
+    if (appliedUndos !== movesToUndo) {
+      console.warn('[Store] Expected to undo %d moves but reverted %d', movesToUndo, appliedUndos);
+    }
+
+    set({
+      moveHistory: remainingHistory,
+      rewindMode: null,
+      gameResult: null,
+      gameStarted: remainingHistory.length > 0,
+      lastMoveAt: lastRemainingTimestamp,
+      engineContinuationToken: continuationToken ?? null,
+      hasUsedTakeback: true,
+    });
+
+    get().updateTurnState();
+    get().redrawChessground();
+
+    return true;
   },
 
   // Reset the current game

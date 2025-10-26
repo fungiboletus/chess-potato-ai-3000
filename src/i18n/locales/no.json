@@ -55,6 +55,7 @@
     "eval_column": "Eval",
     "eval_offline_hint": "Evaluering ikke tilgjengelig uten nett.",
     "eval_error_hint": "Kan ikke evaluere posisjonen.",
+    "undo": "Angre trekk",
     "backToGame": "Tilbake til Spillet"
   },
   "player": {

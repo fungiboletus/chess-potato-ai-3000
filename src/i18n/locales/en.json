@@ -55,6 +55,7 @@
     "eval_column": "Eval",
     "eval_offline_hint": "Evaluation unavailable while offline.",
     "eval_error_hint": "Unable to evaluate position.",
+    "undo": "Takeback",
     "backToGame": "Back to Game"
   },
   "player": {

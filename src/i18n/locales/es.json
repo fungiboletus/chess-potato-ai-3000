@@ -48,6 +48,7 @@
     "eval_column": "Eval",
     "eval_offline_hint": "Evaluación no disponible sin conexión.",
     "eval_error_hint": "No se puede evaluar la posición.",
+    "undo": "Deshacer jugada",
     "backToGame": "Volver al Juego"
   },
   "player": {

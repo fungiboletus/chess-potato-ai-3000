@@ -17,6 +17,7 @@ export const ChessGame: React.FC = () => {
     gameResult,
     moveHistory,
     windowStack,
+    hasUsedTakeback,
     setShowMoveHistory,
     setShowHelp,
     setShowLanguageWindow,
@@ -77,7 +78,7 @@ export const ChessGame: React.FC = () => {
         zIndex={getZIndex('engine')}
       />
 
-      <ConfettiParticles show={gameResult?.type === 'win'} />
+      <ConfettiParticles show={gameResult?.type === 'win' && !hasUsedTakeback} />
 
     </div>
   );

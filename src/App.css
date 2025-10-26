@@ -439,10 +439,20 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Back to game button */
-.back-to-game-button {
-  width: 100%;
+/* Move history action buttons */
+.move-history-actions {
+  display: flex;
+  gap: 0;
   margin-top: 8px;
+}
+
+.move-history-action-button {
+  flex: 1 1 0;
+  margin: 0;
+}
+
+.move-history-action-button + .move-history-action-button {
+  margin-left: 0;
 }
 
 /** pixel theme */

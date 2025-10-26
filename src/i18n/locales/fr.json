@@ -55,6 +55,7 @@
     "eval_column": "Éval",
     "eval_offline_hint": "Évaluation indisponible hors ligne.",
     "eval_error_hint": "Impossible d'évaluer la position.",
+    "undo": "Annuler le coup",
     "backToGame": "Retour au Jeu"
   },
   "player": {

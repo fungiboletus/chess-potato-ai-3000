@@ -446,6 +446,18 @@ class MCPClientService {
   }
 
   /**
+   * Explicitly set the continuation token (used when rewinding gameplay state)
+   */
+  setToken(token: string | null): void {
+    if (token) {
+      console.log('[MCP] Restoring continuation token from history');
+    } else if (this.currentToken) {
+      console.log('[MCP] Clearing continuation token');
+    }
+    this.currentToken = token;
+  }
+
+  /**
    * List all available chess engines from the MCP server
    * @returns Array of engine information
    * @throws Error if not connected or listing fails
