@@ -280,8 +280,11 @@ button:disabled {
   max-height: 90dvh;
 }
 
-.engine-content {
+.engine-window .window-body {
+  margin: 0;
   padding: 8px;
+  max-height: 80dvh;
+  overflow-y: auto;
 }
 
 /* Engine list - flexbox layout */
