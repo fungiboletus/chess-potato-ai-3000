@@ -52,6 +52,8 @@
     "move_column": "Coup",
     "player_column": "Joueur",
     "eval_column": "Éval",
+    "eval_offline_hint": "Évaluation indisponible hors ligne.",
+    "eval_error_hint": "Impossible d'évaluer la position.",
     "backToGame": "Retour au Jeu"
   },
   "player": {
@@ -95,6 +97,9 @@
     "loading": "Chargement des adversaires disponibles...",
     "error": "Échec du chargement des adversaires depuis le serveur. Utilisation du mode hors ligne.",
     "none": "Aucun adversaire disponible.",
-    "ok": "OK"
+    "ok": "OK",
+    "locked": "La sélection de l'adversaire est verrouillée.",
+    "locked_tooltip": "{{engine}} (Verrouillé)",
+    "lockedOffline": "Adversaire verrouillé en mode hors ligne. Démarrez une nouvelle partie pour changer."
   }
 }

@@ -35,7 +35,7 @@ This is a **Model Context Protocol (MCP) server** built with FastMCP that provid
 
 ### Chess Engine Integration
 
-- **Engine Wrapper**: [chess_engine.py](chess_engine.py) abstracts UCI engine communication
+- **Engine Wrapper**: [chess_engines.py](chess_engines.py) abstracts UCI engine communication
 - **python-chess**: Handles FEN parsing (`chess.Board`) and UCI engine protocol (`chess.engine`)
 - **Resource Management**: Persistent engine instances stored in module-level dictionary, shut down on exit
 - **Engine Configuration**: Engine profiles loaded from YAML configuration file with Pydantic validation
@@ -51,7 +51,7 @@ This is a **Model Context Protocol (MCP) server** built with FastMCP that provid
 1. Client sends FEN string and optional token via MCP protocol
 2. `compute_next_move()` tool receives FEN and validates token (if present)
 3. Validates FEN transition is legal from previous position
-4. Delegates to `chess_engine.compute_next_move_cached()` with selected engine
+4. Delegates to `chess_engines.compute_next_move_cached()` with selected engine
 5. Gets or creates persistent engine instance via `get_engine()`
 6. Creates `chess.Board` from FEN
 7. Requests move with engine-specific depth/time constraints via `engine.play()`

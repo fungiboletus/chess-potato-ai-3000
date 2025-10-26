@@ -36,6 +36,13 @@ engines:
     time_limit: 10
     options: {}
 
+  - key: random
+    path: /Users/antoinep/fun/llm-chess-bot/chess-potato-random/target/debug/chess-potato-random
+    display_name: Random
+    description: Plays a random legal move each turn.
+    time_limit: 10
+    options: {}
+
   - key: badfish
     path: /Users/antoinep/fun/llm-chess-bot/worstfish/worstfish
     display_name: Badfish

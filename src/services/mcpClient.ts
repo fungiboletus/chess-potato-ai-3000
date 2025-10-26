@@ -19,6 +19,17 @@ export interface EngineInfo {
   default: boolean;
 }
 
+export interface NextMoveResult {
+  move: string;
+  fen: string | null;
+  token: string | null;
+}
+
+export interface PositionEvaluation {
+  expectation: number;
+  score: number;
+}
+
 const NextMoveResultSchema = CallToolResultSchema.extend({
   structuredContent: z.object({
     move: z.string(),
@@ -34,6 +45,15 @@ const ListEnginesResultSchema = CallToolResultSchema.extend({
       display_name: z.string(),
       description: z.string(),
       default: z.boolean()
+    }))
+  }).passthrough().optional()
+});
+
+const EvaluateFensResultSchema = CallToolResultSchema.extend({
+  structuredContent: z.object({
+    evaluations: z.record(z.object({
+      expectation: z.number(),
+      score: z.number()
     }))
   }).passthrough().optional()
 });
@@ -268,7 +288,7 @@ class MCPClientService {
    * @returns The best move in UCI format (e.g., "e2e4")
    * @throws Error if not connected or move computation fails after all retries
    */
-  async computeNextMove(fen: string, engineName: string): Promise<string> {
+  async computeNextMove(fen: string, engineName: string): Promise<NextMoveResult> {
     return this.retryOperation(async () => {
       if (this.connectionState !== 'connected') {
         console.log('[MCP] Establishing connection before computing move...');
@@ -300,19 +320,25 @@ class MCPClientService {
         }
 
         const uciMove = content.move;
+        const resultingFen = content.fen ?? null;
+        const token = content.token ?? null;
 
         if (!uciMove || uciMove.length < 4) {
           throw new Error('Invalid UCI move format received');
         }
 
         // Store the token for the next move
-        if (content.token) {
-          this.currentToken = content.token;
+        if (token) {
+          this.currentToken = token;
           console.log('[MCP] Stored continuation token for next move');
         }
 
         console.log('[MCP] Received move:', uciMove);
-        return uciMove;
+        return {
+          move: uciMove,
+          fen: resultingFen,
+          token
+        };
 
       } catch (error) {
         const errorMsg = this.getErrorMessage(error);
@@ -332,6 +358,63 @@ class MCPClientService {
    */
   getConnectionState(): ConnectionState {
     return this.connectionState;
+  }
+
+  /**
+   * Evaluate a batch of positions and return their scores.
+   * @param fens - Unique board positions in FEN notation.
+   * @param tokens - Optional security tokens tied to each FEN.
+   */
+  async evaluateFens(
+    fens: string[],
+    tokens?: (string | null)[]
+  ): Promise<Record<string, PositionEvaluation>> {
+    if (fens.length === 0) {
+      return {};
+    }
+
+    return this.retryOperation(async () => {
+      if (this.connectionState !== 'connected') {
+        console.log('[MCP] Establishing connection before evaluating positions...');
+      }
+
+      const client = await this.ensureClient();
+
+      // Ensure token list matches requested FENs
+      const tokenList = fens.map((_, index) => {
+        const token = tokens?.[index] ?? null;
+        return token ?? '';
+      });
+
+      try {
+        console.log(`[MCP] Evaluating ${fens.length} position(s)...`);
+        const result = await client.callTool({
+          name: 'evaluate_fens',
+          arguments: {
+            fens,
+            tokens: tokenList
+          }
+        }, EvaluateFensResultSchema);
+
+        const content = result.structuredContent as typeof EvaluateFensResultSchema['_output']['structuredContent'];
+
+        if (!content || !content.evaluations) {
+          throw new Error('Empty response from MCP server');
+        }
+
+        console.log('[MCP] Received evaluations for', Object.keys(content.evaluations).length, 'position(s)');
+        return content.evaluations;
+      } catch (error) {
+        const errorMsg = this.getErrorMessage(error);
+        console.error('[MCP] Error evaluating positions:', error);
+
+        if (this.isConnectionIssue(errorMsg)) {
+          this.handleConnectionDrop('evaluate_fens', error);
+        }
+
+        throw new Error(`Failed to evaluate positions: ${errorMsg}`);
+      }
+    }, 'evaluate_fens');
   }
 
   /**

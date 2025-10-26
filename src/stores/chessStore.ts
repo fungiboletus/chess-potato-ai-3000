@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Chess } from 'chess.js';
 import type { Api } from 'chessground/api';
-import { mcpClient, type EngineInfo } from '../services/mcpClient';
+import { mcpClient, type EngineInfo, type PositionEvaluation } from '../services/mcpClient';
 import { computeRandomMove } from '../utils/offlineEngine';
 
 // Game states following a state machine pattern
@@ -25,12 +25,20 @@ export interface GameResult {
 export interface MoveRecord {
   san: string;        // Standard Algebraic Notation (e.g., "e4")
   playerKey: string;  // Engine key or "human"
-  eval: string;       // Evaluation (hardcoded to "-" for now)
   fen: string;        // Position after this move
+  evaluationToken?: string | null; // Token associated with the position for MCP evaluations
 }
 
 // Special offline engine constant
 export const OFFLINE_ENGINE = 'offline-random';
+
+export type PositionEvaluationStatus = 'loading' | 'success' | 'error' | 'offline';
+
+export interface PositionEvaluationState {
+  status: PositionEvaluationStatus;
+  data?: PositionEvaluation;
+  error?: string;
+}
 
 export interface ChessGameStore {
   // Core game state
@@ -41,6 +49,7 @@ export interface ChessGameStore {
 
   // Move tracking
   moveHistory: MoveRecord[];
+  positionEvaluations: Record<string, PositionEvaluationState>;
 
   // Rewind mode (for reviewing past positions)
   rewindMode: {
@@ -65,6 +74,7 @@ export interface ChessGameStore {
   selectedEngine: string | null;
   availableEngines: EngineInfo[];
   engineFetchState: EngineFetchState;
+  engineLocked: boolean;
 
   // Computed state
   isPlayerTurn: boolean;
@@ -96,6 +106,10 @@ export interface ChessGameStore {
   // Engine actions
   fetchEngines: () => Promise<void>;
   setSelectedEngine: (engineName: string) => void;
+  setEngineLocked: (locked: boolean) => void;
+
+  // Evaluation actions
+  fetchPositionEvaluations: (fens: string[], tokens?: (string | null)[]) => Promise<void>;
 
   // Chessground integration
   setChessgroundApi: (api: Api | null) => void;
@@ -118,6 +132,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   playerColor: 'white',
   gameStarted: false,
   moveHistory: [],
+  positionEvaluations: {},
   rewindMode: null,
   gameResult: null,
   showMoveHistory: false,
@@ -132,6 +147,88 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   selectedEngine: null,
   availableEngines: [],
   engineFetchState: 'idle',
+  engineLocked: false,
+
+  fetchPositionEvaluations: async (fens: string[], tokens?: (string | null)[]) => {
+    if (fens.length === 0) {
+      return;
+    }
+
+    const uniquePositions = new Map<string, string | null>();
+    fens.forEach((fen, index) => {
+      if (!uniquePositions.has(fen)) {
+        uniquePositions.set(fen, tokens?.[index] ?? null);
+      }
+    });
+
+    const stateSnapshot = get();
+    const isOnline = typeof navigator === 'undefined' ? true : navigator.onLine;
+
+    const fensToFetch: string[] = [];
+    const tokensToFetch: (string | null)[] = [];
+
+    uniquePositions.forEach((token, fen) => {
+      const existing = stateSnapshot.positionEvaluations[fen];
+      const shouldRetryOffline = existing?.status === 'offline' && isOnline;
+
+      if (!existing || existing.status === 'error' || shouldRetryOffline) {
+        if (existing?.status === 'loading' || existing?.status === 'success') {
+          return;
+        }
+        fensToFetch.push(fen);
+        tokensToFetch.push(token ?? null);
+      }
+    });
+
+    if (fensToFetch.length === 0) {
+      return;
+    }
+
+    set(current => {
+      const updated = { ...current.positionEvaluations };
+      fensToFetch.forEach(fen => {
+        updated[fen] = { status: 'loading' };
+      });
+      return { positionEvaluations: updated };
+    });
+
+    try {
+      const evaluations = await mcpClient.evaluateFens(fensToFetch, tokensToFetch);
+
+      set(current => {
+        const updated = { ...current.positionEvaluations };
+        fensToFetch.forEach(fen => {
+          const evaluation = evaluations[fen];
+          if (evaluation) {
+            updated[fen] = { status: 'success', data: evaluation };
+          } else {
+            updated[fen] = {
+              status: 'error',
+              error: 'No evaluation returned for position'
+            };
+          }
+        });
+        return { positionEvaluations: updated };
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const normalized = message.toLowerCase();
+      const connectionIssue = normalized.includes('network') ||
+        normalized.includes('connect') ||
+        normalized.includes('offline') ||
+        normalized.includes('failed to fetch');
+      const offline = (typeof navigator !== 'undefined' && !navigator.onLine) || connectionIssue;
+      const status: PositionEvaluationStatus = offline ? 'offline' : 'error';
+
+      set(current => {
+        const updated = { ...current.positionEvaluations };
+        fensToFetch.forEach(fen => {
+          updated[fen] = { status, error: message };
+        });
+        return { positionEvaluations: updated };
+      });
+    }
+  },
 
   // Calculate legal moves for the current position
   calculateLegalMoves: () => {
@@ -246,16 +343,23 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     const newColor = color || (Math.random() < 0.5 ? 'white' : 'black');
     const chess = new Chess();
 
+    // Check if engine should remain locked due to URL parameter
+    // (offline engine lock should be reset, but URL lock should persist)
+    const params = new URLSearchParams(window.location.search);
+    const shouldLockByUrl = params.get('lockEngine') === 'true';
+
     set({
       chess,
       playerColor: newColor,
       gameStarted: false,
       moveHistory: [],
+      positionEvaluations: {},
       rewindMode: null, // Exit rewind mode on new game
       gameResult: null,
       gameState: 'initializing',
       isPlayerTurn: false,
       legalMoves: new Map(),
+      engineLocked: shouldLockByUrl, // Reset offline lock, but preserve URL lock
     });
 
     // Update turn state after initialization
@@ -286,13 +390,18 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         const moveRecord: MoveRecord = {
           san: move.san,
           playerKey: 'human',
-          eval: '-',
-          fen: chess.fen() // Store FEN after move
+          fen: chess.fen(), // Store FEN after move
+          evaluationToken: null
         };
         set(state => ({
           moveHistory: [...state.moveHistory, moveRecord],
           gameStarted: true
         }));
+
+        void get().fetchPositionEvaluations(
+          [moveRecord.fen],
+          [moveRecord.evaluationToken ?? null]
+        );
 
         // Update turn state after move
         get().updateTurnState();
@@ -353,19 +462,33 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         // Determine which engine to use
         const engineToUse = currentState.selectedEngine || OFFLINE_ENGINE;
         let uciMove: string;
+        let evaluationToken: string | null = null;
 
         // If using offline engine or selectedEngine is the offline engine, use random move
         if (engineToUse === OFFLINE_ENGINE) {
           console.log('[AI] Using offline random engine');
           uciMove = computeRandomMove(currentState.chess);
+          // Lock engine selection once offline engine is used
+          if (!currentState.engineLocked) {
+            console.log('[AI] Locking engine selection - offline engine in use');
+            set({ engineLocked: true });
+          }
         } else {
           // Call MCP service to get the best move
           try {
-            uciMove = await mcpClient.computeNextMove(fen, engineToUse);
+            const moveResult = await mcpClient.computeNextMove(fen, engineToUse);
+            uciMove = moveResult.move;
+            evaluationToken = moveResult.token ?? null;
             console.log('[AI] MCP returned move:', uciMove);
           } catch (mcpError) {
             console.warn('[AI] MCP failed, falling back to offline engine:', mcpError);
             uciMove = computeRandomMove(currentState.chess);
+            evaluationToken = null;
+            // Lock engine selection when falling back to offline engine
+            if (!currentState.engineLocked) {
+              console.log('[AI] Locking engine selection - fallback to offline engine');
+              set({ engineLocked: true });
+            }
           }
         }
 
@@ -393,13 +516,18 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
           const moveRecord: MoveRecord = {
             san: move.san,
             playerKey: engineToUse,
-            eval: '-',
-            fen: stateAfterMCP.chess.fen() // Store FEN after move
+            fen: stateAfterMCP.chess.fen(), // Store FEN after move
+            evaluationToken
           };
           set(state => ({
             moveHistory: [...state.moveHistory, moveRecord],
             gameStarted: true
           }));
+
+          void get().fetchPositionEvaluations(
+            [moveRecord.fen],
+            [moveRecord.evaluationToken ?? null]
+          );
 
           // Update turn state after AI move
           get().updateTurnState();
@@ -430,13 +558,18 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
             const moveRecord: MoveRecord = {
               san: move.san,
               playerKey: OFFLINE_ENGINE,
-              eval: '-',
-              fen: currentState.chess.fen() // Store FEN after move
+              fen: currentState.chess.fen(), // Store FEN after move
+              evaluationToken: null
             };
             set(state => ({
               moveHistory: [...state.moveHistory, moveRecord],
               gameStarted: true
             }));
+
+            void get().fetchPositionEvaluations(
+              [moveRecord.fen],
+              [moveRecord.evaluationToken ?? null]
+            );
           }
         } catch (fallbackError) {
           console.error('[AI] Failed to compute fallback move:', fallbackError);
@@ -543,11 +676,11 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   fetchEngines: async () => {
     set({ engineFetchState: 'loading' });
 
-    // Define offline engine info - always available
+    // Define offline engine info - only used as fallback
     const offlineEngineInfo: EngineInfo = {
       name: OFFLINE_ENGINE,
       display_name: 'Offline (Random)',
-      description: 'A simple offline engine that plays random moves. Always available.',
+      description: 'A simple offline engine that plays random moves. Fallback when server is unavailable.',
       default: false
     };
 
@@ -555,10 +688,12 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       console.log('[Store] Fetching available engines...');
       const engines = await mcpClient.listEngines();
 
-      // Always add the offline engine to the list
-      const allEngines = [...engines, offlineEngineInfo];
+      // Only use online engines when fetch succeeds
+      if (engines.length === 0) {
+        throw new Error('No engines returned from server');
+      }
 
-      // Find the default engine (from online engines only)
+      // Find the default engine
       const defaultEngine = engines.find(e => e.default);
 
       // Try to get persisted engine from localStorage
@@ -567,7 +702,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       // Determine which engine to use
       let engineToSelect: string;
 
-      if (persistedEngine && allEngines.some(e => e.name === persistedEngine)) {
+      if (persistedEngine && engines.some(e => e.name === persistedEngine)) {
         // Use persisted engine if it exists in the list
         engineToSelect = persistedEngine;
         console.log('[Store] Using persisted engine:', engineToSelect);
@@ -575,19 +710,15 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         // Use default engine from server
         engineToSelect = defaultEngine.name;
         console.log('[Store] Using default engine:', engineToSelect);
-      } else if (engines.length > 0) {
-        // Fallback to first engine if no default specified
+      } else {
+        // Fallback to first engine
         engineToSelect = engines[0].name;
         console.log('[Store] Using first available engine:', engineToSelect);
-      } else {
-        // No online engines available - use offline
-        engineToSelect = OFFLINE_ENGINE;
-        console.log('[Store] No online engines available, using offline engine');
       }
 
-      // Update state with all engines (online + offline)
+      // Update state with online engines only
       set({
-        availableEngines: allEngines,
+        availableEngines: engines,
         selectedEngine: engineToSelect,
         engineFetchState: 'success'
       });
@@ -595,11 +726,11 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       // Persist the selection
       localStorage.setItem('selected-engine', engineToSelect);
 
-      console.log(`[Store] Successfully loaded ${allEngines.length} engines (${engines.length} online + offline)`);
+      console.log(`[Store] Successfully loaded ${engines.length} online engines`);
     } catch (error) {
       console.error('[Store] Failed to fetch engines:', error);
 
-      // Fall back to offline engine only
+      // Fall back to offline engine only on failure
       set({
         availableEngines: [offlineEngineInfo],
         selectedEngine: OFFLINE_ENGINE,
@@ -607,13 +738,23 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       });
 
       localStorage.setItem('selected-engine', OFFLINE_ENGINE);
+      console.log('[Store] Using offline engine as fallback');
     }
   },
 
   setSelectedEngine: (engineName: string) => {
+    const { engineLocked } = get();
+    if (engineLocked) {
+      console.log('[Store] Cannot switch engine - engine is locked');
+      return;
+    }
     console.log('[Store] Switching to engine:', engineName);
     set({ selectedEngine: engineName });
     localStorage.setItem('selected-engine', engineName);
+  },
+
+  setEngineLocked: (locked: boolean) => {
+    set({ engineLocked: locked });
   },
 
   getSelectedEngineDisplayName: () => {

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useChessStore from '../stores/chessStore';
 import { DraggableWindow } from './DraggableWindow';
-import type { MoveRecord } from '../stores/chessStore';
+import type { MoveRecord, PositionEvaluationState } from '../stores/chessStore';
 
 interface MoveHistoryWindowProps {
   isOpen: boolean;
@@ -27,6 +27,8 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   const rewindMode = useChessStore(state => state.rewindMode);
   const enterRewindMode = useChessStore(state => state.enterRewindMode);
   const exitRewindMode = useChessStore(state => state.exitRewindMode);
+  const positionEvaluations = useChessStore(state => state.positionEvaluations);
+  const fetchPositionEvaluations = useChessStore(state => state.fetchPositionEvaluations);
   const scrollableRef = useRef<HTMLDivElement>(null);
   const moveRowRefs = useRef<(HTMLTableRowElement | null)[]>([]);
 
@@ -52,6 +54,69 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     // Look up engine display name
     const engine = availableEngines.find(e => e.name === playerKey);
     return engine?.display_name || playerKey;
+  };
+
+  const formatEvaluation = (evaluation: { score: number; expectation: number } | undefined): string => {
+    if (!evaluation) {
+      return '-';
+    }
+
+    const { score, expectation } = evaluation;
+
+    if (!Number.isFinite(score)) {
+      return '-';
+    }
+
+    if (Math.abs(score) >= 9800) {
+      const mateDistance = Math.max(0, 10000 - Math.abs(score));
+      const mateMoves = Math.ceil(mateDistance / 2);
+      const prefix = score > 0 ? '#' : '-#';
+      return mateMoves > 0 ? `${prefix}${mateMoves}` : prefix;
+    }
+
+    const pawnScore = score / 100;
+    const roundedScore = Math.round(pawnScore * 100) / 100;
+    const formattedScore = roundedScore === 0
+      ? '0.00'
+      : roundedScore > 0
+        ? `+${roundedScore.toFixed(2)}`
+        : roundedScore.toFixed(2);
+
+    const expectationPercent = Math.round(Math.min(Math.max(expectation * 100, 0), 100));
+    //return `${formattedScore} (${expectationPercent}%)`;
+    return `${expectationPercent}% (${formattedScore})`;
+  };
+
+  const getEvaluationAttributes = (fen: string): { display: string; title?: string } => {
+    const evaluationState: PositionEvaluationState | undefined = positionEvaluations[fen];
+
+    if (!evaluationState) {
+      return { display: '-' };
+    }
+
+    if (evaluationState.status === 'loading') {
+      return { display: '-' };
+    }
+
+    if (evaluationState.status === 'success') {
+      return { display: formatEvaluation(evaluationState.data) };
+    }
+
+    if (evaluationState.status === 'offline') {
+      return {
+        display: 'N/A',
+        title: evaluationState.error || t('move_history.eval_offline_hint', { defaultValue: 'Evaluation unavailable while offline.' })
+      };
+    }
+
+    if (evaluationState.status === 'error') {
+      return {
+        display: 'Error',
+        title: evaluationState.error || t('move_history.eval_error_hint', { defaultValue: 'Unable to evaluate position.' })
+      };
+    }
+
+    return { display: '-' };
   };
 
   const isEmpty = moveHistory.length === 0;
@@ -113,6 +178,34 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     moveRowRefs.current.length = moveHistory.length;
   }, [moveHistory.length]);
 
+  useEffect(() => {
+    if (moveHistory.length === 0) {
+      return;
+    }
+
+    const fens = moveHistory.map(move => move.fen);
+    const tokens = moveHistory.map(move => move.evaluationToken ?? null);
+    void fetchPositionEvaluations(fens, tokens);
+  }, [moveHistory, fetchPositionEvaluations]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handleOnline = () => {
+      if (moveHistory.length === 0) {
+        return;
+      }
+      const fens = moveHistory.map(move => move.fen);
+      const tokens = moveHistory.map(move => move.evaluationToken ?? null);
+      void fetchPositionEvaluations(fens, tokens);
+    };
+
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [moveHistory, fetchPositionEvaluations]);
+
   // Keep the highlighted row within the visible scroll region without forcing unwanted jumps
   useEffect(() => {
     if (!scrollableRef.current || highlightedIndex < 0) {
@@ -152,6 +245,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     return moveHistory.map((moveRecord, index) => {
       const isHighlighted = index === highlightedIndex;
       const className = isHighlighted ? 'highlighted' : '';
+      const evaluation = getEvaluationAttributes(moveRecord.fen);
 
       return (
         <tr
@@ -165,7 +259,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
         >
           <td>{moveRecord.san}</td>
           <td>{getPlayerDisplayName(moveRecord.playerKey)}</td>
-          <td>{moveRecord.eval}</td>
+          <td title={evaluation.title}>{evaluation.display}</td>
         </tr>
       );
     });
@@ -178,7 +272,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
     const innerWidth = window.innerWidth;
     const innerHeight = window.innerHeight;
-    const leftEdge = Math.max(0, innerWidth - WINDOW_WIDTH - 100);
+    const leftEdge = Math.max(0, innerWidth - WINDOW_WIDTH + 20);
     const topEdge = Math.max(0, (innerHeight - 300) / 2);
 
     return {

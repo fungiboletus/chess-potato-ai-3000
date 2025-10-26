@@ -18,6 +18,7 @@ export const ChessGameWindow: React.FC = () => {
     gameStarted,
     selectedEngine,
     engineFetchState,
+    engineLocked,
     rewindMode,
     resetGame,
     resignGame,
@@ -63,6 +64,7 @@ export const ChessGameWindow: React.FC = () => {
               isAIThinking={isAIThinking}
               engineFetchState={engineFetchState}
               selectedEngine={selectedEngine}
+              engineLocked={engineLocked}
               onClick={() => setShowEngineWindow(true)}
             />
             <div className="progress-container">

@@ -52,6 +52,8 @@
     "move_column": "Move",
     "player_column": "Player",
     "eval_column": "Eval",
+    "eval_offline_hint": "Evaluation unavailable while offline.",
+    "eval_error_hint": "Unable to evaluate position.",
     "backToGame": "Back to Game"
   },
   "player": {
@@ -95,6 +97,9 @@
     "loading": "Loading available opponents...",
     "error": "Failed to load opponents from server. Using offline mode.",
     "none": "No opponents available.",
-    "ok": "OK"
+    "ok": "OK",
+    "locked": "Engine selection is locked.",
+    "locked_tooltip": "{{engine}} (Locked)",
+    "lockedOffline": "Engine locked to offline mode. Start a new game to change engine."
   }
 }

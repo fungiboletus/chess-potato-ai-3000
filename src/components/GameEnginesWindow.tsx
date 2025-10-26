@@ -37,7 +37,12 @@ export const GameEnginesWindow: React.FC<GameEnginesWindowProps> = ({
   zIndex,
 }) => {
   const { t } = useTranslation();
-  const { selectedEngine, availableEngines, engineFetchState, setSelectedEngine } = useChessStore();
+  const { selectedEngine, availableEngines, engineFetchState, engineLocked, setSelectedEngine } = useChessStore();
+
+  // Determine the lock reason
+  const params = new URLSearchParams(window.location.search);
+  const isLockedByUrl = params.get('lockEngine') === 'true';
+  const isLockedByOffline = engineLocked && !isLockedByUrl && selectedEngine === OFFLINE_ENGINE;
 
   const handleEngineChange = (engineName: string) => {
     setSelectedEngine(engineName);
@@ -64,6 +69,17 @@ export const GameEnginesWindow: React.FC<GameEnginesWindowProps> = ({
       zIndex={zIndex}
     >
       <div className="engine-content">
+        {engineLocked && isLockedByUrl && (
+          <div className="engine-locked">
+            <p>{t('engine.locked', 'Engine selection is locked by URL parameter.')}</p>
+          </div>
+        )}
+        {isLockedByOffline && (
+          <div className="engine-locked">
+            <p>{t('engine.lockedOffline', 'Engine locked to offline mode. Start a new game to change engine.')}</p>
+          </div>
+        )}
+
         {engineFetchState === 'loading' && (
           <div className="engine-loading">
             <p>{t('engine.loading', 'Loading available engines...')}</p>
@@ -90,6 +106,7 @@ export const GameEnginesWindow: React.FC<GameEnginesWindowProps> = ({
                       value={engine.name}
                       checked={selectedEngine === engine.name}
                       onChange={() => handleEngineChange(engine.name)}
+                      disabled={engineLocked}
                     />
                     <label htmlFor={`engine-${engine.name}`}>
                       <img

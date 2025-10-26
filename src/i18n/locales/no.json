@@ -52,6 +52,8 @@
     "move_column": "Trekk",
     "player_column": "Spiller",
     "eval_column": "Eval",
+    "eval_offline_hint": "Evaluering ikke tilgjengelig uten nett.",
+    "eval_error_hint": "Kan ikke evaluere posisjonen.",
     "backToGame": "Tilbake til Spillet"
   },
   "player": {
@@ -95,6 +97,9 @@
     "loading": "Laster tilgjengelige motstandere...",
     "error": "Kunne ikke laste motstandere fra serveren. Bruker frakoblet modus.",
     "none": "Ingen motstandere tilgjengelig.",
-    "ok": "OK"
+    "ok": "OK",
+    "locked": "Motstandervalg er låst.",
+    "locked_tooltip": "{{engine}} (Låst)",
+    "lockedOffline": "Motstander låst i frakoblet modus. Start et nytt spill for å bytte."
   }
 }

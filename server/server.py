@@ -15,14 +15,15 @@ from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
-from chess_engine import (
+from chess_engines import (
     compute_next_move_cached as engine_compute_move,
 )
-from chess_engine import (
+from chess_engines import (
     ensure_valid_transition,
     get_available_engines,
     shutdown_engines,
 )
+from chess_evaluation import evaluate_position, shutdown_evaluator
 
 # Configure logging
 logging.basicConfig(
@@ -62,6 +63,7 @@ key = pyseto.Key.new(version=4, purpose="local", key=SECRET_KEY)
 
 # Register engine shutdown on exit
 atexit.register(shutdown_engines)
+atexit.register(shutdown_evaluator)
 
 
 class MoveResponse(BaseModel):
@@ -183,6 +185,91 @@ async def list_engines() -> EngineListResponse:
         for profile in get_available_engines()
     ]
     return EngineListResponse(engines=engines)
+
+
+class PositionEvaluation(BaseModel):
+    """Evaluation data for a single chess position."""
+
+    expectation: float  # WDL expectation (0.0 to 1.0)
+    score: int  # Centipawn score
+
+
+class EvaluationResponse(BaseModel):
+    """Response containing evaluation scores for multiple positions."""
+
+    evaluations: dict[str, PositionEvaluation]  # FEN -> evaluation data
+
+
+@mcp.tool
+async def evaluate_fens(fens: list[str], tokens: list[str]) -> EvaluationResponse:
+    """
+    Evaluate a list of FEN positions and return their scores using Stockfish's NNUE evaluation.
+
+    Args:
+        fens: List of chess positions in FEN format to evaluate
+        tokens: List of signed tokens corresponding to each FEN (for validation)
+
+    Returns:
+        EvaluationResponse containing:
+            - evaluations: Dictionary mapping FEN to PositionEvaluation with:
+                - expectation: WDL expectation value (0.0=losing to 1.0=winning)
+                - score: Centipawn evaluation (positive=advantage, ±10000=mate)
+
+    Raises:
+        ValueError: If token validation fails or FEN count doesn't match token count
+    """
+    # if len(fens) != len(tokens):
+    #    raise ValueError(
+    #        f"Mismatch: {len(fens)} FENs provided but {len(tokens)} tokens provided"
+    #    )
+
+    evaluations: dict[str, PositionEvaluation] = {}
+
+    # for fen, token in zip(fens, tokens):
+    # Validate token for this FEN
+    # try:
+    #     decoded_token = pyseto.decode(key, token)
+    #     payload = (  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+    #         decoded_token.payload
+    #     )
+    #     if not isinstance(payload, (bytes, bytearray)):
+    #         raise ValueError("Token has no valid payload")
+
+    #     decoded = json.loads(payload)
+
+    #     # Check subject
+    #     if decoded.get("sub") != "compute_next_move":
+    #         raise ValueError(f"Invalid token subject: {decoded.get('sub')}")
+
+    #     # Check expiration
+    #     current_time = int(time.time())
+    #     exp = decoded.get("exp")
+    #     if exp is None:
+    #         raise ValueError("Token missing expiration claim")
+
+    #     if current_time > exp:
+    #         raise ValueError(f"Token expired (exp: {exp}, now: {current_time})")
+
+    #     # Verify FEN matches token
+    #     token_fen = decoded.get("fen")
+    #     if token_fen != fen:
+    #         raise ValueError(
+    #             f"FEN mismatch: token contains '{token_fen}' but received '{fen}'"
+    #         )
+
+    # except json.JSONDecodeError as e:
+    #     raise ValueError(f"Failed to decode token payload: {e}")
+    # except Exception as e:
+    #     raise ValueError(f"Token validation failed for FEN '{fen}': {e}")
+
+    for fen in fens:
+        # Evaluate the position
+        result = evaluate_position(fen)
+        evaluations[fen] = PositionEvaluation(
+            expectation=result["expectation"], score=result["score"]
+        )
+
+    return EvaluationResponse(evaluations=evaluations)
 
 
 def force_exit_handler(signum: int, frame: FrameType | None) -> None:

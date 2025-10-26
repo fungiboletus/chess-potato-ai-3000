@@ -45,6 +45,8 @@
     "move_column": "Movimiento",
     "player_column": "Jugador",
     "eval_column": "Eval",
+    "eval_offline_hint": "Evaluación no disponible sin conexión.",
+    "eval_error_hint": "No se puede evaluar la posición.",
     "backToGame": "Volver al Juego"
   },
   "player": {
@@ -88,6 +90,9 @@
     "loading": "Cargando adversarios disponibles...",
     "error": "Error al cargar adversarios desde el servidor. Usando modo sin conexión.",
     "none": "No hay adversarios disponibles.",
-    "ok": "Aceptar"
+    "ok": "Aceptar",
+    "locked": "La selección del adversario está bloqueada.",
+    "locked_tooltip": "{{engine}} (Bloqueado)",
+    "lockedOffline": "Adversario bloqueado en modo sin conexión. Inicia una nueva partida para cambiar."
   }
 }

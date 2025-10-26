@@ -67,7 +67,7 @@
 }
 
 .move-history-content table th:last-child {
-  width: 50px;
+  width: 80px;
   /* Let other columns share remaining space */
 }
 
