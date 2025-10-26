@@ -7,6 +7,8 @@ interface LanguageWindowProps {
   isOpen: boolean;
   onClose: () => void;
   onMouseDown?: () => void;
+  windowId?: string;
+  zIndex?: number;
 }
 
 const LANGUAGES = [
@@ -20,6 +22,8 @@ export const LanguageWindow: React.FC<LanguageWindowProps> = ({
   isOpen,
   onClose,
   onMouseDown,
+  windowId,
+  zIndex,
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -44,6 +48,8 @@ export const LanguageWindow: React.FC<LanguageWindowProps> = ({
       onClose={onClose}
       onMouseDown={onMouseDown}
       defaultPosition={getCenterPosition()}
+      windowId={windowId}
+      zIndex={zIndex}
     >
       <div className="language-content">
         <fieldset>
@@ -65,6 +71,12 @@ export const LanguageWindow: React.FC<LanguageWindowProps> = ({
             </div>
           ))}
         </fieldset>
+
+        <div className="window-actions">
+          <button onClick={onClose}>
+            {t('language.ok', 'OK')}
+          </button>
+        </div>
       </div>
     </DraggableWindow>
   );

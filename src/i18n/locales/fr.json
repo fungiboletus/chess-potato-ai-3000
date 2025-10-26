@@ -51,7 +51,8 @@
     "current_fen": "FEN actuel :",
     "move_column": "Coup",
     "player_column": "Joueur",
-    "eval_column": "Éval"
+    "eval_column": "Éval",
+    "backToGame": "Retour au Jeu"
   },
   "player": {
     "human": "Humain"
@@ -85,14 +86,15 @@
     "checkmate_you_win": "Échec et mat ! Vous gagnez !",
     "checkmate_ai_wins": "Échec et mat ! L'IA gagne !",
     "draw": "La partie est nulle !",
-    "you_resigned": "Vous avez abandonné !"
+    "you_resigned": "Vous avez abandonné !",
+    "review_mode": "Mode Révision"
   },
   "engine": {
-    "title": "Sélection du Moteur",
+    "title": "Choix de l'Adversaire",
     "select": "Choisissez votre adversaire",
-    "loading": "Chargement des moteurs disponibles...",
-    "error": "Échec du chargement des moteurs depuis le serveur. Utilisation du mode hors ligne.",
-    "none": "Aucun moteur disponible.",
+    "loading": "Chargement des adversaires disponibles...",
+    "error": "Échec du chargement des adversaires depuis le serveur. Utilisation du mode hors ligne.",
+    "none": "Aucun adversaire disponible.",
     "ok": "OK"
   }
 }

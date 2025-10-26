@@ -26,6 +26,7 @@ export interface MoveRecord {
   san: string;        // Standard Algebraic Notation (e.g., "e4")
   playerKey: string;  // Engine key or "human"
   eval: string;       // Evaluation (hardcoded to "-" for now)
+  fen: string;        // Position after this move
 }
 
 // Special offline engine constant
@@ -41,15 +42,24 @@ export interface ChessGameStore {
   // Move tracking
   moveHistory: MoveRecord[];
 
+  // Rewind mode (for reviewing past positions)
+  rewindMode: {
+    active: boolean;
+    moveIndex: number;
+    fen: string;
+  } | null;
+
   // Game result
   gameResult: GameResult | null;
 
   // UI state
   showMoveHistory: boolean;
   showHelp: boolean;
-  showHelpLast: boolean; // Whether help or move history was last shown
   showLanguageWindow: boolean;
   showEngineWindow: boolean;
+
+  // Window z-index management
+  windowStack: string[]; // Window IDs in order, last = top
 
   // Engine state
   selectedEngine: string | null;
@@ -71,13 +81,17 @@ export interface ChessGameStore {
   resetGame: () => void;
   resignGame: () => void;
 
+  // Rewind mode actions
+  enterRewindMode: (moveIndex: number) => void;
+  exitRewindMode: () => void;
+
   // UI actions
   setShowMoveHistory: (show: boolean) => void;
   setShowHelp: (show: boolean) => void;
-  setShowHelpLast: (show: boolean) => void;
   setShowLanguageWindow: (show: boolean) => void;
   setShowEngineWindow: (show: boolean) => void;
   closeGameResult: () => void;
+  bringWindowToFront: (windowId: string) => void;
 
   // Engine actions
   fetchEngines: () => Promise<void>;
@@ -104,12 +118,13 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   playerColor: 'white',
   gameStarted: false,
   moveHistory: [],
+  rewindMode: null,
   gameResult: null,
   showMoveHistory: false,
   showHelp: false,
-  showHelpLast: false,
   showLanguageWindow: false,
   showEngineWindow: false,
+  windowStack: [],
   isPlayerTurn: false,
   legalMoves: new Map(),
   chessgroundApi: null,
@@ -182,6 +197,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         isPlayerTurn: false,
         legalMoves: new Map()
       });
+      // Bring game result window to front
+      get().bringWindowToFront('gameResult');
       return;
     }
 
@@ -234,6 +251,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       playerColor: newColor,
       gameStarted: false,
       moveHistory: [],
+      rewindMode: null, // Exit rewind mode on new game
       gameResult: null,
       gameState: 'initializing',
       isPlayerTurn: false,
@@ -248,7 +266,13 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
   // Make a player move
   makePlayerMove: (from: string, to: string) => {
-    const { chess, gameState, isPlayerTurn } = get();
+    const { chess, gameState, isPlayerTurn, rewindMode } = get();
+
+    // Prevent moves when in rewind mode
+    if (rewindMode?.active) {
+      console.log('Cannot make moves in rewind mode');
+      return false;
+    }
 
     // Validate that it's the player's turn
     if (gameState !== 'player_turn' || !isPlayerTurn) {
@@ -262,7 +286,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         const moveRecord: MoveRecord = {
           san: move.san,
           playerKey: 'human',
-          eval: '-'
+          eval: '-',
+          fen: chess.fen() // Store FEN after move
         };
         set(state => ({
           moveHistory: [...state.moveHistory, moveRecord],
@@ -282,7 +307,13 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
 
   // Make an AI move using MCP service
   makeAIMove: () => {
-    const { gameState } = get();
+    const { gameState, rewindMode } = get();
+
+    // Prevent AI moves when in rewind mode
+    if (rewindMode?.active) {
+      console.log('Cannot make AI moves in rewind mode');
+      return;
+    }
 
     // Only make AI move if it's AI's turn
     if (gameState !== 'ai_turn') {
@@ -362,7 +393,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
           const moveRecord: MoveRecord = {
             san: move.san,
             playerKey: engineToUse,
-            eval: '-'
+            eval: '-',
+            fen: stateAfterMCP.chess.fen() // Store FEN after move
           };
           set(state => ({
             moveHistory: [...state.moveHistory, moveRecord],
@@ -398,7 +430,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
             const moveRecord: MoveRecord = {
               san: move.san,
               playerKey: OFFLINE_ENGINE,
-              eval: '-'
+              eval: '-',
+              fen: currentState.chess.fen() // Store FEN after move
             };
             set(state => ({
               moveHistory: [...state.moveHistory, moveRecord],
@@ -439,15 +472,63 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       isPlayerTurn: false,
       legalMoves: new Map()
     });
+    // Bring game result window to front
+    get().bringWindowToFront('gameResult');
+  },
+
+  // Rewind mode actions
+  enterRewindMode: (moveIndex: number) => {
+    const { moveHistory } = get();
+
+    // Validate move index
+    if (moveIndex < 0 || moveIndex >= moveHistory.length) {
+      console.error('Invalid move index:', moveIndex);
+      return;
+    }
+
+    const move = moveHistory[moveIndex];
+    set({
+      rewindMode: {
+        active: true,
+        moveIndex,
+        fen: move.fen
+      }
+    });
+  },
+
+  exitRewindMode: () => {
+    set({
+      rewindMode: null
+    });
   },
 
   // UI state setters
-  setShowMoveHistory: (show: boolean) => set({ showMoveHistory: show, showHelpLast: false }),
-  setShowHelp: (show: boolean) => set({ showHelp: show, showHelpLast: show }),
-  setShowHelpLast: (show: boolean) => set({ showHelpLast: show }),
-  setShowLanguageWindow: (show: boolean) => set({ showLanguageWindow: show }),
-  setShowEngineWindow: (show: boolean) => set({ showEngineWindow: show }),
+  setShowMoveHistory: (show: boolean) => {
+    set({ showMoveHistory: show });
+    if (show) get().bringWindowToFront('moveHistory');
+  },
+  setShowHelp: (show: boolean) => {
+    set({ showHelp: show });
+    if (show) get().bringWindowToFront('help');
+  },
+  setShowLanguageWindow: (show: boolean) => {
+    set({ showLanguageWindow: show });
+    if (show) get().bringWindowToFront('language');
+  },
+  setShowEngineWindow: (show: boolean) => {
+    set({ showEngineWindow: show });
+    if (show) get().bringWindowToFront('engine');
+  },
   closeGameResult: () => set({ gameResult: null }),
+
+  // Window z-index management
+  bringWindowToFront: (windowId: string) => {
+    const { windowStack } = get();
+    // Remove windowId if it exists, then add it to the end (top)
+    const newStack = windowStack.filter(id => id !== windowId);
+    newStack.push(windowId);
+    set({ windowStack: newStack });
+  },
 
   // Chessground integration
   setChessgroundApi: (api: Api | null) => set({ chessgroundApi: api }),
@@ -462,11 +543,22 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   fetchEngines: async () => {
     set({ engineFetchState: 'loading' });
 
+    // Define offline engine info - always available
+    const offlineEngineInfo: EngineInfo = {
+      name: OFFLINE_ENGINE,
+      display_name: 'Offline (Random)',
+      description: 'A simple offline engine that plays random moves. Always available.',
+      default: false
+    };
+
     try {
       console.log('[Store] Fetching available engines...');
       const engines = await mcpClient.listEngines();
 
-      // Find the default engine
+      // Always add the offline engine to the list
+      const allEngines = [...engines, offlineEngineInfo];
+
+      // Find the default engine (from online engines only)
       const defaultEngine = engines.find(e => e.default);
 
       // Try to get persisted engine from localStorage
@@ -475,7 +567,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       // Determine which engine to use
       let engineToSelect: string;
 
-      if (persistedEngine && engines.some(e => e.name === persistedEngine)) {
+      if (persistedEngine && allEngines.some(e => e.name === persistedEngine)) {
         // Use persisted engine if it exists in the list
         engineToSelect = persistedEngine;
         console.log('[Store] Using persisted engine:', engineToSelect);
@@ -488,14 +580,14 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         engineToSelect = engines[0].name;
         console.log('[Store] Using first available engine:', engineToSelect);
       } else {
-        // No engines available - use offline
+        // No online engines available - use offline
         engineToSelect = OFFLINE_ENGINE;
-        console.log('[Store] No engines available, using offline engine');
+        console.log('[Store] No online engines available, using offline engine');
       }
 
-      // Update state
+      // Update state with all engines (online + offline)
       set({
-        availableEngines: engines,
+        availableEngines: allEngines,
         selectedEngine: engineToSelect,
         engineFetchState: 'success'
       });
@@ -503,13 +595,13 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       // Persist the selection
       localStorage.setItem('selected-engine', engineToSelect);
 
-      console.log(`[Store] Successfully loaded ${engines.length} engines`);
+      console.log(`[Store] Successfully loaded ${allEngines.length} engines (${engines.length} online + offline)`);
     } catch (error) {
       console.error('[Store] Failed to fetch engines:', error);
 
-      // Fall back to offline engine
+      // Fall back to offline engine only
       set({
-        availableEngines: [],
+        availableEngines: [offlineEngineInfo],
         selectedEngine: OFFLINE_ENGINE,
         engineFetchState: 'error'
       });

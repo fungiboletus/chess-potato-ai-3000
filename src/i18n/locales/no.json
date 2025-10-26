@@ -51,7 +51,8 @@
     "current_fen": "Nåværende FEN:",
     "move_column": "Trekk",
     "player_column": "Spiller",
-    "eval_column": "Eval"
+    "eval_column": "Eval",
+    "backToGame": "Tilbake til Spillet"
   },
   "player": {
     "human": "Menneske"
@@ -85,14 +86,15 @@
     "checkmate_you_win": "Sjakkmatt! Du vinner!",
     "checkmate_ai_wins": "Sjakkmatt! AI vinner!",
     "draw": "Spillet er remis!",
-    "you_resigned": "Du ga opp!"
+    "you_resigned": "Du ga opp!",
+    "review_mode": "Gjennomgangsmodus"
   },
   "engine": {
-    "title": "Velg Motor",
+    "title": "Velg Motstander",
     "select": "Velg din motstander",
-    "loading": "Laster tilgjengelige motorer...",
-    "error": "Kunne ikke laste motorer fra serveren. Bruker frakoblet modus.",
-    "none": "Ingen motorer tilgjengelig.",
+    "loading": "Laster tilgjengelige motstandere...",
+    "error": "Kunne ikke laste motstandere fra serveren. Bruker frakoblet modus.",
+    "none": "Ingen motstandere tilgjengelig.",
     "ok": "OK"
   }
 }

@@ -7,6 +7,8 @@ interface GameResultWindowProps {
   onClose: () => void;
   result: 'win' | 'lose' | 'draw';
   message: string;
+  windowId?: string;
+  zIndex?: number;
 }
 
 export const GameResultWindow: React.FC<GameResultWindowProps> = ({
@@ -14,6 +16,8 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
   onClose,
   result,
   message,
+  windowId,
+  zIndex,
 }) => {
   const { t } = useTranslation();
 
@@ -56,6 +60,8 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
       onClose={onClose}
       defaultPosition={getCenterPosition()}
       className="game-result-window"
+      windowId={windowId}
+      zIndex={zIndex}
     >
       <div className={`game-result-content ${result}`}>
         {/* Placeholder for GIF */}

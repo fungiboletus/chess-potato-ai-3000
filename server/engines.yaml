@@ -71,7 +71,7 @@ engines:
   - key: stockfish_unbeatable
     path: stockfish
     display_name: Stockfish (Unbeatable)
-    description: Stockfish tuned for maximum strength to challenge top players.
+    description: Stockfish tuned to beat any human.
     depth: 24
     time_limit: 5.0
     options:

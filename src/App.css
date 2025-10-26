@@ -43,7 +43,7 @@
 
 .move-history-window {
   width: 260px;
-  height: 290px;
+  height: 330px;
   max-width: 90dvw;
   max-height: 90vh;
   overflow-y: auto;
@@ -263,7 +263,7 @@ button:disabled {
 /* Engine Window Styles */
 .engine-window {
   position: absolute;
-  width: 300px;
+  width: 360px;
   max-width: 90dvw;
   max-height: 90dvh;
 }
@@ -334,7 +334,7 @@ button:disabled {
 }
 
 .language-content {
-  padding: 16px;
+  padding: 8px;
 }
 
 .language-content legend {
@@ -368,4 +368,67 @@ button:disabled {
 
 .language-button img {
   display: block;
+}
+
+/* Window actions (buttons at bottom) */
+.window-actions {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/** CRT Scan lines */
+/*This adds a "crt scanlines" effect to the screen*/
+.chess-board-container .chess-board::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  /*background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.125) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));*/
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.150) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.012), rgba(0, 0, 255, 0.04));
+  z-index: 2;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+/* Rewind mode - grayscale board */
+.chess-board-container.rewind-mode .chess-board {
+  filter: grayscale(100%);
+}
+
+/* Read-only board - change cursor to default */
+.chess-board-container.read-only .cg-wrap.manipulable cg-board,
+.chess-board-container.read-only .chess-board,
+.chess-board-container.read-only piece {
+  cursor: default;
+}
+
+/* AI thinking - progress cursor (overrides read-only) */
+.chess-board-container.ai-thinking .cg-wrap.manipulable cg-board,
+.chess-board-container.ai-thinking .chess-board,
+.chess-board-container.ai-thinking piece {
+  cursor: progress;
+}
+
+/* Move history - highlighted row */
+.move-history-content table tbody tr.highlighted {
+  background-color: #000080;
+  color: white;
+}
+
+/* Move history - disabled table (when AI is thinking) */
+.move-history-content table.disabled {
+  cursor: not-allowed;
+}
+
+.move-history-content table.disabled tbody tr {
+  cursor: not-allowed;
+}
+
+/* Back to game button */
+.back-to-game-button {
+  width: 100%;
+  margin-top: 8px;
 }

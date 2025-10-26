@@ -51,7 +51,8 @@
     "current_fen": "Current FEN:",
     "move_column": "Move",
     "player_column": "Player",
-    "eval_column": "Eval"
+    "eval_column": "Eval",
+    "backToGame": "Back to Game"
   },
   "player": {
     "human": "Human"
@@ -85,14 +86,15 @@
     "checkmate_you_win": "Checkmate! You win!",
     "checkmate_ai_wins": "Checkmate! AI wins!",
     "draw": "Game is a draw!",
-    "you_resigned": "You resigned!"
+    "you_resigned": "You resigned!",
+    "review_mode": "Review Mode"
   },
   "engine": {
-    "title": "Select Engine",
+    "title": "Select Opponent",
     "select": "Choose your opponent",
-    "loading": "Loading available engines...",
-    "error": "Failed to load engines from server. Using offline mode.",
-    "none": "No engines available.",
+    "loading": "Loading available opponents...",
+    "error": "Failed to load opponents from server. Using offline mode.",
+    "none": "No opponents available.",
     "ok": "OK"
   }
 }

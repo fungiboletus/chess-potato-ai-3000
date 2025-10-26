@@ -14,3 +14,10 @@ body {
   height: 100vh;
   height: 100dvh;
 }
+
+/* Pixelated rendering for retro look */
+img, canvas {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}

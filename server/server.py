@@ -41,7 +41,10 @@ TOKEN_EXPIRATION_SECONDS = int(
 
 
 # Create MCP server
-mcp = FastMCP("Chess Engine Server")
+mcp = FastMCP(
+    name="Chess Engine Server",
+    stateless_http=True,
+)
 
 # Secret Key Configuration
 # Always generate a cryptographically secure 256-bit key

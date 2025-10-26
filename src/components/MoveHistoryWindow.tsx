@@ -9,6 +9,8 @@ interface MoveHistoryWindowProps {
   onClose: () => void;
   onMouseDown?: () => void;
   moveHistory: MoveRecord[];
+  windowId?: string;
+  zIndex?: number;
 }
 
 export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
@@ -16,10 +18,24 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   onClose,
   moveHistory,
   onMouseDown,
+  windowId,
+  zIndex,
 }) => {
   const { t } = useTranslation();
   const availableEngines = useChessStore(state => state.availableEngines);
+  const gameState = useChessStore(state => state.gameState);
+  const rewindMode = useChessStore(state => state.rewindMode);
+  const enterRewindMode = useChessStore(state => state.enterRewindMode);
+  const exitRewindMode = useChessStore(state => state.exitRewindMode);
   const scrollableRef = useRef<HTMLDivElement>(null);
+
+  const handleClose = () => {
+    // Exit rewind mode when closing the window
+    if (rewindMode?.active) {
+      exitRewindMode();
+    }
+    onClose();
+  };
 
   // Autoscroll to bottom when move history changes
   useEffect(() => {
@@ -37,8 +53,27 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     return engine?.display_name || playerKey;
   };
 
+  const isEmpty = moveHistory.length === 0;
+
+  const handleRowClick = (index: number) => {
+    // Disable clicks when AI is thinking
+    if (gameState === 'ai_thinking') {
+      return;
+    }
+
+    const latestMoveIndex = moveHistory.length - 1;
+
+    // If clicking on the latest move, exit rewind mode
+    if (index === latestMoveIndex) {
+      exitRewindMode();
+    } else {
+      // Otherwise, enter rewind mode for this move
+      enterRewindMode(index);
+    }
+  };
+
   const generateMoveRows = () => {
-    if (moveHistory.length === 0) {
+    if (isEmpty) {
       return (
         <tr>
           <td colSpan={3}>{t('move_history.no_moves')}</td>
@@ -46,13 +81,26 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       );
     }
 
-    return moveHistory.map((moveRecord, index) => (
-      <tr key={index}>
-        <td>{moveRecord.san}</td>
-        <td>{getPlayerDisplayName(moveRecord.playerKey)}</td>
-        <td>{moveRecord.eval}</td>
-      </tr>
-    ));
+    const isInteractive = gameState !== 'ai_thinking';
+    const currentIndex = rewindMode?.active ? rewindMode.moveIndex : moveHistory.length - 1;
+
+    return moveHistory.map((moveRecord, index) => {
+      const isHighlighted = index === currentIndex;
+      const className = isHighlighted ? 'highlighted' : '';
+
+      return (
+        <tr
+          key={index}
+          className={className}
+          onClick={isInteractive ? () => handleRowClick(index) : undefined}
+          style={isInteractive ? { cursor: 'pointer' } : undefined}
+        >
+          <td>{moveRecord.san}</td>
+          <td>{getPlayerDisplayName(moveRecord.playerKey)}</td>
+          <td>{moveRecord.eval}</td>
+        </tr>
+      );
+    });
   };
 
   const WINDOW_WIDTH = 260;
@@ -72,21 +120,25 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
   };
 
-  // computed property for current FEN
-  const currentFen = useChessStore(state => state.chessgroundApi?.getFen() || 'N/A');
+  // Display FEN: show rewind FEN if active, otherwise the latest move's FEN
+  const displayFen = rewindMode?.active
+    ? rewindMode.fen
+    : (moveHistory.length > 0 ? moveHistory[moveHistory.length - 1].fen : useChessStore.getState().chess.fen());
 
   return (
     <DraggableWindow
       className="move-history-window"
       title={t('move_history.title')}
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onMouseDown={onMouseDown}
       defaultPosition={getRightSidePosition()}
+      windowId={windowId}
+      zIndex={zIndex}
     >
       <div className="move-history-content">
         <div className="sunken-panel move-history-scrollable" ref={scrollableRef}>
-          <table className="interactive">
+          <table className={`${isEmpty ? '' : 'interactive'} ${gameState === 'ai_thinking' ? 'disabled' : ''}`}>
             <thead>
               <tr>
                 <th>{t('move_history.move_column')}</th>
@@ -102,8 +154,16 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
         <dl className="fen-section">
           <dt>{t('move_history.current_fen')}</dt>
-          <dd>{currentFen}</dd>
+          <dd>{displayFen}</dd>
         </dl>
+
+        <button
+          className="back-to-game-button"
+          disabled={!rewindMode?.active}
+          onClick={exitRewindMode}
+        >
+          {t('move_history.backToGame')}
+        </button>
       </div>
     </DraggableWindow>
   );

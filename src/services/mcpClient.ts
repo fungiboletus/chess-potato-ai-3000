@@ -50,7 +50,6 @@ const ListEnginesResultSchema = CallToolResultSchema.extend({
  */
 class MCPClientService {
   private client: Client | null = null;
-  private transport: StreamableHTTPClientTransport | null = null;
   private connectionState: ConnectionState = 'disconnected';
   private connectionError: string | null = null;
   private connectionPromise: Promise<Client> | null = null;
@@ -104,19 +103,15 @@ class MCPClientService {
       return this.connectionPromise;
     }
 
-    let connectionTask: Promise<Client>;
-    connectionTask = (async () => {
+    this.connectionPromise = (async () => {
       try {
         return await this.establishConnection();
       } finally {
-        if (this.connectionPromise === connectionTask) {
-          this.connectionPromise = null;
-        }
+        this.connectionPromise = null;
       }
     })();
 
-    this.connectionPromise = connectionTask;
-    return connectionTask;
+    return this.connectionPromise;
   }
 
   /**
@@ -134,7 +129,6 @@ class MCPClientService {
 
     try {
       await client.connect(transport);
-      this.transport = transport;
       this.client = client;
       this.connectionState = 'connected';
       console.log('[MCP] Connected to server at', this.SERVER_URL);
@@ -151,7 +145,6 @@ class MCPClientService {
 
   private resetClientState(): void {
     this.client = null;
-    this.transport = null;
     this.currentToken = null;
   }
 

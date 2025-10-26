@@ -18,6 +18,7 @@ export const ChessGameWindow: React.FC = () => {
     gameStarted,
     selectedEngine,
     engineFetchState,
+    rewindMode,
     resetGame,
     resignGame,
     setShowMoveHistory,
@@ -36,7 +37,11 @@ export const ChessGameWindow: React.FC = () => {
     ? `${t('game.title')} - ${engineDisplayName} Edition`
     : t('game.title');
 
-  const statusBarContent = (
+  const statusBarContent = rewindMode?.active ? (
+    <p className="status-bar-field" style={{ flex: 1 }}>
+      {t('status.review_mode')}
+    </p>
+  ) : (
     <>
       <p className="status-bar-field">{t('game.playing_as', { color: t(`colors.${playerColor}`) })}</p>
       <p className="status-bar-field">{gameStatus}</p>

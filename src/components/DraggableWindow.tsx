@@ -1,5 +1,6 @@
 import React, { type ReactNode, useEffect, useRef, useState } from 'react';
 import Draggable from 'react-draggable';
+import useChessStore from '../stores/chessStore';
 
 interface DraggableWindowProps {
   title: string;
@@ -11,6 +12,8 @@ interface DraggableWindowProps {
   defaultPosition?: { x: number; y: number };
   className?: string;
   onDragStop?: () => void;
+  windowId?: string; // Unique ID for z-index management
+  zIndex?: number; // Z-index to apply
 }
 
 // Helper function to calculate smart default positions
@@ -37,9 +40,22 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
   defaultPosition = { x: 0, y: 0 },
   className = '',
   onDragStop,
+  windowId,
+  zIndex,
 }) => {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(() => getSmartPosition(defaultPosition));
+  const bringWindowToFront = useChessStore(state => state.bringWindowToFront);
+
+  // Handle mouse down to bring window to front
+  const handleMouseDown = () => {
+    if (windowId) {
+      bringWindowToFront(windowId);
+    }
+    if (onMouseDown) {
+      onMouseDown();
+    }
+  };
 
   useEffect(() => {
     // check that it's visible when it's opened
@@ -92,7 +108,12 @@ export const DraggableWindow: React.FC<DraggableWindowProps> = ({
       nodeRef={nodeRef}
       bounds="parent"
     >
-      <div ref={nodeRef} className={`window ${className}`} onMouseDownCapture={onMouseDown}>
+      <div
+        ref={nodeRef}
+        className={`window ${className}`}
+        onMouseDownCapture={handleMouseDown}
+        style={{ zIndex }}
+      >
         <div className="title-bar draggable-title-bar">
           <div className="title-bar-text">{title}</div>
           <div className="title-bar-controls draggable-title-bar-controls">

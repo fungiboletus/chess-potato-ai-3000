@@ -44,7 +44,8 @@
     "current_fen": "FEN actual:",
     "move_column": "Movimiento",
     "player_column": "Jugador",
-    "eval_column": "Eval"
+    "eval_column": "Eval",
+    "backToGame": "Volver al Juego"
   },
   "player": {
     "human": "Humano"
@@ -78,14 +79,15 @@
     "checkmate_you_win": "¡Jaque mate! ¡Ganaste!",
     "checkmate_ai_wins": "¡Jaque mate! ¡La IA gana!",
     "draw": "¡La partida es un empate!",
-    "you_resigned": "¡Te rendiste!"
+    "you_resigned": "¡Te rendiste!",
+    "review_mode": "Modo Revisión"
   },
   "engine": {
-    "title": "Seleccionar Motor",
+    "title": "Seleccionar Adversario",
     "select": "Elige tu oponente",
-    "loading": "Cargando motores disponibles...",
-    "error": "Error al cargar motores desde el servidor. Usando modo sin conexión.",
-    "none": "No hay motores disponibles.",
+    "loading": "Cargando adversarios disponibles...",
+    "error": "Error al cargar adversarios desde el servidor. Usando modo sin conexión.",
+    "none": "No hay adversarios disponibles.",
     "ok": "Aceptar"
   }
 }

@@ -6,12 +6,16 @@ interface HelpWindowProps {
   isOpen: boolean;
   onClose: () => void;
   onMouseDown?: () => void;
+  windowId?: string;
+  zIndex?: number;
 }
 
 export const HelpWindow: React.FC<HelpWindowProps> = ({
   isOpen,
   onClose,
   onMouseDown,
+  windowId,
+  zIndex,
 }) => {
   const { t } = useTranslation();
 
@@ -39,6 +43,8 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
       onClose={onClose}
       onMouseDown={onMouseDown}
       defaultPosition={getLeftSidePosition()}
+      windowId={windowId}
+      zIndex={zIndex}
     >
       <div className="help-content">
         <h3 className="help-heading">

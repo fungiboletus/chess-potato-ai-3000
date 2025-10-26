@@ -11,12 +11,20 @@ export const ChessBoard: React.FC = () => {
   const config = useChessgroundConfig();
   const makePlayerMove = useChessStore(state => state.makePlayerMove);
   const setChessgroundApi = useChessStore(state => state.setChessgroundApi);
+  const rewindMode = useChessStore(state => state.rewindMode);
+  const gameState = useChessStore(state => state.gameState);
+  const isPlayerTurn = useChessStore(state => state.isPlayerTurn);
+
+  // Different cursor states
+  const isAIThinking = gameState === 'ai_thinking';
+  const isReadOnly = !isPlayerTurn || rewindMode?.active;
 
   // Initialize chessground
   useEffect(() => {
     if (boardRef.current && !api) {
       const chessgroundApi = Chessground(boardRef.current, {
         animation: { enabled: true, duration: 200 },
+        
         ...config,
         movable: {
           ...config.movable,
@@ -68,7 +76,7 @@ export const ChessBoard: React.FC = () => {
   }, [api, config, makePlayerMove]);
 
   return (
-    <div className="chess-board-container">
+    <div className={`chess-board-container ${rewindMode?.active ? 'rewind-mode' : ''} ${isReadOnly ? 'read-only' : ''} ${isAIThinking ? 'ai-thinking' : ''}`}>
       <div ref={boardRef} className="chess-board" />
     </div>
   );
