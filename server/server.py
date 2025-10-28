@@ -53,7 +53,6 @@ TOKEN_EXPIRATION_SECONDS = int(
 # Create MCP server
 mcp = FastMCP(
     name="Chess Engine Server",
-    stateless_http=True,
 )
 
 # Secret Key Configuration
@@ -318,7 +317,7 @@ async def health_check(request):
 
 
 if __name__ == "__main__":
-    app = mcp.http_app()
+    app = mcp.http_app(stateless_http=True)
 
     app.add_middleware(
         CORSMiddleware,

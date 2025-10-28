@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChessBoard } from '../ChessBoard';
-import { AnimatedProgressBar } from './AnimatedProgressBar';
-import { GameEngineButton } from './GameEngineButton';
+import { ChessHeader } from './ChessHeader';
+import { GameControls } from './GameControls';
 import useChessStore from '../stores/chessStore';
 import { useGameStatus } from '../hooks/useGameStatus';
 import { DraggableWindow } from './DraggableWindow';
@@ -13,24 +13,12 @@ export const ChessGameWindow: React.FC = () => {
 
   const {
     playerColor,
-    gameState,
     moveHistory,
-    gameStarted,
     selectedEngine,
-    engineFetchState,
-    engineLocked,
     rewindMode,
-    resetGame,
-    resignGame,
-    setShowMoveHistory,
-    setShowHelp,
-    setShowLanguageWindow,
-    setShowEngineWindow,
     redrawChessground,
     getSelectedEngineDisplayName,
   } = useChessStore();
-
-  const isAIThinking = gameState === 'ai_thinking';
 
   // Get engine display name and create window title
   const engineDisplayName = getSelectedEngineDisplayName();
@@ -59,51 +47,13 @@ export const ChessGameWindow: React.FC = () => {
     >
       <div className="chess-game-main-window">
         <div className="chess-container">
-          <div className="chess-header">
-            <GameEngineButton
-              isAIThinking={isAIThinking}
-              engineFetchState={engineFetchState}
-              selectedEngine={selectedEngine}
-              engineLocked={engineLocked}
-              onClick={() => setShowEngineWindow(true)}
-            />
-            <div className="progress-container">
-              <div className={`ai-thinking-container`} style={{ visibility: isAIThinking ? 'visible' : 'hidden' }}>
-                <p>
-                  {t('game.thinking', { engineName: engineDisplayName })}
-                </p>
-                <AnimatedProgressBar isVisible={isAIThinking} width="100%" key={moveHistory.length << 1 + (isAIThinking ? 1 : 0)} />
-              </div>
-            </div>
-
-          </div>
+          <ChessHeader />
 
           <div className="chess-board-wrapper">
             <ChessBoard />
           </div>
 
-          <div className="game-controls">
-            <button onClick={resetGame} disabled={gameStarted && gameState !== 'game_over'}>
-              {t('game.new_game')}
-            </button>
-            <button onClick={resignGame} disabled={gameState === 'initializing' || gameState === 'game_over'}>
-              {t('game.resign')}
-            </button>
-            <button onClick={() => setShowMoveHistory(true)}>
-              {t('game.show_moves')}
-            </button>
-            <button onClick={() => setShowHelp(true)}>
-              {t('game.help')}
-            </button>
-            <button
-              onClick={() => setShowLanguageWindow(true)}
-              title={t('language.select')}
-              className="language-button"
-            >
-              <img src="/world.png" alt="" height="16" width="16" />
-              {t('language.lang')}
-            </button>
-          </div>
+          <GameControls />
         </div>
       </div>
     </DraggableWindow>

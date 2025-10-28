@@ -454,7 +454,7 @@ button:disabled {
   margin: 0;
 }
 
-.move-history-action-button + .move-history-action-button {
+.move-history-action-button+.move-history-action-button {
   margin-left: 0;
 }
 
@@ -505,4 +505,13 @@ button:disabled {
 
 .pixel-theme.cg-wrap piece.king.black {
   background-image: url("pieces/pixel/bK.svg");
+}
+
+/* disable text selection globally */
+body {
+  user-select: none;
+}
+
+.text-selectable {
+  user-select: text;
 }

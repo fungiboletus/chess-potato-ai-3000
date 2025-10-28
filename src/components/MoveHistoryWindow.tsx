@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useChessStore from '../stores/chessStore';
 import { DraggableWindow } from './DraggableWindow';
-import type { MoveRecord, PositionEvaluationState } from '../stores/chessStore';
+import { MoveHistoryActions } from './MoveHistoryActions';
+import { getEvaluationAttributes } from '../utils/evaluationFormatter';
+import type { MoveRecord } from '../stores/chessStore';
 
 interface MoveHistoryWindowProps {
   isOpen: boolean;
@@ -24,9 +26,6 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   const { t } = useTranslation();
   const availableEngines = useChessStore(state => state.availableEngines);
   const gameState = useChessStore(state => state.gameState);
-  const isPlayerTurn = useChessStore(state => state.isPlayerTurn);
-  const gameStarted = useChessStore(state => state.gameStarted);
-  const undoLastPlayerMove = useChessStore(state => state.undoLastPlayerMove);
   const rewindMode = useChessStore(state => state.rewindMode);
   const enterRewindMode = useChessStore(state => state.enterRewindMode);
   const exitRewindMode = useChessStore(state => state.exitRewindMode);
@@ -76,68 +75,6 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     return engine?.display_name || playerKey;
   };
 
-  const formatEvaluation = (evaluation: { score: number; expectation: number } | undefined): string => {
-    if (!evaluation) {
-      return '-';
-    }
-
-    const { score, expectation } = evaluation;
-
-    if (!Number.isFinite(score)) {
-      return '-';
-    }
-
-    if (Math.abs(score) >= 9800) {
-      const mateDistance = Math.max(0, 10000 - Math.abs(score));
-      const mateMoves = Math.ceil(mateDistance / 2);
-      const prefix = score > 0 ? '#' : '-#';
-      return mateMoves > 0 ? `${prefix}${mateMoves}` : prefix;
-    }
-
-    const pawnScore = score / 100;
-    const roundedScore = Math.round(pawnScore * 100) / 100;
-    const formattedScore = roundedScore === 0
-      ? '0.00'
-      : roundedScore > 0
-        ? `+${roundedScore.toFixed(2)}`
-        : roundedScore.toFixed(2);
-
-    const expectationPercent = Math.round(Math.min(Math.max(expectation * 100, 0), 100));
-    //return `${formattedScore} (${expectationPercent}%)`;
-    return `${expectationPercent}% (${formattedScore})`;
-  };
-
-  const getEvaluationAttributes = (fen: string): { display: string; title?: string } => {
-    const evaluationState: PositionEvaluationState | undefined = positionEvaluations[fen];
-
-    if (!evaluationState) {
-      return { display: '-' };
-    }
-
-    if (evaluationState.status === 'loading') {
-      return { display: '-' };
-    }
-
-    if (evaluationState.status === 'success') {
-      return { display: formatEvaluation(evaluationState.data) };
-    }
-
-    if (evaluationState.status === 'offline') {
-      return {
-        display: 'N/A',
-        title: evaluationState.error || t('move_history.eval_offline_hint', { defaultValue: 'Evaluation unavailable while offline.' })
-      };
-    }
-
-    if (evaluationState.status === 'error') {
-      return {
-        display: 'Error',
-        title: evaluationState.error || t('move_history.eval_error_hint', { defaultValue: 'Unable to evaluate position.' })
-      };
-    }
-
-    return { display: '-' };
-  };
 
   const isEmpty = moveHistory.length === 0;
   const highlightedIndex = rewindMode?.active ? rewindMode.moveIndex : moveHistory.length - 1;
@@ -198,48 +135,6 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
   useEffect(() => {
     moveRowRefs.current.length = moveHistory.length;
   }, [moveHistory.length]);
-
-  const [now, setNow] = useState<number>(() => Date.now());
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      setNow(Date.now());
-    }, 30_000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
-
-  const lastPlayerMove = useMemo(() => {
-    for (let i = moveHistory.length - 1; i >= 0; i--) {
-      if (moveHistory[i].playerKey === 'human') {
-        return moveHistory[i];
-      }
-    }
-    return null;
-  }, [moveHistory]);
-
-  const THIRTY_MINUTES_MS = 30 * 60 * 1000;
-  const hasRecentPlayerMove = Boolean(
-    lastPlayerMove && now - lastPlayerMove.timestamp <= THIRTY_MINUTES_MS
-  );
-
-  const canUndo = isPlayerTurn &&
-    gameState === 'player_turn' &&
-    gameStarted &&
-    hasRecentPlayerMove &&
-    !rewindMode?.active;
-
-  const undoDisabled = !canUndo;
-
-  const handleUndoLastMove = () => {
-    undoLastPlayerMove();
-  };
 
   useEffect(() => {
     if (!isOpen || moveHistory.length === 0) {
@@ -314,7 +209,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     return moveHistory.map((moveRecord, index) => {
       const isHighlighted = index === highlightedIndex;
       const className = isHighlighted ? 'highlighted' : '';
-      const evaluation = showEvaluations ? getEvaluationAttributes(moveRecord.fen) : null;
+      const evaluation = showEvaluations ? getEvaluationAttributes(moveRecord.fen, positionEvaluations, t) : null;
       const playerName = getPlayerDisplayName(moveRecord.playerKey);
 
       return (
@@ -404,25 +299,10 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
         <dl className="fen-section">
           <dt>{t('move_history.current_fen')}</dt>
-          <dd>{displayFen}</dd>
+          <dd className="text-selectable">{displayFen}</dd>
         </dl>
 
-        <div className="move-history-actions">
-          <button
-            className="move-history-action-button undo-move-button"
-            onClick={handleUndoLastMove}
-            disabled={undoDisabled}
-          >
-            {t('move_history.undo', { defaultValue: 'Takeback' })}
-          </button>
-          <button
-            className="move-history-action-button back-to-game-button"
-            disabled={!rewindMode?.active}
-            onClick={exitRewindMode}
-          >
-            {t('move_history.backToGame')}
-          </button>
-        </div>
+        <MoveHistoryActions />
       </div>
     </DraggableWindow>
   );

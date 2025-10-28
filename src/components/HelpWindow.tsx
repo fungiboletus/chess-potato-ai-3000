@@ -46,7 +46,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
       windowId={windowId}
       zIndex={zIndex}
     >
-      <div className="help-content">
+      <div className="help-content text-selectable">
         <h3 className="help-heading">
           {t('help.how_to_play')}
         </h3>
@@ -76,6 +76,12 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
           • <strong>{t('help.result_window')}</strong> {t('help.result_window_text')}<br />
           • <strong>{t('help.draggable')}</strong> {t('help.draggable_text')}<br />
           • <strong>{t('help.persistent')}</strong> {t('help.persistent_text')}
+        </div>
+
+        <div className="help-section">
+          <a href="https://www.finn.no/realestate/homes/search.html?filters&sort=PRICE_DESC&property_type=1">
+            {t('help.buy_me_a_house')}
+          </a>
         </div>
 
         <div className="help-footer">
