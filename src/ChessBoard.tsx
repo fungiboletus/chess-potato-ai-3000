@@ -4,6 +4,8 @@ import type { Api } from 'chessground/api';
 import useChessStore from './stores/chessStore';
 import { useChessgroundConfig } from './hooks/useChessgroundConfig';
 
+import './themes.css'
+
 export const ChessBoard: React.FC = () => {
   const boardRef = useRef<HTMLDivElement>(null);
   const [api, setApi] = useState<Api | null>(null);
@@ -14,6 +16,8 @@ export const ChessBoard: React.FC = () => {
   const rewindMode = useChessStore(state => state.rewindMode);
   const gameState = useChessStore(state => state.gameState);
   const isPlayerTurn = useChessStore(state => state.isPlayerTurn);
+  const selectedPieceTheme = useChessStore(state => state.selectedPieceTheme);
+  const selectedBoardTheme = useChessStore(state => state.selectedBoardTheme);
 
   // Different cursor states
   const isAIThinking = gameState === 'ai_thinking';
@@ -66,8 +70,8 @@ export const ChessBoard: React.FC = () => {
   }, [api, config, makePlayerMove]);
 
   return (
-    <div className={`chess-board-container ${rewindMode?.active ? 'rewind-mode' : ''} ${isReadOnly ? 'read-only' : ''} ${isAIThinking ? 'ai-thinking' : ''}`}>
-      <div ref={boardRef} className="chess-board pixel-theme" />
+    <div className={`chess-board-container ${selectedPieceTheme}-theme ${selectedBoardTheme}-board ${rewindMode?.active ? 'rewind-mode' : ''} ${isReadOnly ? 'read-only' : ''} ${isAIThinking ? 'ai-thinking' : ''}`}>
+      <div ref={boardRef} className="chess-board" />
     </div>
   );
 };

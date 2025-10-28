@@ -5,6 +5,7 @@ import { GameResultWindow } from './components/GameResultWindow';
 import { HelpWindow } from './components/HelpWindow';
 import { LanguageWindow } from './components/LanguageWindow';
 import { GameEnginesWindow } from './components/GameEnginesWindow';
+import { ThemeWindow } from './components/ThemeWindow';
 import { ConfettiParticles } from './components/ConfettiParticles';
 import useChessStore from './stores/chessStore';
 
@@ -14,6 +15,7 @@ export const ChessGame: React.FC = () => {
     showHelp,
     showLanguageWindow,
     showEngineWindow,
+    showThemeWindow,
     gameResult,
     moveHistory,
     windowStack,
@@ -22,6 +24,7 @@ export const ChessGame: React.FC = () => {
     setShowHelp,
     setShowLanguageWindow,
     setShowEngineWindow,
+    setShowThemeWindow,
     closeGameResult,
   } = useChessStore();
 
@@ -76,6 +79,13 @@ export const ChessGame: React.FC = () => {
         onClose={() => setShowEngineWindow(false)}
         windowId="engine"
         zIndex={getZIndex('engine')}
+      />
+
+      <ThemeWindow
+        isOpen={showThemeWindow}
+        onClose={() => setShowThemeWindow(false)}
+        windowId="theme"
+        zIndex={getZIndex('theme')}
       />
 
       <ConfettiParticles show={gameResult?.type === 'win' && !hasUsedTakeback} />

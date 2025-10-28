@@ -71,7 +71,12 @@ export interface ChessGameStore {
   showHelp: boolean;
   showLanguageWindow: boolean;
   showEngineWindow: boolean;
+  showThemeWindow: boolean;
   moveHistoryFocusRequestId: number;
+
+  // Theme state
+  selectedPieceTheme: string;
+  selectedBoardTheme: string;
 
   // Window z-index management
   windowStack: string[]; // Window IDs in order, last = top
@@ -107,8 +112,13 @@ export interface ChessGameStore {
   setShowHelp: (show: boolean) => void;
   setShowLanguageWindow: (show: boolean) => void;
   setShowEngineWindow: (show: boolean) => void;
+  setShowThemeWindow: (show: boolean) => void;
   closeGameResult: () => void;
   bringWindowToFront: (windowId: string) => void;
+
+  // Theme actions
+  setSelectedPieceTheme: (theme: string) => void;
+  setSelectedBoardTheme: (theme: string) => void;
 
   // Engine actions
   fetchEngines: () => Promise<void>;
@@ -153,6 +163,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   showHelp: false,
   showLanguageWindow: false,
   showEngineWindow: false,
+  showThemeWindow: false,
   moveHistoryFocusRequestId: 0,
   windowStack: [],
   isPlayerTurn: false,
@@ -163,6 +174,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   availableEngines: [],
   engineFetchState: 'idle',
   engineLocked: false,
+  selectedPieceTheme: localStorage.getItem('selected-piece-theme') || 'pixel',
+  selectedBoardTheme: localStorage.getItem('selected-board-theme') || 'blue',
 
   loadPositionEvaluations: async (
     fens: string[],
@@ -790,7 +803,21 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     set({ showEngineWindow: show });
     if (show) get().bringWindowToFront('engine');
   },
+  setShowThemeWindow: (show: boolean) => {
+    set({ showThemeWindow: show });
+    if (show) get().bringWindowToFront('theme');
+  },
   closeGameResult: () => set({ gameResult: null }),
+
+  // Theme actions
+  setSelectedPieceTheme: (theme: string) => {
+    set({ selectedPieceTheme: theme });
+    localStorage.setItem('selected-piece-theme', theme);
+  },
+  setSelectedBoardTheme: (theme: string) => {
+    set({ selectedBoardTheme: theme });
+    localStorage.setItem('selected-board-theme', theme);
+  },
 
   // Window z-index management
   bringWindowToFront: (windowId: string) => {

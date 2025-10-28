@@ -14,6 +14,7 @@ export const ChessHeader: React.FC = () => {
     engineLocked,
     moveHistory,
     setShowEngineWindow,
+    setShowThemeWindow,
     getSelectedEngineDisplayName,
   } = useChessStore();
 
@@ -29,6 +30,11 @@ export const ChessHeader: React.FC = () => {
         engineLocked={engineLocked}
         onClick={() => setShowEngineWindow(true)}
       />
+      <div className="top-right-buttons">
+        <button onClick={() => setShowThemeWindow(true)}>
+          {t('game.change_theme')}
+        </button>
+      </div>
       <div className="progress-container">
         <div className={`ai-thinking-container`} style={{ visibility: isAIThinking ? 'visible' : 'hidden' }}>
           <p>

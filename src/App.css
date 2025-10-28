@@ -20,7 +20,7 @@
   justify-content: center;
   box-sizing: border-box;
   overflow: auto;
-  background-image: url('./clouds_perso.webp');
+  background-image: url('/clouds_perso.webp');
   background-size: cover;
   background-position: center;
 }
@@ -118,7 +118,7 @@
 }
 
 
-img.pixel-theme.cg-wrapated {
+img.pixel-theme .cg-wrapated {
   image-rendering: pixelated;
 }
 
@@ -391,6 +391,77 @@ button:disabled {
   text-align: center;
 }
 
+/* Theme Window Styles */
+.theme-window {
+  position: absolute;
+  width: 400px;
+  max-width: 90dvw;
+  max-height: 90dvh;
+}
+
+.theme-window .window-body {
+  margin: 0;
+  padding: 8px;
+  max-height: 60dvh;
+  overflow-y: auto;
+}
+
+.theme-content {
+  padding: 8px;
+}
+
+.theme-content fieldset {
+  margin-bottom: 16px;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 0;
+}
+
+.theme-button {
+  width: 100%;
+  min-width: 40px;
+  aspect-ratio: 1;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #c0c0c0;
+  border: none;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+
+.theme-button:active {
+  box-shadow: inset -1px -1px #ffffff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+}
+
+.theme-button.selected {
+  box-shadow: inset -1px -1px #ffffff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+  background-color: #c0c0c0;
+}
+
+.theme-button:hover:not(.selected) {
+  background-color: #d0d0d0;
+}
+
+.piece-preview {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.board-preview {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
 /** CRT Scan lines */
 /*This adds a "crt scanlines" effect to the screen*/
 .chess-board-container .chess-board::before {
@@ -414,14 +485,14 @@ button:disabled {
 }
 
 /* Read-only board - change cursor to default */
-.chess-board-container.read-only .cg-wrap.manipulable .pixel-theme.cg-wrap,
+.chess-board-container.read-only .cg-wrap.manipulable .pixel-theme .cg-wrap,
 .chess-board-container.read-only .chess-board,
 .chess-board-container.read-only piece {
   cursor: default;
 }
 
 /* AI thinking - progress cursor (overrides read-only) */
-.chess-board-container.ai-thinking .cg-wrap.manipulable .pixel-theme.cg-wrap,
+.chess-board-container.ai-thinking .cg-wrap.manipulable .pixel-theme .cg-wrap,
 .chess-board-container.ai-thinking .chess-board,
 .chess-board-container.ai-thinking piece {
   cursor: progress;
@@ -458,54 +529,7 @@ button:disabled {
   margin-left: 0;
 }
 
-/** pixel theme */
-.pixel-theme.cg-wrap piece.pawn.white {
-  background-image: url("pieces/pixel/wP.svg");
-}
 
-.pixel-theme.cg-wrap piece.bishop.white {
-  background-image: url("pieces/pixel/wB.svg");
-}
-
-.pixel-theme.cg-wrap piece.knight.white {
-  background-image: url("pieces/pixel/wN.svg");
-}
-
-.pixel-theme.cg-wrap piece.rook.white {
-  background-image: url("pieces/pixel/wR.svg");
-}
-
-.pixel-theme.cg-wrap piece.queen.white {
-  background-image: url("pieces/pixel/wQ.svg");
-}
-
-.pixel-theme.cg-wrap piece.king.white {
-  background-image: url("pieces/pixel/wK.svg");
-}
-
-.pixel-theme.cg-wrap piece.pawn.black {
-  background-image: url("pieces/pixel/bP.svg");
-}
-
-.pixel-theme.cg-wrap piece.bishop.black {
-  background-image: url("pieces/pixel/bB.svg");
-}
-
-.pixel-theme.cg-wrap piece.knight.black {
-  background-image: url("pieces/pixel/bN.svg");
-}
-
-.pixel-theme.cg-wrap piece.rook.black {
-  background-image: url("pieces/pixel/bR.svg");
-}
-
-.pixel-theme.cg-wrap piece.queen.black {
-  background-image: url("pieces/pixel/bQ.svg");
-}
-
-.pixel-theme.cg-wrap piece.king.black {
-  background-image: url("pieces/pixel/bK.svg");
-}
 
 /* disable text selection globally */
 body {
@@ -514,4 +538,10 @@ body {
 
 .text-selectable {
   user-select: text;
+}
+
+.chess-header .top-right-buttons {
+  position: absolute;
+  top: 22px;
+  right: 3px;
 }
