@@ -103,5 +103,12 @@
     "locked": "Engine selection is locked.",
     "locked_tooltip": "{{engine}} (Locked)",
     "lockedOffline": "Engine locked to offline mode. Start a new game to change engine."
+  },
+  "theme": {
+    "title": "Change Theme",
+    "pieces": "Pieces",
+    "board": "Board",
+    "crt_effect": "CRT scanlines effect",
+    "ok": "OK"
   }
 }

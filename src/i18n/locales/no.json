@@ -103,5 +103,12 @@
     "locked": "Motstandervalg er låst.",
     "locked_tooltip": "{{engine}} (Låst)",
     "lockedOffline": "Motstander låst i frakoblet modus. Start et nytt spill for å bytte."
+  },
+  "theme": {
+    "title": "Endre Tema",
+    "pieces": "Brikker",
+    "board": "Brett",
+    "crt_effect": "CRT-skannelinjeeffekt",
+    "ok": "OK"
   }
 }

@@ -96,5 +96,12 @@
     "locked": "La selección del adversario está bloqueada.",
     "locked_tooltip": "{{engine}} (Bloqueado)",
     "lockedOffline": "Adversario bloqueado en modo sin conexión. Inicia una nueva partida para cambiar."
+  },
+  "theme": {
+    "title": "Cambiar Tema",
+    "pieces": "Piezas",
+    "board": "Tablero",
+    "crt_effect": "Efecto de líneas de escaneo CRT",
+    "ok": "Aceptar"
   }
 }

@@ -402,7 +402,7 @@ button:disabled {
 .theme-window .window-body {
   margin: 0;
   padding: 8px;
-  max-height: 60dvh;
+  max-height: 66dvh;
   overflow-y: auto;
 }
 
@@ -464,7 +464,7 @@ button:disabled {
 
 /** CRT Scan lines */
 /*This adds a "crt scanlines" effect to the screen*/
-.chess-board-container .chess-board::before {
+.chess-board-container.crt-enabled .chess-board::before {
   content: " ";
   display: block;
   position: absolute;

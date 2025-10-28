@@ -77,6 +77,7 @@ export interface ChessGameStore {
   // Theme state
   selectedPieceTheme: string;
   selectedBoardTheme: string;
+  crtEffectEnabled: boolean;
 
   // Window z-index management
   windowStack: string[]; // Window IDs in order, last = top
@@ -119,6 +120,7 @@ export interface ChessGameStore {
   // Theme actions
   setSelectedPieceTheme: (theme: string) => void;
   setSelectedBoardTheme: (theme: string) => void;
+  setCrtEffectEnabled: (enabled: boolean) => void;
 
   // Engine actions
   fetchEngines: () => Promise<void>;
@@ -176,6 +178,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   engineLocked: false,
   selectedPieceTheme: localStorage.getItem('selected-piece-theme') || 'pixel',
   selectedBoardTheme: localStorage.getItem('selected-board-theme') || 'blue',
+  crtEffectEnabled: localStorage.getItem('crtEffectEnabled') !== 'false', // Default true
 
   loadPositionEvaluations: async (
     fens: string[],
@@ -817,6 +820,10 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   setSelectedBoardTheme: (theme: string) => {
     set({ selectedBoardTheme: theme });
     localStorage.setItem('selected-board-theme', theme);
+  },
+  setCrtEffectEnabled: (enabled: boolean) => {
+    set({ crtEffectEnabled: enabled });
+    localStorage.setItem('crtEffectEnabled', enabled ? 'true' : 'false');
   },
 
   // Window z-index management

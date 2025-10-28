@@ -18,6 +18,7 @@ export const ChessBoard: React.FC = () => {
   const isPlayerTurn = useChessStore(state => state.isPlayerTurn);
   const selectedPieceTheme = useChessStore(state => state.selectedPieceTheme);
   const selectedBoardTheme = useChessStore(state => state.selectedBoardTheme);
+  const crtEffectEnabled = useChessStore(state => state.crtEffectEnabled);
 
   // Different cursor states
   const isAIThinking = gameState === 'ai_thinking';
@@ -70,7 +71,7 @@ export const ChessBoard: React.FC = () => {
   }, [api, config, makePlayerMove]);
 
   return (
-    <div className={`chess-board-container ${selectedPieceTheme}-theme ${selectedBoardTheme}-board ${rewindMode?.active ? 'rewind-mode' : ''} ${isReadOnly ? 'read-only' : ''} ${isAIThinking ? 'ai-thinking' : ''}`}>
+    <div className={`chess-board-container ${selectedPieceTheme}-theme ${selectedBoardTheme}-board ${rewindMode?.active ? 'rewind-mode' : ''} ${isReadOnly ? 'read-only' : ''} ${isAIThinking ? 'ai-thinking' : ''} ${crtEffectEnabled ? 'crt-enabled' : ''}`}>
       <div ref={boardRef} className="chess-board" />
     </div>
   );

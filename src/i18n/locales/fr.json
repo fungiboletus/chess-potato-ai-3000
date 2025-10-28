@@ -103,5 +103,12 @@
     "locked": "La sélection de l'adversaire est verrouillée.",
     "locked_tooltip": "{{engine}} (Verrouillé)",
     "lockedOffline": "Adversaire verrouillé en mode hors ligne. Démarrez une nouvelle partie pour changer."
+  },
+  "theme": {
+    "title": "Changer le Thème",
+    "pieces": "Pièces",
+    "board": "Échiquier",
+    "crt_effect": "Effet de lignes de balayage CRT",
+    "ok": "OK"
   }
 }

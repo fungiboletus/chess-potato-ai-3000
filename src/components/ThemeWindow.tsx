@@ -60,7 +60,7 @@ export const ThemeWindow: React.FC<ThemeWindowProps> = ({
   zIndex,
 }) => {
   const { t } = useTranslation();
-  const { selectedPieceTheme, selectedBoardTheme, setSelectedPieceTheme, setSelectedBoardTheme } = useChessStore();
+  const { selectedPieceTheme, selectedBoardTheme, crtEffectEnabled, setSelectedPieceTheme, setSelectedBoardTheme, setCrtEffectEnabled } = useChessStore();
 
   const handlePieceThemeChange = (theme: string) => {
     setSelectedPieceTheme(theme);
@@ -130,6 +130,18 @@ export const ThemeWindow: React.FC<ThemeWindowProps> = ({
             ))}
           </div>
         </fieldset>
+
+        <div className="field-row" style={{ marginTop: '16px' }}>
+          <input
+            id="theme-crt-effect"
+            type="checkbox"
+            checked={crtEffectEnabled}
+            onChange={event => setCrtEffectEnabled(event.target.checked)}
+          />
+          <label htmlFor="theme-crt-effect">
+            {t('theme.crt_effect', 'CRT scanlines effect')}
+          </label>
+        </div>
 
         <div className="window-actions">
           <button onClick={onClose}>
