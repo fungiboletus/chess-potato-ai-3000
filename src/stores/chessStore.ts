@@ -103,6 +103,7 @@ export interface ChessGameStore {
   undoLastPlayerMove: () => boolean;
   resetGame: () => void;
   resignGame: () => void;
+  loadPositionEvaluations: () => Promise<void>;
 
   // Rewind mode actions
   enterRewindMode: (moveIndex: number) => void;
@@ -169,13 +170,18 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   availableEngines: [],
   engineFetchState: 'idle',
   engineLocked: false,
-  selectedPieceTheme: localStorage.getItem('selected-piece-theme') || 'pixel',
-  selectedBoardTheme: localStorage.getItem('selected-board-theme') || 'blue',
+  selectedPieceTheme: localStorage.getItem('selected-piece-theme') || 'cburnett',
+  selectedBoardTheme: localStorage.getItem('selected-board-theme') || 'default',
   crtEffectEnabled: localStorage.getItem('crtEffectEnabled') !== 'false', // Default true
 
   loadPositionEvaluations: async () => {
     const state = get();
-    const { moveHistory, positionEvaluations, playerColor } = state;
+    const { moveHistory, positionEvaluations, playerColor, selectedEngine } = state;
+
+    // Offline engine does not support evaluations
+    if (selectedEngine === OFFLINE_ENGINE) {
+      return;
+    }
 
     const playerIsWhite = playerColor === 'white';
     const fensToFetch: string[] = [];
@@ -865,6 +871,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         selectedEngine: OFFLINE_ENGINE,
         engineFetchState: 'error'
       });
+      //localStorage.setItem('selected-engine', OFFLINE_ENGINE);
       console.log('[Store] Using offline engine as fallback');
     }
   },
