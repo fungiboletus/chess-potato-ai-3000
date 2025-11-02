@@ -18,6 +18,8 @@ from starlette.responses import JSONResponse
 
 from chess_engines import (
     compute_next_move_cached as engine_compute_move,
+    compute_all_transitions,
+    ensure_fen_is_in_transitions,
 )
 from chess_engines import (
     ensure_valid_transition,
@@ -48,7 +50,9 @@ ALLOWED_ORIGINS = os.getenv(
 TOKEN_EXPIRATION_SECONDS = int(
     os.getenv("TOKEN_EXPIRATION_SECONDS", "3600")
 )  # 1 hour (3600 seconds) by default
-
+TOKEN_EVALUATION_ADDITIONAL_DELAY_SECONDS = int(
+    os.getenv("TOKEN_EVALUATION_ADDITIONAL_DELAY_SECONDS", "86400")
+)  # 1 day (86400 seconds) by default
 
 # Create MCP server
 mcp = FastMCP(
@@ -57,9 +61,17 @@ mcp = FastMCP(
 
 # Secret Key Configuration
 # Always generate a cryptographically secure 256-bit key
-SECRET_KEY: bytes = secrets.token_bytes(32)
+SECRET_KEY: str | None = os.getenv("CPAI3000_SECRET_KEY", None)
 
-key = pyseto.Key.new(version=4, purpose="local", key=SECRET_KEY)
+secret_key_bytes: bytes | None = None
+if isinstance(SECRET_KEY, str):
+    # Decode from hex if provided as a string
+    secret_key_bytes = bytes.fromhex(SECRET_KEY)
+else:
+    print("No CPAI3000_SECRET_KEY provided - generating a random key")
+    secret_key_bytes = secrets.token_bytes(32)
+
+key = pyseto.Key.new(version=4, purpose="local", key=secret_key_bytes)
 
 # Register engine shutdown on exit
 atexit.register(shutdown_engines)
@@ -90,6 +102,43 @@ class EngineListResponse(BaseModel):
     engines: list[EngineInfoModel]
 
 
+def check_token(token: str, evaluation: bool = False) -> str:
+    """Check the token and return the FEN inside it."""
+    try:
+        decoded_token = pyseto.decode(key, token)
+        payload = (  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+            decoded_token.payload
+        )
+        if not isinstance(payload, (bytes, bytearray)):
+            raise ValueError("Token has no valid payload")
+
+        decoded = json.loads(payload)
+
+        # Check subject
+        if decoded.get("sub") != "compute_next_move":
+            raise ValueError(f"Invalid token subject: {decoded.get('sub')}")
+
+        # Check expiration
+        current_time = int(time.time())
+        exp = decoded.get("exp")
+        if exp is None:
+            raise ValueError("Token missing expiration claim")
+
+        if evaluation:
+            exp += TOKEN_EVALUATION_ADDITIONAL_DELAY_SECONDS
+
+        if current_time > exp:
+            raise ValueError(f"Token expired (exp: {exp}, now: {current_time})")
+
+        # Extract old FEN for transition validation
+        return decoded.get("fen")
+
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Failed to decode token payload: {e}")
+    except Exception as e:
+        raise ValueError(f"Token validation failed: {e}")
+
+
 @mcp.tool
 async def compute_next_move(
     fen: str, token: str | None = None, engine_name: str = "chess-potato-ai-3000"
@@ -114,36 +163,7 @@ async def compute_next_move(
     """
     # Validate token if present
     if token:
-        try:
-            decoded_token = pyseto.decode(key, token)
-            payload = (  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-                decoded_token.payload
-            )
-            if not isinstance(payload, (bytes, bytearray)):
-                raise ValueError("Token has no valid payload")
-
-            decoded = json.loads(payload)
-
-            # Check subject
-            if decoded.get("sub") != "compute_next_move":
-                raise ValueError(f"Invalid token subject: {decoded.get('sub')}")
-
-            # Check expiration
-            current_time = int(time.time())
-            exp = decoded.get("exp")
-            if exp is None:
-                raise ValueError("Token missing expiration claim")
-
-            if current_time > exp:
-                raise ValueError(f"Token expired (exp: {exp}, now: {current_time})")
-
-            # Extract old FEN for transition validation
-            old_fen = decoded.get("fen")
-
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Failed to decode token payload: {e}")
-        except Exception as e:
-            raise ValueError(f"Token validation failed: {e}")
+        old_fen = check_token(token)
     else:
         old_fen = None
 
@@ -203,7 +223,7 @@ class EvaluationResponse(BaseModel):
 @mcp.tool
 async def evaluate_fens(
     fens: list[str],
-    tokens: list[str] | None = None,
+    tokens: list[str],
     player_is_white: bool | None = None,
     invert_turns: list[bool] | None = None,
 ) -> EvaluationResponse:
@@ -236,44 +256,24 @@ async def evaluate_fens(
             f"Mismatch: {len(fens)} FENs provided but {len(invert_turns)} invert flags provided"
         )
 
+    if len(tokens) > 1024:
+        raise ValueError(f"Too many tokens provided: {len(tokens)} (maximum is 1024)")
+
+    # validate all the tokens and extract FENs
+    fens_from_tokens = [check_token(t, evaluation=True) for t in tokens]
+    # add start position too
+    fens_from_tokens.append(chess.Board().fen())
+    print("Computed FENs from tokens for validation.")
+    for f in fens_from_tokens:
+        print(f)
+    all_valid_transitions = compute_all_transitions(fens_from_tokens)
+
+    # validate each fen against the valid transitions
+    for fen in fens:
+        print("Validating FEN against transitions:", fen)
+        ensure_fen_is_in_transitions(fen, all_valid_transitions)
+
     evaluations: dict[str, PositionEvaluation] = {}
-
-    # for fen, token in zip(fens, tokens):
-    # Validate token for this FEN
-    # try:
-    #     decoded_token = pyseto.decode(key, token)
-    #     payload = (  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-    #         decoded_token.payload
-    #     )
-    #     if not isinstance(payload, (bytes, bytearray)):
-    #         raise ValueError("Token has no valid payload")
-
-    #     decoded = json.loads(payload)
-
-    #     # Check subject
-    #     if decoded.get("sub") != "compute_next_move":
-    #         raise ValueError(f"Invalid token subject: {decoded.get('sub')}")
-
-    #     # Check expiration
-    #     current_time = int(time.time())
-    #     exp = decoded.get("exp")
-    #     if exp is None:
-    #         raise ValueError("Token missing expiration claim")
-
-    #     if current_time > exp:
-    #         raise ValueError(f"Token expired (exp: {exp}, now: {current_time})")
-
-    #     # Verify FEN matches token
-    #     token_fen = decoded.get("fen")
-    #     if token_fen != fen:
-    #         raise ValueError(
-    #             f"FEN mismatch: token contains '{token_fen}' but received '{fen}'"
-    #         )
-
-    # except json.JSONDecodeError as e:
-    #     raise ValueError(f"Failed to decode token payload: {e}")
-    # except Exception as e:
-    #     raise ValueError(f"Token validation failed for FEN '{fen}': {e}")
 
     for idx, fen in enumerate(fens):
         # Evaluate the position

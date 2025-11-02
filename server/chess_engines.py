@@ -5,10 +5,11 @@ import logging
 import os
 import random
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any, Set, TypedDict
 
 import chess
 import chess.engine
+import chess.polyglot
 import yaml
 from pydantic import BaseModel, Field, field_validator
 
@@ -27,7 +28,9 @@ class EngineProfile(BaseModel):
     key: str = Field(..., description="Unique identifier for this engine profile")
     path: str = Field(..., description="Path to the UCI engine executable")
     display_name: str = Field(..., description="Human-readable name for the engine")
-    description: str = Field(..., description="Brief description of the engine's characteristics")
+    description: str = Field(
+        ..., description="Brief description of the engine's characteristics"
+    )
     depth: int | None = Field(None, description="Search depth limit (plies)")
     time_limit: float | None = Field(None, description="Time limit in seconds")
     options: dict[str, int | bool | str] = Field(
@@ -190,7 +193,9 @@ def compute_next_move(fen: str, engine_name: str) -> MoveData:
 
         # Get the best move with limits from the engine profile
         limit = chess.engine.Limit(depth=profile.depth, time=profile.time_limit)
-        logger.info(f"[{engine_name}] Computing move (depth={profile.depth}, time={profile.time_limit}s)")
+        logger.info(
+            f"[{engine_name}] Computing move (depth={profile.depth}, time={profile.time_limit}s)"
+        )
 
         # The chess.engine logger will show UCI "info" lines here at DEBUG level
         result = engine.play(board, limit)
@@ -270,10 +275,33 @@ def ensure_valid_transition(fen_start: str | None, fen_target: str):
 
     for mv in board.legal_moves:
         board.push(mv)
-        try:
-            if board.fen() == fen_target:
-                return
-        finally:
-            board.pop()
+        if board.fen() == fen_target:
+            return
+        board.pop()
 
     raise ValueError("The target FEN is not reachable from the starting FEN.")
+
+
+def compute_all_transitions(fens: list[str]) -> Set[int]:
+    """Compute all possible transitions, returning the zobrist hash set."""
+    zobrist_hashes: Set[int] = set()
+
+    for fen in fens:
+        board = chess.Board(fen)
+        zobrist_hashes.add(chess.polyglot.zobrist_hash(board))
+        print("Computing transitions for FEN:", fen)
+        for mv in board.legal_moves:
+            board.push(mv)
+            print("Transition FEN:", board.fen())
+            zobrist_hashes.add(chess.polyglot.zobrist_hash(board))
+            board.pop()
+
+    return zobrist_hashes
+
+
+def ensure_fen_is_in_transitions(fen: str, valid_transitions: Set[int]):
+    """Validate that the FEN is in the set of valid transitions."""
+    board = chess.Board(fen)
+    fen_hash = chess.polyglot.zobrist_hash(board)
+    if fen_hash not in valid_transitions:
+        raise ValueError("The provided FEN is not in the set of valid transitions.")

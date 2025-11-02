@@ -6,6 +6,8 @@ import { MoveHistoryActions } from './MoveHistoryActions';
 import { getEvaluationAttributes } from '../utils/evaluationFormatter';
 import type { MoveRecord } from '../stores/chessStore';
 
+const MOVE_HISTORY_STORAGE_KEY = 'moveHistory.showEvaluations';
+
 interface MoveHistoryWindowProps {
   isOpen: boolean;
   onClose: () => void;
@@ -39,7 +41,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       return true;
     }
 
-    const storedValue = window.localStorage.getItem('moveHistory.showEvaluations');
+    const storedValue = window.localStorage.getItem(MOVE_HISTORY_STORAGE_KEY);
     return storedValue === null ? true : storedValue === 'true';
   });
 
@@ -48,7 +50,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       return;
     }
 
-    window.localStorage.setItem('moveHistory.showEvaluations', showEvaluations ? 'true' : 'false');
+    window.localStorage.setItem(MOVE_HISTORY_STORAGE_KEY, showEvaluations ? 'true' : 'false');
   }, [showEvaluations]);
 
   const handleClose = () => {
@@ -136,37 +138,34 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     moveRowRefs.current.length = moveHistory.length;
   }, [moveHistory.length]);
 
+
+
   useEffect(() => {
-    if (!isOpen || moveHistory.length === 0) {
+    const shouldLoadEvaluations = isOpen && showEvaluations && moveHistory.length > 0;
+    if (!shouldLoadEvaluations) {
       return;
     }
 
-    if (!showEvaluations) {
-      return;
-    }
-
-    const fens = moveHistory.map(move => move.fen);
-    const tokens = moveHistory.map(move => move.evaluationToken ?? null);
-    void loadPositionEvaluations(fens, tokens);
-  }, [isOpen, moveHistory, loadPositionEvaluations, showEvaluations]);
+    void loadPositionEvaluations();
+  }, [loadPositionEvaluations, isOpen, showEvaluations, moveHistory.length]);
 
   useEffect(() => {
-    if (!showEvaluations || typeof window === 'undefined') {
+    if (typeof window === 'undefined') {
       return;
     }
 
     const handleOnline = () => {
-      if (!isOpen || moveHistory.length === 0) {
+      const shouldLoadEvaluations = isOpen && showEvaluations && moveHistory.length > 0;
+      if (!shouldLoadEvaluations) {
         return;
       }
-      const fens = moveHistory.map(move => move.fen);
-      const tokens = moveHistory.map(move => move.evaluationToken ?? null);
-      void loadPositionEvaluations(fens, tokens);
+
+      void loadPositionEvaluations();
     };
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [isOpen, moveHistory, loadPositionEvaluations, showEvaluations]);
+  }, [loadPositionEvaluations, isOpen, showEvaluations, moveHistory.length]);
 
   // Keep the highlighted row within the visible scroll region without forcing unwanted jumps
   useEffect(() => {

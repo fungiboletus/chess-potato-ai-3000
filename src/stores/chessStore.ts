@@ -127,13 +127,6 @@ export interface ChessGameStore {
   setSelectedEngine: (engineName: string) => void;
   setEngineLocked: (locked: boolean) => void;
 
-  // Evaluation actions
-  loadPositionEvaluations: (
-    fens: string[],
-    tokens?: (string | null)[]
-  ) => Promise<Record<string, PositionEvaluationState>>;
-  prefetchEvaluationsForHistory: () => Promise<void>;
-
   // Chessground integration
   setChessgroundApi: (api: Api | null) => void;
   redrawChessground: () => void;
@@ -180,41 +173,30 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   selectedBoardTheme: localStorage.getItem('selected-board-theme') || 'blue',
   crtEffectEnabled: localStorage.getItem('crtEffectEnabled') !== 'false', // Default true
 
-  loadPositionEvaluations: async (
-    fens: string[],
-    tokens?: (string | null)[]
-  ) => {
-    if (fens.length === 0) {
-      return {};
-    }
+  loadPositionEvaluations: async () => {
+    const state = get();
+    const { moveHistory, positionEvaluations, playerColor } = state;
 
-    const uniquePositions = new Map<string, string | null>();
-    fens.forEach((fen, index) => {
-      if (!uniquePositions.has(fen)) {
-        uniquePositions.set(fen, tokens?.[index] ?? null);
-      }
-    });
-
-    const snapshot = get();
-    const playerIsWhite = snapshot.playerColor === 'white';
-    const isOnline = typeof navigator === 'undefined' ? true : navigator.onLine;
-
+    const playerIsWhite = playerColor === 'white';
     const fensToFetch: string[] = [];
-    const tokensToFetch: (string | null)[] = [];
+    const tokensToSend: string[] = [];
 
-    uniquePositions.forEach((token, fen) => {
-      const cached = snapshot.positionEvaluations[fen];
-      const shouldRetryOffline = cached?.status === 'offline' && isOnline;
-      const needsFetch = !cached || cached.status === 'error' || shouldRetryOffline;
-
-      if (needsFetch) {
-        if (cached?.status === 'loading') {
-          return;
-        }
+    moveHistory.forEach((move, index) => {
+      const fen = move.fen;
+      const cached = positionEvaluations[fen];
+      if (!cached || cached.status === 'error' || cached.status === 'offline') {
         fensToFetch.push(fen);
-        tokensToFetch.push(token ?? null);
+        if (move.evaluationToken) {
+          tokensToSend.push(move.evaluationToken);
+        } else if (index > 0) {
+          const previousToken = moveHistory[index - 1].evaluationToken;
+          if (previousToken) {
+            tokensToSend.push(previousToken);
+          }
+        }
       }
     });
+
 
     if (fensToFetch.length > 0) {
       set(current => {
@@ -228,7 +210,7 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       try {
         const evaluations = await mcpClient.evaluateFens(
           fensToFetch,
-          tokensToFetch,
+          tokensToSend,
           playerIsWhite
         );
 
@@ -266,31 +248,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         });
       }
     }
-
-    const finalEvaluations = get().positionEvaluations;
-    const result: Record<string, PositionEvaluationState> = {};
-
-    uniquePositions.forEach((_, fen) => {
-      const evaluation = finalEvaluations[fen];
-      if (evaluation) {
-        result[fen] = evaluation;
-      }
-    });
-
-    return result;
-  },
-
-  prefetchEvaluationsForHistory: async () => {
-    const state = get();
-
-    if (state.moveHistory.length === 0) {
-      return;
-    }
-
-    const fens = state.moveHistory.map(move => move.fen);
-    const tokens = state.moveHistory.map(move => move.evaluationToken ?? null);
-
-    await state.loadPositionEvaluations(fens, tokens);
   },
 
   // Calculate legal moves for the current position
