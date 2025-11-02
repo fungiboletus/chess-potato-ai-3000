@@ -865,8 +865,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         selectedEngine: OFFLINE_ENGINE,
         engineFetchState: 'error'
       });
-
-      localStorage.setItem('selected-engine', OFFLINE_ENGINE);
       console.log('[Store] Using offline engine as fallback');
     }
   },
