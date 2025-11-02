@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 _move_cache: dict[tuple[str, str], list["MoveData"]] = {}
 
 # Global persistent engine instances keyed by engine name
-_engines: dict[str, chess.engine.SimpleEngine] = {}
+_engines: dict[str, chess.engine.UciProtocol] = {}
 
 
 class EngineProfile(BaseModel):
@@ -136,19 +136,19 @@ def get_available_engines() -> list[EngineProfile]:
     return list(_ENGINE_PROFILES.values())
 
 
-def get_engine(engine_name: str) -> chess.engine.SimpleEngine:
+async def get_engine(engine_name: str) -> chess.engine.UciProtocol:
     """Get or initialize the persistent engine instance for a profile."""
     profile = _get_engine_profile(engine_name)
     engine = _engines.get(engine_name)
     if engine is None:
         logger.info(f"Initializing engine '{engine_name}' at {profile.path}")
-        engine = chess.engine.SimpleEngine.popen_uci(profile.path)
+        _transport, engine = await chess.engine.popen_uci(profile.path)
         options = profile.options
         if options:
             try:
-                engine.configure(options)
+                await engine.configure(options)
             except chess.engine.EngineError as exc:
-                engine.quit()
+                await engine.quit()
                 _engines.pop(engine_name, None)
                 raise ValueError(
                     f"Failed to configure engine '{engine_name}': {exc}"
@@ -158,16 +158,16 @@ def get_engine(engine_name: str) -> chess.engine.SimpleEngine:
     return engine
 
 
-def shutdown_engines():
+async def shutdown_engines():
     """Gracefully shutdown all engine instances."""
     for _engine_name, engine in list(_engines.items()):
         try:
-            engine.quit()
+            await engine.quit()
         finally:
             _engines.pop(_engine_name, None)
 
 
-def compute_next_move(fen: str, engine_name: str) -> MoveData:
+async def compute_next_move(fen: str, engine_name: str) -> MoveData:
     """
     Compute the next best move for a given chess position.
 
@@ -188,7 +188,7 @@ def compute_next_move(fen: str, engine_name: str) -> MoveData:
         board = chess.Board(fen)
 
         # Get the persistent engine
-        engine = get_engine(engine_name)
+        engine = await get_engine(engine_name)
         profile = _get_engine_profile(engine_name)
 
         # Get the best move with limits from the engine profile
@@ -198,7 +198,7 @@ def compute_next_move(fen: str, engine_name: str) -> MoveData:
         )
 
         # The chess.engine logger will show UCI "info" lines here at DEBUG level
-        result = engine.play(board, limit)
+        result = await engine.play(board, limit)
 
         if result.move is None:
             raise ValueError("No valid moves available from the given position.")
@@ -246,7 +246,7 @@ async def compute_next_move_cached(fen: str, engine_name: str) -> MoveData:
     # Check if we have fewer than 3 variations cached for this position
     if cache_key not in _move_cache or len(_move_cache[cache_key]) < 3:
         # Compute a new move and add to cache
-        move_data = compute_next_move(fen, engine_name)
+        move_data = await compute_next_move(fen, engine_name)
 
         if cache_key not in _move_cache:
             _move_cache[cache_key] = []

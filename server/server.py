@@ -1,5 +1,6 @@
 """Chess MCP Server - Provides UCI engine move computation."""
 
+import asyncio
 import atexit
 import json
 import logging
@@ -14,17 +15,18 @@ import uvicorn
 from fastmcp import FastMCP
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
+from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from chess_engines import (
-    compute_next_move_cached as engine_compute_move,
     compute_all_transitions,
     ensure_fen_is_in_transitions,
-)
-from chess_engines import (
     ensure_valid_transition,
     get_available_engines,
     shutdown_engines,
+)
+from chess_engines import (
+    compute_next_move_cached as engine_compute_move,
 )
 from chess_evaluation import evaluate_position, shutdown_evaluator
 
@@ -73,9 +75,24 @@ else:
 
 key = pyseto.Key.new(version=4, purpose="local", key=secret_key_bytes)
 
+
+def shutdown_all_sync():
+    """Synchronously shutdown all engines and evaluator with timeout."""
+
+    async def shutdown_all():
+        await shutdown_engines()
+        await shutdown_evaluator()
+
+    try:
+        asyncio.run(asyncio.wait_for(shutdown_all(), timeout=2.0))
+    except TimeoutError:
+        logger.warning("Shutdown timed out after 2 seconds")
+    except Exception as e:
+        logger.warning(f"Error during shutdown: {e}")
+
+
 # Register engine shutdown on exit
-atexit.register(shutdown_engines)
-atexit.register(shutdown_evaluator)
+atexit.register(shutdown_all_sync)
 
 
 class MoveResponse(BaseModel):
@@ -290,7 +307,7 @@ async def evaluate_fens(
             board_turn_is_white = board.turn == chess.WHITE
             inverse_turn = board_turn_is_white != player_is_white
 
-        result = evaluate_position(fen, inverse_turn=inverse_turn)
+        result = await evaluate_position(fen, inverse_turn=inverse_turn)
         evaluations[fen] = PositionEvaluation(
             expectation=result["expectation"], score=result["score"]
         )
@@ -301,18 +318,16 @@ async def evaluate_fens(
 def force_exit_handler(signum: int, frame: FrameType | None) -> None:
     """Aggressive shutdown - no waiting for graceful cleanup."""
     logger.info("Received interrupt signal - forcing immediate exit")
-    # Try to shutdown engines, but don't wait
-    try:
-        shutdown_engines()
-    except Exception:
-        pass
+    # Attempt graceful shutdown with timeout
+    shutdown_all_sync()
     # Hard exit
     os._exit(0)
 
 
 @mcp.custom_route("/health", methods=["GET"])
-async def health_check(request):
+async def health_check(request: Request):
     """Health check endpoint."""
+    return JSONResponse({"status": "healthy", "service": "mcp-server"})
     return JSONResponse({"status": "healthy", "service": "mcp-server"})
 
 
