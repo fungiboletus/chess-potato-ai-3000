@@ -79,9 +79,20 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
         </div>
 
         <div className="help-section">
-          <a href="https://www.finn.no/realestate/homes/search.html?filters&sort=PRICE_DESC&property_type=1">
+          <button
+            type="button"
+            className="buy-house-button"
+            onClick={() => {
+              window.open(
+                'https://www.finn.no/realestate/homes/search.html?filters&sort=PRICE_DESC&property_type=1',
+                '_blank',
+                'noopener,noreferrer'
+              );
+            }}
+          >
+            <img src="/house2.png" alt="" height="16" width="16" />
             {t('help.buy_me_a_house')}
-          </a>
+          </button>
         </div>
 
         <div className="help-footer">

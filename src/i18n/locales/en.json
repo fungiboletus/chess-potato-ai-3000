@@ -18,7 +18,8 @@
     "resigned": "You resigned the game!",
     "congratulations": "Congratulations! You won!",
     "better_luck": "Better luck next time!",
-    "well_played": "It's a draw! Well played!"
+    "well_played": "It's a draw! Well played!",
+    "change_theme": "Appearance"
   },
   "help": {
     "title": "Chess Potato AI 3000 - Help",
@@ -42,6 +43,7 @@
     "draggable_text": "Move windows around!",
     "persistent": "Persistent:",
     "persistent_text": "Window positions are saved",
+    "buy_me_a_house": "Buy me a house",
     "footer": "Made with ❤️ and Windows 98 nostalgia"
   },
   "move_history": {

@@ -31,7 +31,8 @@ export const ChessHeader: React.FC = () => {
         onClick={() => setShowEngineWindow(true)}
       />
       <div className="top-right-buttons">
-        <button onClick={() => setShowThemeWindow(true)}>
+        <button className="change-theme-button" onClick={() => setShowThemeWindow(true)}>
+          <img src="/pawn2.png" height="16" width="16" alt="" className="theme-icon" />
           {t('game.change_theme')}
         </button>
       </div>

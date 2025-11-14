@@ -31,11 +31,13 @@ The application uses a centralized Zustand store ([src/stores/chessStore.ts](src
 **Provider Pattern**: The app is wrapped in `ChessGameProvider` ([src/providers/ChessGameProvider.tsx](src/providers/ChessGameProvider.tsx)) which initializes the game on mount.
 
 **Window Components**: UI follows a Windows 98-style draggable window pattern:
+
 - `DraggableWindow`: Base wrapper component using react-draggable
 - `ChessGameWindow`: Main game window containing the chess board
 - `MoveHistoryWindow`, `HelpWindow`, `GameResultWindow`, `LanguageWindow`: Modal-style windows with z-index management
 
 **Chessground Integration**:
+
 - `ChessBoard` component ([src/ChessBoard.tsx](src/ChessBoard.tsx)) wraps the Chessground library
 - `useChessgroundConfig` hook generates Chessground configuration from store state
 - The Chessground API reference is stored in the Zustand store for programmatic board updates
@@ -49,6 +51,7 @@ The application uses a centralized Zustand store ([src/stores/chessStore.ts](src
 ## Internationalization (i18n)
 
 The application supports multiple languages using i18next:
+
 - Translation files: [src/i18n/locales/](src/i18n/locales/) (en, fr, es, no)
 - Browser language detection with localStorage caching
 - Language selection via LanguageWindow component
@@ -73,7 +76,12 @@ The application supports multiple languages using i18next:
 ## Future Extension Points
 
 The README notes these are planned enhancements:
+
 - REST API integration for sophisticated AI engines
 - UCI protocol support for advanced chess engines
 - Player vs Player online functionality
 - Game analysis and position evaluation
+
+## Tips for Agents
+
+- Run the tests and checks yourself. Instead of suggesting to run the tests and checks once you are done, run them yourself before claiming you are done. So you can iterate until they pass.

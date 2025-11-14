@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
 import useChessStore, { OFFLINE_ENGINE } from '../stores/chessStore';
+import { getEngineIcon } from './engineIcons';
 
 interface GameEnginesWindowProps {
   isOpen: boolean;
@@ -10,25 +11,6 @@ interface GameEnginesWindowProps {
   windowId?: string;
   zIndex?: number;
 }
-
-// Map engine names to their icon paths
-const getEngineIcon = (engineName: string): string => {
-  switch (engineName) {
-    case 'chess-potato-ai-3000':
-      return './icons/engine-potato.png';
-    case 'alphabet':
-      return './icons/engine-alphabet.png';
-    case 'stockfish_level_0':
-      return './engines/stockfish_level_0.png';
-    case OFFLINE_ENGINE:
-      return './icons/engine-offline.png';
-    default:
-      if (engineName.includes('stockfish')) {
-        return './engines/stockfish.png';
-      }
-      return './icons/engine-generic.png';
-  }
-};
 
 export const GameEnginesWindow: React.FC<GameEnginesWindowProps> = ({
   isOpen,

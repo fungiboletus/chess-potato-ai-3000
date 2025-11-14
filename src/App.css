@@ -374,15 +374,21 @@ button:disabled {
   flex-shrink: 0;
 }
 
-.language-button {
+.language-button,
+.buy-house-button {
   display: flex;
   align-items: center;
   gap: 4px;
   justify-content: center;
 }
 
-.language-button img {
+.language-button img,
+.buy-house-button img {
   display: block;
+}
+
+.buy-house-button {
+  height: 28px;
 }
 
 /* Window actions (buttons at bottom) */
@@ -544,4 +550,15 @@ body {
   position: absolute;
   top: 22px;
   right: 3px;
+}
+
+.change-theme-button {
+  background: black;
+  color: white;
+  font-weight: bold;
+  box-shadow: inset 1px -1px gray;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }

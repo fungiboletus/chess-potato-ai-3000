@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EngineFetchState } from '../stores/chessStore';
+import { getEngineIcon } from './engineIcons';
 
 interface GameEngineButtonProps {
   isAIThinking: boolean;
@@ -9,26 +10,6 @@ interface GameEngineButtonProps {
   engineLocked: boolean;
   onClick: () => void;
 }
-
-// Map engine names to their icon paths
-const getEngineIcon = (engineName: string | null): string => {
-  if (!engineName) return './icons/engine-default.png';
-
-  switch (engineName) {
-    case 'chess-potato-ai-3000':
-      return './icons/engine-potato.png';
-    case 'alphabet':
-      return './icons/engine-alphabet.png';
-    case 'stockfish_level_0':
-    case 'stockfish_default':
-    case 'stockfish_unbeatable':
-      return './icons/engine-stockfish.png';
-    case 'offline-random':
-      return './icons/engine-offline.png';
-    default:
-      return './icons/engine-generic.png';
-  }
-};
 
 export const GameEngineButton: React.FC<GameEngineButtonProps> = ({
   isAIThinking,

@@ -18,7 +18,8 @@
     "resigned": "Du ga opp spillet!",
     "congratulations": "Gratulerer! Du vant!",
     "better_luck": "Lykke til neste gang!",
-    "well_played": "Det er remis! Godt spilt!"
+    "well_played": "Det er remis! Godt spilt!",
+    "change_theme": "Utseende"
   },
   "help": {
     "title": "Chess Potato AI 3000 - Hjelp",
@@ -42,6 +43,7 @@
     "draggable_text": "Flytt vinduer rundt!",
     "persistent": "Persistent:",
     "persistent_text": "Vinduposisjoner lagres",
+    "buy_me_a_house": "Kjøp meg et hus",
     "footer": "Laget med ❤️ og Windows 98 nostalgi"
   },
   "move_history": {

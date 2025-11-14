@@ -11,7 +11,8 @@
     "victory": "¡Victoria!",
     "defeat": "Derrota",
     "draw": "Empate",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "change_theme": "Apariencia"
   },
   "help": {
     "title": "Chess Potato AI 3000 - Ayuda",
@@ -35,6 +36,7 @@
     "draggable_text": "¡Mueve las ventanas!",
     "persistent": "Persistente:",
     "persistent_text": "Las posiciones de las ventanas se guardan",
+    "buy_me_a_house": "Cómprame una casa",
     "footer": "Hecho con ❤️ y nostalgia de Windows 98"
   },
   "move_history": {

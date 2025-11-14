@@ -18,7 +18,8 @@
     "resigned": "Vous avez abandonné la partie !",
     "congratulations": "Félicitations ! Vous avez gagné !",
     "better_luck": "Plus de chance la prochaine fois !",
-    "well_played": "C'est un match nul ! Bien joué !"
+    "well_played": "C'est un match nul ! Bien joué !",
+    "change_theme": "Apparence"
   },
   "help": {
     "title": "Chess Potato AI 3000 - Aide",
@@ -42,6 +43,7 @@
     "draggable_text": "Déplacez les fenêtres !",
     "persistent": "Persistant :",
     "persistent_text": "Les positions des fenêtres sont sauvegardées",
+    "buy_me_a_house": "Achetez-moi une maison",
     "footer": "Fait avec ❤️ et nostalgie Windows 98"
   },
   "move_history": {
