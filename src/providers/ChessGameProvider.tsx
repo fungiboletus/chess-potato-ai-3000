@@ -16,12 +16,32 @@ export const ChessGameProvider: React.FC<ChessGameProviderProps> = ({ children }
   const setEngineLocked = useChessStore(state => state.setEngineLocked);
   const availableEngines = useChessStore(state => state.availableEngines);
 
-  // Fetch engines on mount
+  // Fetch engines after persisted state rehydrates
   useEffect(() => {
-    fetchEngines();
+    let isActive = true;
+    let hasFetched = false;
 
-    // Cleanup: disconnect from MCP server on unmount
+    const runFetchOnce = () => {
+      if (!isActive || hasFetched) {
+        return;
+      }
+      hasFetched = true;
+      fetchEngines();
+    };
+
+    const hasHydrated = useChessStore.persist.hasHydrated();
+    const unsubscribe = hasHydrated
+      ? undefined
+      : useChessStore.persist.onFinishHydration(runFetchOnce);
+
+    if (hasHydrated) {
+      runFetchOnce();
+    }
+
+    // Cleanup: unsubscribe hydration listener and disconnect MCP on unmount
     return () => {
+      isActive = false;
+      unsubscribe?.();
       mcpClient.disconnect().catch((error) => {
         console.error('[MCP] Error disconnecting:', error);
       });
@@ -47,7 +67,6 @@ export const ChessGameProvider: React.FC<ChessGameProviderProps> = ({ children }
           console.log('[Provider] Setting engine from URL parameter:', engineParam);
           // Temporarily bypass the lock check by setting the engine directly in the store
           useChessStore.setState({ selectedEngine: engineParam });
-          localStorage.setItem('selected-engine', engineParam);
         } else {
           console.warn('[Provider] Engine from URL parameter not found:', engineParam);
         }

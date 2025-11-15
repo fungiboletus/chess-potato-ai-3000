@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
 import { Chess } from 'chess.js';
 import type { Api } from 'chessground/api';
 import { mcpClient, type EngineInfo, type PositionEvaluation } from '../services/mcpClient';
@@ -142,7 +143,30 @@ export interface ChessGameStore {
 // Internal variable to track AI move timeout
 let aiMoveTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const useChessStore = create<ChessGameStore>((set, get) => ({
+type ChessPersistedState = Pick<
+  ChessGameStore,
+  'selectedPieceTheme' | 'selectedBoardTheme' | 'crtEffectEnabled' | 'selectedEngine'
+>;
+
+const createPersistStorage = (): StateStorage => {
+  if (typeof window === 'undefined') {
+    return {
+      getItem: () => null,
+      setItem: () => undefined,
+      removeItem: () => undefined
+    };
+  }
+
+  return {
+    getItem: (name: string) => window.localStorage.getItem(name),
+    setItem: (name: string, value: string) => window.localStorage.setItem(name, value),
+    removeItem: (name: string) => window.localStorage.removeItem(name)
+  };
+};
+
+const useChessStore = create<ChessGameStore>()(
+  persist(
+    (set, get) => ({
   // Initial state
   chess: new Chess(),
   gameState: 'initializing',
@@ -170,9 +194,9 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   availableEngines: [],
   engineFetchState: 'idle',
   engineLocked: false,
-  selectedPieceTheme: localStorage.getItem('selected-piece-theme') || 'cburnett',
-  selectedBoardTheme: localStorage.getItem('selected-board-theme') || 'default',
-  crtEffectEnabled: localStorage.getItem('crtEffectEnabled') !== 'false', // Default true
+  selectedPieceTheme: 'cburnett',
+  selectedBoardTheme: 'default',
+  crtEffectEnabled: true,
 
   loadPositionEvaluations: async () => {
     const state = get();
@@ -778,15 +802,12 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
   // Theme actions
   setSelectedPieceTheme: (theme: string) => {
     set({ selectedPieceTheme: theme });
-    localStorage.setItem('selected-piece-theme', theme);
   },
   setSelectedBoardTheme: (theme: string) => {
     set({ selectedBoardTheme: theme });
-    localStorage.setItem('selected-board-theme', theme);
   },
   setCrtEffectEnabled: (enabled: boolean) => {
     set({ crtEffectEnabled: enabled });
-    localStorage.setItem('crtEffectEnabled', enabled ? 'true' : 'false');
   },
 
   // Window z-index management
@@ -831,8 +852,8 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
       // Find the default engine
       const defaultEngine = engines.find(e => e.default);
 
-      // Try to get persisted engine from localStorage
-      const persistedEngine = localStorage.getItem('selected-engine');
+      // Use persisted engine from Zustand storage if it is available
+      const persistedEngine = get().selectedEngine;
 
       // Determine which engine to use
       let engineToSelect: string;
@@ -858,9 +879,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         engineFetchState: 'success'
       });
 
-      // Persist the selection
-      localStorage.setItem('selected-engine', engineToSelect);
-
       console.log(`[Store] Successfully loaded ${engines.length} online engines`);
     } catch (error) {
       console.error('[Store] Failed to fetch engines:', error);
@@ -871,7 +889,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
         selectedEngine: OFFLINE_ENGINE,
         engineFetchState: 'error'
       });
-      //localStorage.setItem('selected-engine', OFFLINE_ENGINE);
       console.log('[Store] Using offline engine as fallback');
     }
   },
@@ -884,7 +901,6 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     }
     console.log('[Store] Switching to engine:', engineName);
     set({ selectedEngine: engineName });
-    localStorage.setItem('selected-engine', engineName);
   },
 
   setEngineLocked: (locked: boolean) => {
@@ -895,7 +911,19 @@ const useChessStore = create<ChessGameStore>((set, get) => ({
     const { selectedEngine, availableEngines } = get();
     const engineInfo = availableEngines.find(e => e.name === selectedEngine);
     return engineInfo?.display_name || 'Untitled Engine';
-  },
-}));
+  }
+    }),
+    {
+      name: 'chess-game-store',
+      storage: createJSONStorage<ChessPersistedState>(() => createPersistStorage()),
+      partialize: (state) => ({
+        selectedPieceTheme: state.selectedPieceTheme,
+        selectedBoardTheme: state.selectedBoardTheme,
+        crtEffectEnabled: state.crtEffectEnabled,
+        selectedEngine: state.selectedEngine
+      })
+    }
+  )
+);
 
 export default useChessStore;
