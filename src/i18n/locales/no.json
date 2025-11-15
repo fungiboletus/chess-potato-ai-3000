@@ -60,6 +60,15 @@
     "undo": "Angre trekk",
     "backToGame": "Tilbake til Spillet"
   },
+  "eval_chart": {
+    "win_probability": "Vinnersjanse",
+    "centipawns": "Centibønder",
+    "turns": "Trekk",
+    "loading": "Laster evalueringer...",
+    "offline_unavailable": "Evalueringer er ikke tilgjengelige for frakoblet motor.",
+    "unavailable": "Evalueringsdata ikke tilgjengelig.",
+    "no_moves": "Ingen trekk ennå."
+  },
   "player": {
     "human": "Menneske"
   },

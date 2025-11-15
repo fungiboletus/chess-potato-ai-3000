@@ -53,6 +53,15 @@
     "undo": "Deshacer jugada",
     "backToGame": "Volver al Juego"
   },
+  "eval_chart": {
+    "win_probability": "Prob. de victoria",
+    "centipawns": "Centipeones",
+    "turns": "Jugadas",
+    "loading": "Cargando evaluaciones...",
+    "offline_unavailable": "Evaluaciones no disponibles para el motor sin conexión.",
+    "unavailable": "Datos de evaluación no disponibles.",
+    "no_moves": "Sin movimientos todavía."
+  },
   "player": {
     "human": "Humano"
   },

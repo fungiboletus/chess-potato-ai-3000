@@ -60,6 +60,15 @@
     "undo": "Annuler le coup",
     "backToGame": "Retour au Jeu"
   },
+  "eval_chart": {
+    "win_probability": "Prob. de victoire",
+    "centipawns": "Centipions",
+    "turns": "Coups",
+    "loading": "Chargement des évaluations...",
+    "offline_unavailable": "Évaluations indisponibles pour le moteur hors ligne.",
+    "unavailable": "Données d'évaluation indisponibles.",
+    "no_moves": "Aucun coup pour le moment."
+  },
   "player": {
     "human": "Humain"
   },

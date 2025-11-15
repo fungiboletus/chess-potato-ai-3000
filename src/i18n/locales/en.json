@@ -60,6 +60,15 @@
     "undo": "Takeback",
     "backToGame": "Back to Game"
   },
+  "eval_chart": {
+    "win_probability": "Win Prob'",
+    "centipawns": "Centipawns",
+    "turns": "Turns",
+    "loading": "Loading evaluations...",
+    "offline_unavailable": "Evaluations unavailable for the offline engine.",
+    "unavailable": "Evaluation data unavailable.",
+    "no_moves": "No moves yet."
+  },
   "player": {
     "human": "Human"
   },

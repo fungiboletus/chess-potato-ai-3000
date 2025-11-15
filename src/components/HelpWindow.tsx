@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
+import { EvalChart } from './EvalChart';
 
 interface HelpWindowProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
 
   const WINDOW_WIDTH = 350;
   // Position window on the left side of the screen
-  const getLeftSidePosition = () => {
+  const getLeftSidePosition = useCallback(() => {
 
     // 50px from the right edge
     const innerWidth = window.innerWidth;
@@ -33,7 +34,12 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
       x: leftEdge,
       y: topEdge,
     };
-  };
+  }, []);
+
+  const defaultPosition = useMemo(
+    () => getLeftSidePosition(),
+    [getLeftSidePosition]
+  );
 
   return (
     <DraggableWindow
@@ -42,7 +48,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       onMouseDown={onMouseDown}
-      defaultPosition={getLeftSidePosition()}
+      defaultPosition={defaultPosition}
       windowId={windowId}
       zIndex={zIndex}
     >
@@ -78,6 +84,11 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
           • <strong>{t('help.persistent')}</strong> {t('help.persistent_text')}
         </div>
 
+        <h3 className="help-heading">
+          {t('help.eval_chart_title', { defaultValue: 'Evaluation Chart' })}
+        </h3>
+
+        <EvalChart />
         <div className="help-section">
           <button
             type="button"

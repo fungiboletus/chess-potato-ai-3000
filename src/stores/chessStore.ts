@@ -143,6 +143,7 @@ export interface ChessGameStore {
 
 // Internal variable to track AI move timeout
 let aiMoveTimeout: ReturnType<typeof setTimeout> | null = null;
+let fetchEnginesPromise: Promise<void> | null = null;
 
 type ChessPersistedState = Pick<
   ChessGameStore,
@@ -839,9 +840,17 @@ const useChessStore = create<ChessGameStore>()(
 
   // Engine management
   fetchEngines: async () => {
+    if (fetchEnginesPromise) {
+      return fetchEnginesPromise;
+    }
+
+    const { engineFetchState } = get();
+    if (engineFetchState === 'success') {
+      return;
+    }
+
     set({ engineFetchState: 'loading' });
 
-    // Define offline engine info - only used as fallback
     const offlineEngineInfo: EngineInfo = {
       name: OFFLINE_ENGINE,
       display_name: 'Offline (Random)',
@@ -849,57 +858,54 @@ const useChessStore = create<ChessGameStore>()(
       default: false
     };
 
-    try {
-      console.log('[Store] Fetching available engines...');
-      const engines = await mcpClient.listEngines();
+    const runPromise = (async () => {
+      try {
+        console.log('[Store] Fetching available engines...');
+        const engines = await mcpClient.listEngines();
 
-      // Only use online engines when fetch succeeds
-      if (engines.length === 0) {
-        throw new Error('No engines returned from server');
+        if (engines.length === 0) {
+          throw new Error('No engines returned from server');
+        }
+
+        const defaultEngine = engines.find(e => e.default);
+        const persistedEngine = get().selectedEngine;
+
+        let engineToSelect: string;
+
+        if (persistedEngine && engines.some(e => e.name === persistedEngine)) {
+          engineToSelect = persistedEngine;
+          console.log('[Store] Using persisted engine:', engineToSelect);
+        } else if (defaultEngine) {
+          engineToSelect = defaultEngine.name;
+          console.log('[Store] Using default engine:', engineToSelect);
+        } else {
+          engineToSelect = engines[0].name;
+          console.log('[Store] Using first available engine:', engineToSelect);
+        }
+
+        set({
+          availableEngines: engines,
+          selectedEngine: engineToSelect,
+          engineFetchState: 'success'
+        });
+
+        console.log(`[Store] Successfully loaded ${engines.length} online engines`);
+      } catch (error) {
+        console.error('[Store] Failed to fetch engines:', error);
+
+        set({
+          availableEngines: [offlineEngineInfo],
+          selectedEngine: OFFLINE_ENGINE,
+          engineFetchState: 'error'
+        });
+        console.log('[Store] Using offline engine as fallback');
+      } finally {
+        fetchEnginesPromise = null;
       }
+    })();
 
-      // Find the default engine
-      const defaultEngine = engines.find(e => e.default);
-
-      // Use persisted engine from Zustand storage if it is available
-      const persistedEngine = get().selectedEngine;
-
-      // Determine which engine to use
-      let engineToSelect: string;
-
-      if (persistedEngine && engines.some(e => e.name === persistedEngine)) {
-        // Use persisted engine if it exists in the list
-        engineToSelect = persistedEngine;
-        console.log('[Store] Using persisted engine:', engineToSelect);
-      } else if (defaultEngine) {
-        // Use default engine from server
-        engineToSelect = defaultEngine.name;
-        console.log('[Store] Using default engine:', engineToSelect);
-      } else {
-        // Fallback to first engine
-        engineToSelect = engines[0].name;
-        console.log('[Store] Using first available engine:', engineToSelect);
-      }
-
-      // Update state with online engines only
-      set({
-        availableEngines: engines,
-        selectedEngine: engineToSelect,
-        engineFetchState: 'success'
-      });
-
-      console.log(`[Store] Successfully loaded ${engines.length} online engines`);
-    } catch (error) {
-      console.error('[Store] Failed to fetch engines:', error);
-
-      // Fall back to offline engine only on failure
-      set({
-        availableEngines: [offlineEngineInfo],
-        selectedEngine: OFFLINE_ENGINE,
-        engineFetchState: 'error'
-      });
-      console.log('[Store] Using offline engine as fallback');
-    }
+    fetchEnginesPromise = runPromise;
+    return runPromise;
   },
 
   setSelectedEngine: (engineName: string) => {
