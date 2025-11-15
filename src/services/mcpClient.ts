@@ -30,33 +30,27 @@ export interface PositionEvaluation {
   score: number;
 }
 
-const NextMoveResultSchema = CallToolResultSchema.extend({
-  structuredContent: z.object({
-    move: z.string(),
-    fen: z.string(),
-    token: z.string()
-  }).passthrough().optional()
-});
+const NextMoveStructuredContentSchema = z.object({
+  move: z.string(),
+  fen: z.string().nullable().optional(),
+  token: z.string().nullable().optional()
+}).passthrough();
 
-const ListEnginesResultSchema = CallToolResultSchema.extend({
-  structuredContent: z.object({
-    engines: z.array(z.object({
-      name: z.string(),
-      display_name: z.string(),
-      description: z.string(),
-      default: z.boolean()
-    }))
-  }).passthrough().optional()
-});
+const ListEnginesStructuredContentSchema = z.object({
+  engines: z.array(z.object({
+    name: z.string(),
+    display_name: z.string(),
+    description: z.string(),
+    default: z.boolean()
+  }))
+}).passthrough();
 
-const EvaluateFensResultSchema = CallToolResultSchema.extend({
-  structuredContent: z.object({
-    evaluations: z.record(z.object({
-      expectation: z.number(),
-      score: z.number()
-    }))
-  }).passthrough().optional()
-});
+const EvaluateFensStructuredContentSchema = z.object({
+  evaluations: z.record(z.object({
+    expectation: z.number(),
+    score: z.number()
+  }))
+}).passthrough();
 
 /**
  * Singleton MCP Client Service for chess engine
@@ -310,15 +304,17 @@ class MCPClientService {
             engine_name: engineName,
             ...(this.currentToken && { token: this.currentToken })
           }
-        }, NextMoveResultSchema);
+        }, CallToolResultSchema);
 
-        const content = result.structuredContent as typeof NextMoveResultSchema['_output']['structuredContent'];
+        const rawContent = result.structuredContent;
 
-        // Extract the UCI move from the response
-        if (!content) {
+        if (!rawContent) {
           throw new Error('Empty response from MCP server');
         }
 
+        const content = NextMoveStructuredContentSchema.parse(rawContent);
+
+        // Extract the UCI move from the response
         const uciMove = content.move;
         const resultingFen = content.fen ?? null;
         const token = content.token ?? null;
@@ -393,13 +389,15 @@ class MCPClientService {
             tokens,
             ...(typeof playerIsWhite === 'boolean' ? { player_is_white: playerIsWhite } : {})
           }
-        }, EvaluateFensResultSchema);
+        }, CallToolResultSchema);
 
-        const content = result.structuredContent as typeof EvaluateFensResultSchema['_output']['structuredContent'];
+        const rawContent = result.structuredContent;
 
-        if (!content || !content.evaluations) {
+        if (!rawContent) {
           throw new Error('Empty response from MCP server');
         }
+
+        const content = EvaluateFensStructuredContentSchema.parse(rawContent);
 
         console.log('[MCP] Received evaluations for', Object.keys(content.evaluations).length, 'position(s)');
         return content.evaluations;
@@ -471,13 +469,15 @@ class MCPClientService {
       const result = await client.callTool({
         name: 'list_engines',
         arguments: {}
-      }, ListEnginesResultSchema);
+      }, CallToolResultSchema);
 
-      const content = result.structuredContent as typeof ListEnginesResultSchema['_output']['structuredContent'];
+      const rawContent = result.structuredContent;
 
-      if (!content || !content.engines) {
+      if (!rawContent) {
         throw new Error('Empty response from MCP server');
       }
+
+      const content = ListEnginesStructuredContentSchema.parse(rawContent);
 
       console.log(`[MCP] Found ${content.engines.length} engines`);
       return content.engines;
