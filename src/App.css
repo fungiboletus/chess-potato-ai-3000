@@ -113,9 +113,22 @@
   margin-top: 8px;
 }
 
+.eval-chart__header {
+  display: grid;
+  grid-template-columns: minmax(0, auto) 220px minmax(0, auto);
+  align-items: end;
+  gap: 0;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.eval-chart__header-spacer {
+  height: 0;
+}
+
 .eval-chart__row {
   display: grid;
-  grid-template-columns: auto 220px auto;
+  grid-template-columns: minmax(0, auto) 220px minmax(0, auto);
   align-items: start;
   gap: 0px;
 }
@@ -130,33 +143,20 @@
 
 .eval-chart__axis-container--left {
   justify-content: flex-end;
+  padding-right: 4px;
 }
 
 .eval-chart__axis-container--right {
   justify-content: flex-start;
+  padding-left: 4px;
 }
 
 .eval-chart__axis-title {
   font-size: 9px;
   color: #3a3a3a;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
-}
-
-.eval-chart__axis-container .eval-chart__axis-title {
-  position: absolute;
-  top: -14px;
-  left: 0;
-  width: 100%;
-}
-
-.eval-chart__axis-container--left .eval-chart__axis-title {
-  text-align: right;
-}
-
-.eval-chart__axis-container--right .eval-chart__axis-title {
-  text-align: left;
+  white-space: nowrap;
 }
 
 .eval-chart__axis-title--win {
@@ -172,15 +172,25 @@
   font-size: 8px;
 }
 
+.eval-chart__header .eval-chart__axis-title--win {
+  justify-self: start;
+  text-align: left;
+}
+
+.eval-chart__header .eval-chart__axis-title--centipawn {
+  justify-self: end;
+  text-align: right;
+}
+
 .eval-chart__axis {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
+  /* height: 100%; */
   font-size: 8px;
   color: #3a3a3a;
   line-height: 1;
-  padding: 2px 4px;
+  padding: 1px 0 1px 0;
 }
 
 .eval-chart__axis--left {
@@ -191,6 +201,18 @@
 .eval-chart__axis--right {
   text-align: left;
   color: darkred;
+}
+
+.eval-chart__axis-value {
+  display: block;
+}
+
+.eval-chart__axis-value--top-offset {
+  transform: translateY(4px);
+}
+
+.eval-chart__axis-value--bottom-offset {
+  transform: translateY(-4px);
 }
 
 .eval-chart__canvas-cell {
@@ -644,6 +666,10 @@ button:disabled {
 /* Rewind mode - grayscale board */
 .chess-board-container.rewind-mode .chess-board {
   filter: grayscale(100%);
+}
+
+.chess-board-container.rewind-mode cg-board square.last-move {
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 /* Read-only board - change cursor to default */

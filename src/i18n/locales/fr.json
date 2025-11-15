@@ -61,7 +61,7 @@
     "backToGame": "Retour au Jeu"
   },
   "eval_chart": {
-    "win_probability": "Prob. de victoire",
+    "win_probability": "Probabilité de victoire",
     "centipawns": "Centipions",
     "turns": "Coups",
     "loading": "Chargement des évaluations...",

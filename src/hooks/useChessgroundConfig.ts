@@ -3,7 +3,7 @@ import type { Config } from 'chessground/config';
 import useChessStore from '../stores/chessStore';
 
 export const useChessgroundConfig = (): Config => {
-  const { chess, playerColor, isPlayerTurn, legalMoves, rewindMode } = useChessStore();
+  const { chess, playerColor, isPlayerTurn, legalMoves, rewindMode, lastMoveSquares } = useChessStore();
 
   return useMemo((): Config => {
     // Use rewind FEN when in rewind mode, otherwise use current game FEN
@@ -11,6 +11,8 @@ export const useChessgroundConfig = (): Config => {
 
     // Player can only move when it's their turn AND not in rewind mode
     const canMove = isPlayerTurn && !rewindMode?.active;
+    const activeLastMove = rewindMode?.active ? rewindMode.lastMoveSquares : lastMoveSquares;
+    const lastMove = activeLastMove ?? undefined;
 
     return {
       fen: displayFen,
@@ -22,6 +24,7 @@ export const useChessgroundConfig = (): Config => {
         dests: canMove ? legalMoves : new Map(),
       },
       check: chess.isCheck(),
+      lastMove,
       highlight: {
         lastMove: true,
         check: true,
@@ -32,5 +35,5 @@ export const useChessgroundConfig = (): Config => {
       },
       coordinates: false,
     };
-  }, [chess, playerColor, isPlayerTurn, legalMoves, rewindMode]);
+  }, [chess, playerColor, isPlayerTurn, legalMoves, rewindMode, lastMoveSquares]);
 };

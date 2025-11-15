@@ -11,6 +11,7 @@ const MATE_SCORE_CENTIPAWNS = 10000;
 const MATE_SCORE_BUFFER = 32;
 const EXTREME_LIMIT_PAWNS = (MATE_SCORE_CENTIPAWNS - MATE_SCORE_BUFFER) / 100;
 const EXTREME_SEGMENT_FRACTION = 0.05;
+const DUAL_SCALE_LABEL_GRANULARITY = 10; // Round offset axis labels to neat 10 cp steps
 
 interface EvalPoint {
   expectation: number | null;
@@ -26,8 +27,23 @@ interface PixelColor {
 
 const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max);
 
-const formatCentipawnLabel = (value: number): string => {
-  const cpValue = Math.round(value * 100);
+const formatCentipawnLabel = (value: number, granularity = 1): string => {
+  const effectiveGranularity = Math.max(1, Math.floor(granularity));
+  const rawCentipawns = value * 100;
+  let cpValue: number;
+
+  if (effectiveGranularity === 1) {
+    cpValue = Math.round(rawCentipawns);
+  } else {
+    const roundedMagnitude =
+      Math.round(Math.abs(rawCentipawns) / effectiveGranularity) * effectiveGranularity;
+    const signedRounded = Math.sign(rawCentipawns) * roundedMagnitude;
+    cpValue =
+      signedRounded === 0 && rawCentipawns !== 0
+        ? Math.sign(rawCentipawns) * effectiveGranularity
+        : signedRounded;
+  }
+
   if (cpValue === 0) {
     return '0';
   }
@@ -90,7 +106,6 @@ export const EvalChart: React.FC = () => {
     lowerExtremeMaxScore,
     upperExtremeMinScore,
     upperExtremeMaxScore,
-    maxScoreAbs,
     hasAnyData
   } = useMemo(() => {
     const mapped: EvalPoint[] = moveHistory.map(move => {
@@ -157,13 +172,6 @@ export const EvalChart: React.FC = () => {
       upperExtremeMax = globalMax;
     }
 
-    const localMax = mapped.reduce((max, point) => {
-      if (point.score === null) {
-        return max;
-      }
-      return Math.max(max, Math.abs(point.score));
-    }, 0);
-
     const anyData = mapped.some(point => point.expectation !== null && point.score !== null);
 
     return {
@@ -176,7 +184,6 @@ export const EvalChart: React.FC = () => {
       lowerExtremeMaxScore: lowerExtremeMax,
       upperExtremeMinScore: upperExtremeMin,
       upperExtremeMaxScore: upperExtremeMax,
-      maxScoreAbs: localMax,
       hasAnyData: anyData
     };
   }, [moveHistory, positionEvaluations]);
@@ -186,9 +193,48 @@ export const EvalChart: React.FC = () => {
     [moveHistory, positionEvaluations]
   );
 
-  const chartScale = Math.max(1, Math.ceil(maxScoreAbs));
+  const safeScaleMagnitude = Math.max(Math.abs(trimmedMinScore), Math.abs(trimmedMaxScore));
+  const roundedScaleCentipawns =
+    Math.ceil((safeScaleMagnitude * 100) / DUAL_SCALE_LABEL_GRANULARITY) * DUAL_SCALE_LABEL_GRANULARITY;
+  const chartScale = Math.max(1, roundedScaleCentipawns / 100);
   const turnCount = Math.max(1, Math.ceil(moveHistory.length / 2));
   const hasMoves = moveHistory.length > 0;
+
+  const rightAxisTicks = useMemo(() => {
+    // The right axis blends two scales: a central "safe" region that stays symmetric, and
+    // small offset zones that indicate there are positions beyond the visible range.
+    // If we only see extreme scores on one side (e.g. we're getting mated), we still keep
+    // the opposite label anchored to the safe range instead of inflating it with the mate value.
+    const safeMin = trimmedMinScore;
+    const safeMax = trimmedMaxScore;
+    const hasLowerExtremes = minScore < safeMin - Number.EPSILON;
+    const hasUpperExtremes = maxScore > safeMax + Number.EPSILON;
+
+    const topValue = hasUpperExtremes ? safeMax : chartScale;
+    const bottomValue = hasLowerExtremes ? safeMin : -chartScale;
+
+    const topOffset: 'down' | null = hasUpperExtremes ? 'down' : null;
+    const bottomOffset: 'up' | null = hasLowerExtremes ? 'up' : null;
+    const labelGranularity = DUAL_SCALE_LABEL_GRANULARITY;
+
+    return [
+      {
+        id: 'top' as const,
+        label: formatCentipawnLabel(topValue, labelGranularity),
+        offset: topOffset
+      },
+      {
+        id: 'middle' as const,
+        label: formatCentipawnLabel(0, labelGranularity),
+        offset: null
+      },
+      {
+        id: 'bottom' as const,
+        label: formatCentipawnLabel(bottomValue, labelGranularity),
+        offset: bottomOffset
+      }
+    ];
+  }, [chartScale, maxScore, minScore, trimmedMaxScore, trimmedMinScore]);
 
   const turnLabelData = useMemo(() => {
     const total = turnCount;
@@ -436,11 +482,17 @@ export const EvalChart: React.FC = () => {
 
   return (
     <div className="eval-chart">
+      <div className="eval-chart__header">
+        <span className="eval-chart__axis-title eval-chart__axis-title--win">
+          {t('eval_chart.win_probability')}
+        </span>
+        <span aria-hidden className="eval-chart__header-spacer" />
+        <span className="eval-chart__axis-title eval-chart__axis-title--centipawn">
+          {t('eval_chart.centipawns')}
+        </span>
+      </div>
       <div className="eval-chart__row">
         <div className="eval-chart__axis-container eval-chart__axis-container--left">
-          <span className="eval-chart__axis-title eval-chart__axis-title--win">
-            {t('eval_chart.win_probability')}
-          </span>
           <div className="eval-chart__axis eval-chart__axis--left">
             <span>100%</span>
             <span>50%</span>
@@ -457,13 +509,21 @@ export const EvalChart: React.FC = () => {
           />
         </div>
         <div className="eval-chart__axis-container eval-chart__axis-container--right">
-          <span className="eval-chart__axis-title eval-chart__axis-title--centipawn">
-            {t('eval_chart.centipawns')}
-          </span>
           <div className="eval-chart__axis eval-chart__axis--right">
-            <span>{formatCentipawnLabel(chartScale)}</span>
-            <span>{formatCentipawnLabel(0)}</span>
-            <span>{formatCentipawnLabel(-chartScale)}</span>
+            {rightAxisTicks.map(tick => {
+              const classes = ['eval-chart__axis-value'];
+              if (tick.offset === 'down') {
+                classes.push('eval-chart__axis-value--top-offset');
+              }
+              if (tick.offset === 'up') {
+                classes.push('eval-chart__axis-value--bottom-offset');
+              }
+              return (
+                <span key={tick.id} className={classes.join(' ')}>
+                  {tick.label}
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>

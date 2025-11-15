@@ -61,7 +61,7 @@
     "backToGame": "Back to Game"
   },
   "eval_chart": {
-    "win_probability": "Win Prob'",
+    "win_probability": "Win Probability",
     "centipawns": "Centipawns",
     "turns": "Turns",
     "loading": "Loading evaluations...",

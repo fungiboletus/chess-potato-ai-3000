@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
-import { Chess } from 'chess.js';
+import { Chess, type Move } from 'chess.js';
+import type { Key } from 'chessground/types';
 import type { Api } from 'chessground/api';
 import { mcpClient, type EngineInfo, type PositionEvaluation } from '../services/mcpClient';
 import { computeRandomMove } from '../utils/offlineEngine';
@@ -30,6 +31,8 @@ export interface MoveRecord {
   evaluationToken?: string | null; // Token associated with the position for MCP evaluations
   timestamp: number;  // Unix timestamp (ms) when the move was recorded
   continuationToken?: string | null; // Engine continuation token after this move (AI moves only)
+  from: Key;
+  to: Key;
 }
 
 // Special offline engine constant
@@ -55,6 +58,7 @@ export interface ChessGameStore {
   moveHistory: MoveRecord[];
   positionEvaluations: Record<string, PositionEvaluationState>;
   lastMoveAt: number | null;
+  lastMoveSquares: [Key, Key] | null;
   engineContinuationToken: string | null;
   hasUsedTakeback: boolean;
 
@@ -63,6 +67,7 @@ export interface ChessGameStore {
     active: boolean;
     moveIndex: number;
     fen: string;
+    lastMoveSquares: [Key, Key] | null;
   } | null;
 
   // Game result
@@ -178,6 +183,7 @@ const useChessStore = create<ChessGameStore>()(
   moveHistory: [],
   positionEvaluations: {},
   lastMoveAt: null,
+  lastMoveSquares: null,
   engineContinuationToken: null,
   hasUsedTakeback: false,
   rewindMode: null,
@@ -413,6 +419,7 @@ const useChessStore = create<ChessGameStore>()(
       moveHistory: [],
       positionEvaluations: {},
       lastMoveAt: null,
+      lastMoveSquares: null,
       engineContinuationToken: null,
       hasUsedTakeback: false,
       rewindMode: null, // Exit rewind mode on new game
@@ -455,14 +462,17 @@ const useChessStore = create<ChessGameStore>()(
           fen: chess.fen(), // Store FEN after move
           evaluationToken: null,
           timestamp,
-          continuationToken: null
+          continuationToken: null,
+          from: move.from as Key,
+          to: move.to as Key
         };
         const shouldMarkFirstMove = !get().hasMadeFirstMove;
         set(state => ({
           moveHistory: [...state.moveHistory, moveRecord],
           gameStarted: true,
           lastMoveAt: timestamp,
-          hasMadeFirstMove: state.hasMadeFirstMove || shouldMarkFirstMove
+          hasMadeFirstMove: state.hasMadeFirstMove || shouldMarkFirstMove,
+          lastMoveSquares: [move.from as Key, move.to as Key]
         }));
 
         // Update turn state after move
@@ -583,13 +593,16 @@ const useChessStore = create<ChessGameStore>()(
             fen: stateAfterMCP.chess.fen(), // Store FEN after move
             evaluationToken,
             timestamp,
-            continuationToken
+            continuationToken,
+            from: move.from as Key,
+            to: move.to as Key
           };
           set(state => ({
             moveHistory: [...state.moveHistory, moveRecord],
             gameStarted: true,
             lastMoveAt: timestamp,
-            engineContinuationToken: continuationToken
+            engineContinuationToken: continuationToken,
+            lastMoveSquares: [move.from as Key, move.to as Key]
           }));
           mcpClient.setToken(continuationToken);
 
@@ -625,13 +638,17 @@ const useChessStore = create<ChessGameStore>()(
               fen: currentState.chess.fen(), // Store FEN after move
               evaluationToken: null,
               timestamp: Date.now(),
-              continuationToken: null
+              continuationToken: null,
+              from: move.from as Key,
+              to: move.to as Key
             };
+            const fallbackLastMove: [Key, Key] = [move.from as Key, move.to as Key];
             set(state => ({
               moveHistory: [...state.moveHistory, moveRecord],
               gameStarted: true,
               lastMoveAt: moveRecord.timestamp,
-              engineContinuationToken: null
+              engineContinuationToken: null,
+              lastMoveSquares: fallbackLastMove
             }));
             mcpClient.setToken(null);
 
@@ -717,6 +734,11 @@ const useChessStore = create<ChessGameStore>()(
       console.warn('[Store] Expected to undo %d moves but reverted %d', movesToUndo, appliedUndos);
     }
 
+    const historyMoves = chess.history({ verbose: true }) as Move[];
+    const lastHistoryMove: [Key, Key] | null = historyMoves.length > 0
+      ? [historyMoves[historyMoves.length - 1].from as Key, historyMoves[historyMoves.length - 1].to as Key]
+      : null;
+
     set({
       moveHistory: remainingHistory,
       rewindMode: null,
@@ -725,6 +747,7 @@ const useChessStore = create<ChessGameStore>()(
       lastMoveAt: lastRemainingTimestamp,
       engineContinuationToken: continuationToken ?? null,
       hasUsedTakeback: true,
+      lastMoveSquares: lastHistoryMove
     });
 
     get().updateTurnState();
@@ -766,11 +789,13 @@ const useChessStore = create<ChessGameStore>()(
     }
 
     const move = moveHistory[moveIndex];
+    const lastMoveSquares: [Key, Key] | null = move ? [move.from, move.to] : null;
     set({
       rewindMode: {
         active: true,
         moveIndex,
-        fen: move.fen
+        fen: move.fen,
+        lastMoveSquares
       }
     });
   },
