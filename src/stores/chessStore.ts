@@ -49,6 +49,7 @@ export interface ChessGameStore {
   gameState: GameState;
   playerColor: PlayerColor;
   gameStarted: boolean;
+  hasMadeFirstMove: boolean;
 
   // Move tracking
   moveHistory: MoveRecord[];
@@ -145,7 +146,7 @@ let aiMoveTimeout: ReturnType<typeof setTimeout> | null = null;
 
 type ChessPersistedState = Pick<
   ChessGameStore,
-  'selectedPieceTheme' | 'selectedBoardTheme' | 'crtEffectEnabled' | 'selectedEngine'
+  'selectedPieceTheme' | 'selectedBoardTheme' | 'crtEffectEnabled' | 'selectedEngine' | 'hasMadeFirstMove'
 >;
 
 const createPersistStorage = (): StateStorage => {
@@ -172,6 +173,7 @@ const useChessStore = create<ChessGameStore>()(
   gameState: 'initializing',
   playerColor: 'white',
   gameStarted: false,
+  hasMadeFirstMove: false,
   moveHistory: [],
   positionEvaluations: {},
   lastMoveAt: null,
@@ -390,7 +392,12 @@ const useChessStore = create<ChessGameStore>()(
     // Reset MCP token for the new game
     mcpClient.resetToken();
 
-    const newColor = color || (Math.random() < 0.5 ? 'white' : 'black');
+    const { hasMadeFirstMove } = get();
+    const newColor = color
+      ? color
+      : !hasMadeFirstMove
+        ? 'white'
+        : (Math.random() < 0.5 ? 'white' : 'black');
     const chess = new Chess();
 
     // Check if engine should remain locked due to URL parameter
@@ -449,10 +456,12 @@ const useChessStore = create<ChessGameStore>()(
           timestamp,
           continuationToken: null
         };
+        const shouldMarkFirstMove = !get().hasMadeFirstMove;
         set(state => ({
           moveHistory: [...state.moveHistory, moveRecord],
           gameStarted: true,
-          lastMoveAt: timestamp
+          lastMoveAt: timestamp,
+          hasMadeFirstMove: state.hasMadeFirstMove || shouldMarkFirstMove
         }));
 
         // Update turn state after move
@@ -920,7 +929,8 @@ const useChessStore = create<ChessGameStore>()(
         selectedPieceTheme: state.selectedPieceTheme,
         selectedBoardTheme: state.selectedBoardTheme,
         crtEffectEnabled: state.crtEffectEnabled,
-        selectedEngine: state.selectedEngine
+        selectedEngine: state.selectedEngine,
+        hasMadeFirstMove: state.hasMadeFirstMove
       })
     }
   )
