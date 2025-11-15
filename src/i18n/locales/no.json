@@ -77,10 +77,9 @@
     "black": "svart"
   },
   "result": {
-    "winner": "🏆 VINNER! 🏆",
-    "game_over": "😵 SPILL OVER 😵",
-    "tie": "🤷 DET ER UAVGJORT 🤷",
-    "gif_placeholder": "(GIF-plassholder)"
+    "victory_headline": "Sterk seier!",
+    "defeat_headline": "Spillet er over",
+    "draw_headline": "Jevn remis"
   },
   "language": {
     "title": "Langue | Language | Språk | Idioma",
@@ -121,5 +120,23 @@
     "board": "Brett",
     "crt_effect": "CRT-skannelinjeeffekt",
     "ok": "OK"
+  },
+  "feedback": {
+    "enjoyment": {
+      "legend": "Likte du partiet?",
+      "loved_it": "Elsket det",
+      "it_was_okay": "Det var greit",
+      "not_really": "Ikke spesielt"
+    },
+    "authenticity": {
+      "legend": "Føles motstanderens trekk menneskelige?",
+      "very_human": "Veldig menneskelige",
+      "somewhat_human": "Litt menneskelige",
+      "not_human": "Ikke menneskelige"
+    },
+    "notes_label": "Ekstra notater",
+    "submit": "Send tilbakemelding",
+    "submitting": "Sender...",
+    "thank_you": "Takk for tilbakemeldingen!"
   }
 }

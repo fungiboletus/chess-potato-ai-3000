@@ -77,10 +77,9 @@
     "black": "black"
   },
   "result": {
-    "winner": "🏆 WINNER! 🏆",
-    "game_over": "😵 GAME OVER 😵",
-    "tie": "🤷 IT'S A TIE 🤷",
-    "gif_placeholder": "(GIF placeholder)"
+    "victory_headline": "Well played!",
+    "defeat_headline": "Game over",
+    "draw_headline": "A balanced battle"
   },
   "language": {
     "title": "Langue | Language | Språk | Idioma",
@@ -90,6 +89,24 @@
     "french": "Français",
     "spanish": "Español",
     "norwegian": "Norsk"
+  },
+  "feedback": {
+    "enjoyment": {
+      "legend": "Did you enjoy the game?",
+      "loved_it": "Loved it",
+      "it_was_okay": "It was okay",
+      "not_really": "Not really"
+    },
+    "authenticity": {
+      "legend": "Did the opponent feel human?",
+      "very_human": "Very human",
+      "somewhat_human": "Somewhat human",
+      "not_human": "Not human at all"
+    },
+    "notes_label": "Additional notes",
+    "submit": "Submit feedback",
+    "submitting": "Submitting...",
+    "thank_you": "Thanks for your feedback!"
   },
   "status": {
     "initializing": "Initializing...",

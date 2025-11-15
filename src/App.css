@@ -402,10 +402,86 @@ button:disabled {
 }
 
 .game-result-window {
-  width: 300px;
-  height: 200px;
+  position: absolute;
+  width: 380px;
   max-width: 90dvw;
   max-height: 90dvh;
+}
+
+.game-result-window .window-body {
+  padding: 12px;
+}
+
+.game-result-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-result-headline {
+  font-weight: bold;
+  text-align: center;
+}
+
+.game-feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.game-feedback-grid fieldset {
+  min-width: 0;
+}
+
+.game-feedback-grid legend {
+  font-weight: bold;
+}
+
+.game-feedback-notes {
+  width: 100%;
+}
+
+.game-feedback-notes textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.game-feedback-submit {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 32px;
+}
+
+.game-feedback-submit-button {
+  min-width: 140px;
+}
+
+.game-feedback-submit-button-submitted {
+  color: black;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.game-result-chart {
+  display: flex;
+  justify-content: center;
+}
+
+.game-result-close {
+  align-self: center;
+  min-width: 120px;
+}
+
+@media (max-width: 480px) {
+  .game-feedback-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .game-controls {

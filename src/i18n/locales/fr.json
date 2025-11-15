@@ -77,10 +77,9 @@
     "black": "noirs"
   },
   "result": {
-    "winner": "🏆 GAGNANT ! 🏆",
-    "game_over": "😵 PARTIE TERMINÉE 😵",
-    "tie": "🤷 C'EST UN NUL 🤷",
-    "gif_placeholder": "(GIF temporaire)"
+    "victory_headline": "Belle victoire !",
+    "defeat_headline": "Partie terminée",
+    "draw_headline": "Match équilibré"
   },
   "language": {
     "title": "Langue | Language | Språk | Idioma",
@@ -121,5 +120,23 @@
     "board": "Échiquier",
     "crt_effect": "Effet de lignes de balayage CRT",
     "ok": "OK"
+  },
+  "feedback": {
+    "enjoyment": {
+      "legend": "Avez-vous aimé la partie ?",
+      "loved_it": "J'ai adoré",
+      "it_was_okay": "C'était correct",
+      "not_really": "Pas vraiment"
+    },
+    "authenticity": {
+      "legend": "Les coups de l'adversaire semblaient-ils humains ?",
+      "very_human": "Très humains",
+      "somewhat_human": "Assez humains",
+      "not_human": "Pas du tout humains"
+    },
+    "notes_label": "Notes supplémentaires",
+    "submit": "Envoyer le retour",
+    "submitting": "Envoi...",
+    "thank_you": "Merci pour votre retour !"
   }
 }

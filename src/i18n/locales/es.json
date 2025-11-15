@@ -70,10 +70,9 @@
     "black": "negras"
   },
   "result": {
-    "winner": "🏆 ¡GANADOR! 🏆",
-    "game_over": "😵 JUEGO TERMINADO 😵",
-    "tie": "🤷 ES UN EMPATE 🤷",
-    "gif_placeholder": "(GIF temporal)"
+    "victory_headline": "¡Gran partida!",
+    "defeat_headline": "Partida terminada",
+    "draw_headline": "Empate equilibrado"
   },
   "language": {
     "title": "Langue | Language | Språk | Idioma",
@@ -114,5 +113,23 @@
     "board": "Tablero",
     "crt_effect": "Efecto de líneas de escaneo CRT",
     "ok": "Aceptar"
+  },
+  "feedback": {
+    "enjoyment": {
+      "legend": "¿Disfrutaste la partida?",
+      "loved_it": "Me encantó",
+      "it_was_okay": "Estuvo bien",
+      "not_really": "No mucho"
+    },
+    "authenticity": {
+      "legend": "¿Los movimientos del oponente se sintieron humanos?",
+      "very_human": "Muy humanos",
+      "somewhat_human": "Algo humanos",
+      "not_human": "Nada humanos"
+    },
+    "notes_label": "Notas adicionales",
+    "submit": "Enviar opinión",
+    "submitting": "Enviando...",
+    "thank_you": "¡Gracias por tus comentarios!"
   }
 }
