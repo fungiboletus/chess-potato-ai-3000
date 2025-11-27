@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useChessStore, { OFFLINE_ENGINE } from '../stores/chessStore';
+import useChessStore, { selectIsOfflineMode } from '../stores/chessStore';
 import { DraggableWindow } from './DraggableWindow';
 import { MoveHistoryActions } from './MoveHistoryActions';
 import { getEvaluationAttributes } from '../utils/evaluationFormatter';
@@ -27,7 +27,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 }) => {
   const { t } = useTranslation();
   const availableEngines = useChessStore(state => state.availableEngines);
-  const selectedEngine = useChessStore(state => state.selectedEngine);
+  const isOfflineMode = useChessStore(selectIsOfflineMode);
   const gameState = useChessStore(state => state.gameState);
   const rewindMode = useChessStore(state => state.rewindMode);
   const enterRewindMode = useChessStore(state => state.enterRewindMode);
@@ -68,8 +68,6 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
     }
   }, [moveHistory]);
-
-  const isOfflineEngine = selectedEngine === OFFLINE_ENGINE;
 
   const getPlayerDisplayName = (playerKey: string): string => {
     if (playerKey === 'human') {
@@ -144,13 +142,13 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
 
   useEffect(() => {
-    const shouldLoadEvaluations = isOpen && showEvaluations && moveHistory.length > 0 && !isOfflineEngine;
+    const shouldLoadEvaluations = isOpen && showEvaluations && moveHistory.length > 0 && !isOfflineMode;
     if (!shouldLoadEvaluations) {
       return;
     }
 
     void loadPositionEvaluations();
-  }, [loadPositionEvaluations, isOpen, showEvaluations, moveHistory.length, isOfflineEngine]);
+  }, [loadPositionEvaluations, isOpen, showEvaluations, moveHistory.length, isOfflineMode]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -158,7 +156,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     }
 
     const handleOnline = () => {
-      const shouldLoadEvaluations = isOpen && showEvaluations && moveHistory.length > 0 && !isOfflineEngine;
+      const shouldLoadEvaluations = isOpen && showEvaluations && moveHistory.length > 0 && !isOfflineMode;
       if (!shouldLoadEvaluations) {
         return;
       }
@@ -168,7 +166,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [loadPositionEvaluations, isOpen, showEvaluations, moveHistory.length, isOfflineEngine]);
+  }, [loadPositionEvaluations, isOpen, showEvaluations, moveHistory.length, isOfflineMode]);
 
   // Keep the highlighted row within the visible scroll region without forcing unwanted jumps
   useEffect(() => {
@@ -196,7 +194,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     }
   }, [highlightedIndex]);
 
-  const reallyShowEvaluations = showEvaluations && !isOfflineEngine;
+  const reallyShowEvaluations = showEvaluations && !isOfflineMode;
   const columnCount = reallyShowEvaluations ? 3 : 2;
 
   const generateMoveRows = () => {
@@ -275,8 +273,8 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
             id="move-history-show-evaluations"
             type="checkbox"
             checked={reallyShowEvaluations}
-            disabled={isOfflineEngine}
-            onChange={event => { if (!isOfflineEngine) setShowEvaluations(event.target.checked); }}
+            disabled={isOfflineMode}
+            onChange={event => { if (!isOfflineMode) setShowEvaluations(event.target.checked); }}
           />
           <label htmlFor="move-history-show-evaluations">
             {t('move_history.show_eval_checkbox', { defaultValue: 'Show evaluation' })}

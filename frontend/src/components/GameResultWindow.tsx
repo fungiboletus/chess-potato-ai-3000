@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
 import { EvalChart } from './EvalChart';
+import useChessStore, { selectIsOfflineMode } from '../stores/chessStore';
 
 interface GameResultWindowProps {
   isOpen: boolean;
@@ -60,6 +61,8 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
     };
   }, []);
 
+  const isOfflineMode = useChessStore(selectIsOfflineMode);
+
   return (
     <DraggableWindow
       title={config.title}
@@ -74,6 +77,7 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
         headline={config.headline}
         message={message}
         onClose={onClose}
+        isOfflineMode={isOfflineMode}
       />
     </DraggableWindow>
   );
@@ -83,6 +87,7 @@ interface GameResultContentProps {
   headline: string;
   message: string;
   onClose: () => void;
+  isOfflineMode: boolean;
 }
 
 type EnjoymentValue = 'loved_it' | 'it_was_okay' | 'not_really';
@@ -94,6 +99,7 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
   headline,
   message,
   onClose,
+  isOfflineMode,
 }) => {
   const { t } = useTranslation();
   const [enjoyment, setEnjoyment] = useState<EnjoymentValue | null>(null);
@@ -153,78 +159,82 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
         {message}
       </div>
 
-      <form className="game-feedback-form" onSubmit={handleSubmit}>
-        <div className="game-feedback-grid">
-          <fieldset disabled={disabled}>
-            <legend>{t('feedback.enjoyment.legend')}</legend>
-            {enjoymentOptions.map(option => (
-              <div className="field-row" key={option.value}>
-                <input
-                  id={`game-enjoyment-${option.value}`}
-                  type="radio"
-                  name="game-enjoyment"
-                  value={option.value}
-                  checked={enjoyment === option.value}
-                  onChange={() => setEnjoyment(option.value)}
-                />
-                <label htmlFor={`game-enjoyment-${option.value}`}>
-                  {option.label}
-                </label>
-              </div>
-            ))}
-          </fieldset>
+      {!isOfflineMode && (
+        <>
+          <form className="game-feedback-form" onSubmit={handleSubmit}>
+            <div className="game-feedback-grid">
+              <fieldset disabled={disabled}>
+                <legend>{t('feedback.enjoyment.legend')}</legend>
+                {enjoymentOptions.map(option => (
+                  <div className="field-row" key={option.value}>
+                    <input
+                      id={`game-enjoyment-${option.value}`}
+                      type="radio"
+                      name="game-enjoyment"
+                      value={option.value}
+                      checked={enjoyment === option.value}
+                      onChange={() => setEnjoyment(option.value)}
+                    />
+                    <label htmlFor={`game-enjoyment-${option.value}`}>
+                      {option.label}
+                    </label>
+                  </div>
+                ))}
+              </fieldset>
 
-          <fieldset disabled={disabled}>
-            <legend>{t('feedback.authenticity.legend')}</legend>
-            {authenticityOptions.map(option => (
-              <div className="field-row" key={option.value}>
-                <input
-                  id={`game-authenticity-${option.value}`}
-                  type="radio"
-                  name="game-authenticity"
-                  value={option.value}
-                  checked={authenticity === option.value}
-                  onChange={() => setAuthenticity(option.value)}
-                />
-                <label htmlFor={`game-authenticity-${option.value}`}>
-                  {option.label}
-                </label>
-              </div>
-            ))}
-          </fieldset>
-        </div>
+              <fieldset disabled={disabled}>
+                <legend>{t('feedback.authenticity.legend')}</legend>
+                {authenticityOptions.map(option => (
+                  <div className="field-row" key={option.value}>
+                    <input
+                      id={`game-authenticity-${option.value}`}
+                      type="radio"
+                      name="game-authenticity"
+                      value={option.value}
+                      checked={authenticity === option.value}
+                      onChange={() => setAuthenticity(option.value)}
+                    />
+                    <label htmlFor={`game-authenticity-${option.value}`}>
+                      {option.label}
+                    </label>
+                  </div>
+                ))}
+              </fieldset>
+            </div>
 
-        <div className="field-row-stacked game-feedback-notes">
-          <label htmlFor="game-feedback-notes">
-            {t('feedback.notes_label')}
-          </label>
-          <textarea
-            id="game-feedback-notes"
-            rows={5}
-            value={notes}
-            onChange={event => setNotes(event.target.value)}
-            disabled={disabled}
-          />
-        </div>
+            <div className="field-row-stacked game-feedback-notes">
+              <label htmlFor="game-feedback-notes">
+                {t('feedback.notes_label')}
+              </label>
+              <textarea
+                id="game-feedback-notes"
+                rows={5}
+                value={notes}
+                onChange={event => setNotes(event.target.value)}
+                disabled={disabled}
+              />
+            </div>
 
-        <div className="game-feedback-submit">
-          <button
-            type="submit"
-            className={`game-feedback-submit-button${isSubmitted ? ' game-feedback-submit-button-submitted' : ''}`}
-            disabled={disabled}
-          >
-            {isSubmitted
-              ? t('feedback.thank_you')
-              : isSubmitting
-                ? t('feedback.submitting')
-                : t('feedback.submit')}
-          </button>
-        </div>
-      </form>
+            <div className="game-feedback-submit">
+              <button
+                type="submit"
+                className={`game-feedback-submit-button${isSubmitted ? ' game-feedback-submit-button-submitted' : ''}`}
+                disabled={disabled}
+              >
+                {isSubmitted
+                  ? t('feedback.thank_you')
+                  : isSubmitting
+                    ? t('feedback.submitting')
+                    : t('feedback.submit')}
+              </button>
+            </div>
+          </form>
 
-      <div className="game-result-chart">
-        <EvalChart />
-      </div>
+          <div className="game-result-chart">
+            <EvalChart />
+          </div>
+        </>
+      )}
 
       <button
         onClick={onClose}

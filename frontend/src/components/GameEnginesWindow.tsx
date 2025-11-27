@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
-import useChessStore, { OFFLINE_ENGINE } from '../stores/chessStore';
+import useChessStore, { selectIsOfflineMode } from '../stores/chessStore';
 import { getEngineIcon } from './engineIcons';
 
 interface GameEnginesWindowProps {
@@ -21,11 +21,12 @@ export const GameEnginesWindow: React.FC<GameEnginesWindowProps> = ({
 }) => {
   const { t } = useTranslation();
   const { selectedEngine, availableEngines, engineFetchState, engineLocked, setSelectedEngine } = useChessStore();
+  const isOfflineMode = useChessStore(selectIsOfflineMode);
 
   // Determine the lock reason
   const params = new URLSearchParams(window.location.search);
   const isLockedByUrl = params.get('lockEngine') === 'true';
-  const isLockedByOffline = engineLocked && !isLockedByUrl && selectedEngine === OFFLINE_ENGINE;
+  const isLockedByOffline = engineLocked && !isLockedByUrl && isOfflineMode;
 
   const handleEngineChange = (engineName: string) => {
     setSelectedEngine(engineName);

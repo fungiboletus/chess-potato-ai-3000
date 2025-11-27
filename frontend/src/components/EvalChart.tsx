@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import useChessStore, { OFFLINE_ENGINE } from '../stores/chessStore';
+import useChessStore, { selectIsOfflineMode } from '../stores/chessStore';
 
 const CANVAS_WIDTH = 220;
 const CANVAS_HEIGHT = 120;
@@ -57,12 +57,10 @@ export const EvalChart: React.FC = () => {
   const moveHistory = useChessStore(state => state.moveHistory);
   const positionEvaluations = useChessStore(state => state.positionEvaluations);
   const loadPositionEvaluations = useChessStore(state => state.loadPositionEvaluations);
-  const selectedEngine = useChessStore(state => state.selectedEngine);
-
-  const isOfflineEngine = selectedEngine === OFFLINE_ENGINE;
+  const isOfflineMode = useChessStore(selectIsOfflineMode);
 
   useEffect(() => {
-    if (isOfflineEngine || moveHistory.length === 0) {
+    if (isOfflineMode || moveHistory.length === 0) {
       return;
     }
 
@@ -70,10 +68,10 @@ export const EvalChart: React.FC = () => {
     if (missingEvaluations) {
       void loadPositionEvaluations();
     }
-  }, [isOfflineEngine, loadPositionEvaluations, moveHistory, positionEvaluations]);
+  }, [isOfflineMode, loadPositionEvaluations, moveHistory, positionEvaluations]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || isOfflineEngine) {
+    if (typeof window === 'undefined' || isOfflineMode) {
       return;
     }
 
@@ -94,7 +92,7 @@ export const EvalChart: React.FC = () => {
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [isOfflineEngine, loadPositionEvaluations, moveHistory, positionEvaluations]);
+  }, [isOfflineMode, loadPositionEvaluations, moveHistory, positionEvaluations]);
 
   const {
     points,
@@ -559,7 +557,7 @@ export const EvalChart: React.FC = () => {
           {hasMoves
             ? isLoading
               ? t('eval_chart.loading')
-              : isOfflineEngine
+              : isOfflineMode
                 ? t('eval_chart.offline_unavailable')
                 : t('eval_chart.unavailable')
             : t('eval_chart.no_moves')}
