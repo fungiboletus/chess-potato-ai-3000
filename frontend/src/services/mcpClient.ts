@@ -46,7 +46,7 @@ const ListEnginesStructuredContentSchema = z.object({
 }).passthrough();
 
 const EvaluateFensStructuredContentSchema = z.object({
-  evaluations: z.record(z.object({
+  evaluations: z.record(z.string(), z.object({
     expectation: z.number(),
     score: z.number()
   }))
