@@ -22,29 +22,29 @@
 
 engines:
   - key: chess-potato-ai-3000
-    path: /Users/antoinep/fun/llm-chess-bot/app/chess_engine.py
+    path: /usr/local/bin/chess-potato-ai-3000
     display_name: Chess Potato AI 3000
-    description: The one and only Chess Potato AI 3000, ready to challenge you!
+    description: The flagship hybrid engine built from this repository's UCI project.
     time_limit: 30
     default: true
     options: {}
 
   - key: alphabet
-    path: /Users/antoinep/fun/llm-chess-bot/potato-alphabet-3000/target/debug/potato-alphabet-3000
+    path: /usr/local/bin/potato-alphabet-3000
     display_name: Potato Alphabet 3000
     description: A humourously weak chess engine that plays the move in the middle of the alphabetical list of legal moves.
     time_limit: 10
     options: {}
 
   - key: random
-    path: /Users/antoinep/fun/llm-chess-bot/chess-potato-random/target/debug/chess-potato-random
+    path: /usr/local/bin/chess-potato-random
     display_name: Random
     description: Plays a random legal move each turn.
     time_limit: 10
     options: {}
 
   - key: badfish
-    path: /Users/antoinep/fun/llm-chess-bot/Badfish/src/stockfish
+    path: /usr/local/bin/badfish
     display_name: Badfish
     description: A modified Stockfish engine designed to play bad moves, somewhat worse than random.
     depth: 8
@@ -52,7 +52,7 @@ engines:
     options: {}
 
   - key: worstfish
-    path: /Users/antoinep/fun/llm-chess-bot/worstfish/worstfish
+    path: /usr/local/bin/worstfish
     display_name: Worstfish
     description: A modified Stockfish engine designed to play very poorly, showing a mix of good and terrible moves.
     depth: 8
@@ -60,7 +60,7 @@ engines:
     options: {}
 
   - key: stockfish_level_0
-    path: stockfish
+    path: /usr/games/stockfish
     display_name: Stockfish (Level 0)
     description: Stockfish with minimum strength for casual play.
     depth: 5
@@ -69,7 +69,7 @@ engines:
       Skill Level: 0
 
   - key: stockfish_elo_1320
-    path: stockfish
+    path: /usr/games/stockfish
     display_name: Stockfish (ELO 1320)
     description: Stockfish pretending to be a 1320 ELO player.
     depth: 8
@@ -79,12 +79,12 @@ engines:
       UCI_Elo: 1320
 
   - key: stockfish_default
-    path: stockfish
+    path: /usr/games/stockfish
     display_name: Stockfish (Default)
     description: Stockfish using its default strength configuration.
 
   - key: stockfish_unbeatable
-    path: stockfish
+    path: /usr/games/stockfish
     display_name: Stockfish (Unbeatable)
     description: Stockfish tuned to beat any human.
     depth: 24

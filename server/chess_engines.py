@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field, field_validator
 logger = logging.getLogger(__name__)
 
 # Move variation cache: stores up to 3 variations per FEN position
-_move_cache: dict[tuple[str, str], list["MoveData"]] = {}
+_move_cache: dict[tuple[str, str], list[MoveData]] = {}
 
 # Global persistent engine instances keyed by engine name
 _engines: dict[str, chess.engine.UciProtocol] = {}

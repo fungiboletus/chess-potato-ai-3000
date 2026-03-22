@@ -3,6 +3,9 @@ name: Docker CI
 on:
   pull_request:
     paths:
+      - ".dockerignore"
+      - ".gitmodules"
+      - "engines/**"
       - "server/**"
       - "uci/**"
       - "lichess/**"
@@ -13,6 +16,9 @@ on:
     tags:
       - "*"
     paths:
+      - ".dockerignore"
+      - ".gitmodules"
+      - "engines/**"
       - "server/**"
       - "uci/**"
       - "lichess/**"
@@ -58,6 +64,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Fetch engine submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive \
+            engines/chess-potato-random \
+            engines/potato-alphabet-3000 \
+            engines/Badfish \
+            engines/worstfish
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -90,18 +105,63 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Define local smoke-test tag
+        id: smoke-tag
+        if: env.PUSH_IMAGES != 'true'
+        run: echo "tag=cpai3000-${{ matrix.image.name }}:${{ matrix.arch.name }}" >> "$GITHUB_OUTPUT"
+
       - name: Build ${{ matrix.image.name }} image
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.image.context }}
           file: ${{ matrix.image.dockerfile }}
           platforms: ${{ matrix.arch.platform }}
+          load: ${{ env.PUSH_IMAGES != 'true' }}
           push: ${{ env.PUSH_IMAGES == 'true' }}
-          tags: ${{ steps.arch-tags.outputs.tags }}
+          tags: |
+            ${{ steps.arch-tags.outputs.tags }}
+            ${{ steps.smoke-tag.outputs.tag }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false
           cache-from: type=gha,scope=${{ matrix.image.name }}-${{ matrix.arch.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}-${{ matrix.arch.name }}
+
+      - name: Smoke test server health endpoint
+        if: env.PUSH_IMAGES != 'true' && matrix.image.name == 'server'
+        run: |
+          container_name=cpai3000-server-smoke
+          docker run -d --rm --name "$container_name" -p 18000:8000 "${{ steps.smoke-tag.outputs.tag }}" >/dev/null
+          cleanup() {
+            docker rm -f "$container_name" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:18000/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs "$container_name"
+          exit 1
+
+      - name: Smoke test bundled engine UCI handshakes
+        if: env.PUSH_IMAGES != 'true' && matrix.image.name == 'server'
+        run: |
+          docker run --rm --entrypoint sh "${{ steps.smoke-tag.outputs.tag }}" -lc '
+            for bin in \
+              /usr/local/bin/chess-potato-ai-3000 \
+              /usr/local/bin/chess-potato-random \
+              /usr/local/bin/potato-alphabet-3000 \
+              /usr/local/bin/badfish \
+              /usr/local/bin/worstfish \
+              /usr/games/stockfish
+            do
+              test -x "$bin"
+              printf "uci\nquit\n" | "$bin" | grep -m1 "^uciok$" >/dev/null
+            done
+          '
 
   docker-manifest:
     name: Publish ${{ matrix.image.name }} manifest

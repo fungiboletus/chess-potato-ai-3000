@@ -14,6 +14,12 @@ A Model Context Protocol (MCP) server that provides chess move computation using
 - Python 3.14+
 - Stockfish chess engine installed and available in PATH
 
+If you want the Docker image to bundle all supported engines, clone the repository with submodules:
+
+```bash
+git clone --recurse-submodules https://github.com/fungiboletus/chess-potato-ai-3000.git
+```
+
 ## Installation
 
 ```bash
@@ -31,13 +37,26 @@ uv sync
 uv run server.py
 ```
 
+## Docker Build
+
+The server image uses a multi-stage build to bundle these engines into a single runtime image:
+
+- `chess-potato-ai-3000` from this repository's `uci/` project
+- `chess-potato-random` from `engines/chess-potato-random`
+- `potato-alphabet-3000` from `engines/potato-alphabet-3000`
+- `badfish` from `engines/Badfish`
+- `worstfish` from `engines/worstfish`
+- Debian's packaged `stockfish`
+
+Build it from the repository root:
+
+```bash
+docker build -f server/Dockerfile .
+```
+
 ## Configuration
 
-Edit the constants in `server.py`:
-
-- `ENGINE_PATH`: Path to UCI engine (default: "stockfish")
-- `DEFAULT_DEPTH`: Search depth (default: 10)
-- `DEFAULT_TIME_LIMIT`: Time limit in seconds (default: 1.0)
+Engine profiles live in `engines.yaml`. You can override the file location with the `CPAI3000_ENGINES_CONFIG` environment variable.
 
 ## Development
 

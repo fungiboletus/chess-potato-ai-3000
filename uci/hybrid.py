@@ -23,6 +23,7 @@ ComputeNextMove = Callable[[], str]
 
 DEFAULT_EVAL_POINTS_PATH = "./data/eval_points.csv"
 EVAL_POINTS_CSV_PATH = os.environ.get("EVAL_POINTS_CSV", DEFAULT_EVAL_POINTS_PATH)
+DEFAULT_STOCKFISH_PATH = os.environ.get("STOCKFISH_EXECUTABLE", "stockfish")
 
 
 class HybridEngine(Protocol):
@@ -111,7 +112,7 @@ def is_evaluation_saturated(
 
 def create_hybrid_engine(
     file_path: str | None = None,
-    stockfish_path: str = "stockfish",
+    stockfish_path: str = DEFAULT_STOCKFISH_PATH,
 ) -> tuple[HybridEngine, Callable[[], None]]:
     """Create a function to determine if a retry is needed based on evaluation points."""
     data = load_eval_data(file_path)
