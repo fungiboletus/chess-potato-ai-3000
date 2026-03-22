@@ -1,0 +1,16 @@
+services:
+  lichess-bot:
+    build:
+      context: .
+      dockerfile: lichess/Dockerfile
+    env_file:
+      - .env
+    environment:
+      LLM_MODEL: ${LLM_MODEL:-hf.co/undefined2/chess-potato-ai-3000:Q8_0}
+    command:
+      - sh
+      - -lc
+      - cp /config/config.yaml /lichess-bot/config.yml && exec /usr/games/lichess-bot --config /lichess-bot/config.yml
+    volumes:
+      - ${LICHESS_CONFIG_PATH:-./lichess/config.yaml}:/config/config.yaml:ro
+    restart: unless-stopped

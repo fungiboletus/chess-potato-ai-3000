@@ -30,9 +30,9 @@ WORKDIR /app
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:/usr/games:$PATH"
 
-COPY --from=builder --chown=app:app /app/ /app/
+COPY --from=builder /app/ /app/
 
 # create script
 RUN echo '#!/bin/sh\ncd /app && exec /app/.venv/bin/python main.py' > /usr/games/chess-potato-ai-3000 && chmod +x /usr/games/chess-potato-ai-3000
 
-CMD ["chess-potato-ai-3000"]
+CMD ["/usr/games/chess-potato-ai-3000"]

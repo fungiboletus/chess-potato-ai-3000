@@ -5,7 +5,7 @@ import logging
 import os
 import random
 from pathlib import Path
-from typing import Any, Set, TypedDict
+from typing import Any, TypedDict
 
 import chess
 import chess.engine
@@ -80,7 +80,7 @@ def _load_engine_profiles() -> dict[str, EngineProfile]:
         )
 
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             config_data = yaml.safe_load(f)
 
         # Validate using Pydantic
@@ -282,9 +282,9 @@ def ensure_valid_transition(fen_start: str | None, fen_target: str):
     raise ValueError("The target FEN is not reachable from the starting FEN.")
 
 
-def compute_all_transitions(fens: list[str]) -> Set[int]:
+def compute_all_transitions(fens: list[str]) -> set[int]:
     """Compute all possible transitions, returning the zobrist hash set."""
-    zobrist_hashes: Set[int] = set()
+    zobrist_hashes: set[int] = set()
 
     for fen in fens:
         board = chess.Board(fen)
@@ -299,7 +299,7 @@ def compute_all_transitions(fens: list[str]) -> Set[int]:
     return zobrist_hashes
 
 
-def ensure_fen_is_in_transitions(fen: str, valid_transitions: Set[int]):
+def ensure_fen_is_in_transitions(fen: str, valid_transitions: set[int]):
     """Validate that the FEN is in the set of valid transitions."""
     board = chess.Board(fen)
     fen_hash = chess.polyglot.zobrist_hash(board)

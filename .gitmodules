@@ -1,3 +1,15 @@
 [submodule "model"]
 	path = model
 	url = https://huggingface.co/undefined2/chess-potato-ai-3000
+[submodule "engines/chess-potato-random"]
+	path = engines/chess-potato-random
+	url = https://github.com/fungiboletus/chess-potato-random.git
+[submodule "engines/potato-alphabet-3000"]
+	path = engines/potato-alphabet-3000
+	url = https://github.com/fungiboletus/chess-potato-alphabet-42.git
+[submodule "engines/Badfish"]
+	path = engines/Badfish
+	url = https://github.com/rotolonico/Badfish.git
+[submodule "engines/worstfish"]
+	path = engines/worstfish
+	url = https://github.com/mikimasn/worstfish.git

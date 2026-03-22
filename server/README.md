@@ -11,7 +11,7 @@ A Model Context Protocol (MCP) server that provides chess move computation using
 
 ## Requirements
 
-- Python 3.13+
+- Python 3.14+
 - Stockfish chess engine installed and available in PATH
 
 ## Installation

@@ -68,15 +68,15 @@ engines:
     options:
       Skill Level: 0
 
-  - key: stockfish_elo_800
+  - key: stockfish_elo_1320
     path: stockfish
-    display_name: Stockfish (ELO 800)
-    description: Stockfish pretending to be an 800 ELO player.
+    display_name: Stockfish (ELO 1320)
+    description: Stockfish pretending to be a 1320 ELO player.
     depth: 8
     time_limit: 1.5
     options:
       UCI_LimitStrength: true
-      UCI_Elo: 800
+      UCI_Elo: 1320
 
   - key: stockfish_default
     path: stockfish

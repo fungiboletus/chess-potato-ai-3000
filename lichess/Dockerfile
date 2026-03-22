@@ -7,14 +7,14 @@ ENV UV_SYSTEM_PYTHON=1
 
 WORKDIR /app
 
+# Copy the UCI engine project into the intermediate image
+COPY uci/pyproject.toml uci/uv.lock /app/
+
 # Install dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --locked --no-install-project --no-editable
 
-# Copy the project into the intermediate image
-ADD . /app
+COPY uci/ /app/
 
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -55,12 +55,12 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:/usr/games:$PATH"
 
 # Install chess-potato-ai-3000
-COPY --from=builder --chown=app:app /app/ /app/
+COPY --from=builder /app/ /app/
 # create chess-potato-ai-3000 script
 RUN echo '#!/bin/sh\ncd /app && exec /app/.venv/bin/python main.py' > /usr/games/chess-potato-ai-3000 && chmod +x /usr/games/chess-potato-ai-3000
 
 # Install lichess-bot
-COPY --from=lichessbot_builder --chown=app:app /lichess-bot /lichess-bot/
+COPY --from=lichessbot_builder /lichess-bot /lichess-bot/
 # create lichess-bot script
 RUN echo '#!/bin/sh\ncd /lichess-bot && exec /lichess-bot/.venv/bin/python lichess-bot.py "$@"' > /usr/games/lichess-bot && chmod +x /usr/games/lichess-bot
 
@@ -68,4 +68,4 @@ RUN echo '#!/bin/sh\ncd /lichess-bot && exec /lichess-bot/.venv/bin/python liche
 RUN ln -s /usr/games/chess-potato-ai-3000 /lichess-bot/engines/chess-potato-ai-3000
 
 WORKDIR /lichess-bot
-CMD ["lichess-bot"]
+CMD ["/usr/games/lichess-bot"]

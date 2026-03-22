@@ -1,0 +1,38 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    environment:
+      CPAI3000_ALLOWED_ORIGINS: http://localhost:4173,http://localhost:5173,http://localhost:3000
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=5)
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  frontend:
+    image: node:22-trixie-slim
+    working_dir: /app
+    command: >-
+      sh -lc "npm ci && npm run build && npm run preview -- --host 0.0.0.0 --port 4173"
+    environment:
+      VITE_MCP_SERVER_URL: http://localhost:8000/mcp
+    depends_on:
+      server:
+        condition: service_healthy
+    ports:
+      - "4173:4173"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+volumes:
+  frontend_node_modules:

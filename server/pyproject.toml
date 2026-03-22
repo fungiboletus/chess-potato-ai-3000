@@ -3,7 +3,7 @@ name = "chess-mcp-server"
 version = "0.1.0"
 description = "MCP server for chess move computation using UCI engines"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "async-lru>=2.0.5",
     "fastmcp>=2.12.4",
@@ -16,12 +16,13 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pytest>=8.4.2",
     "ruff>=0.14.1",
 ]
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]

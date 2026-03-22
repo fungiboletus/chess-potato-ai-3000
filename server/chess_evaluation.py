@@ -2,11 +2,11 @@
 
 import atexit
 import logging
-from async_lru import alru_cache
 from typing import TypedDict
 
 import chess
 import chess.engine
+from async_lru import alru_cache
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,16 @@ async def shutdown_evaluator() -> None:
             logger.warning(f"Error shutting down evaluator engine: {e}")
         finally:
             _stockfish_engine = None
+
+
+def shutdown_evaluator_sync() -> None:
+    """Synchronously shut down the evaluator for interpreter exit hooks."""
+    try:
+        import asyncio
+
+        asyncio.run(shutdown_evaluator())
+    except RuntimeError:
+        logger.debug("Skipping evaluator shutdown because no event loop can be started")
 
 
 @alru_cache(maxsize=1024)
@@ -105,4 +115,4 @@ async def evaluate_position(
 
 
 # Register cleanup on exit
-atexit.register(shutdown_evaluator)
+atexit.register(shutdown_evaluator_sync)
