@@ -9,7 +9,7 @@ repos:
       - id: check-json
         exclude: ^frontend/tsconfig\.(app|node)\.json$
       - id: check-yaml
-        exclude: ^charts/rusty-valkey-forward-auth/templates/
+        exclude: ^charts/.*/templates/
       - id: check-xml
       - id: check-ast
       - id: check-merge-conflict

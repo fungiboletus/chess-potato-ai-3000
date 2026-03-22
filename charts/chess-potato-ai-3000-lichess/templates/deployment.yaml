@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chess-potato-ai-3000-lichess.fullname" . }}
+  labels:
+    {{- include "chess-potato-ai-3000-lichess.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chess-potato-ai-3000-lichess.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "chess-potato-ai-3000-lichess.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: lichess
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- else }}
+          command:
+            - sh
+            - -lc
+          {{- end }}
+          {{- with .Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- else }}
+          args:
+            - cp /config/config.yaml /lichess-bot/config.yml && exec /usr/games/lichess-bot --config /lichess-bot/config.yml
+          {{- end }}
+          env:
+            - name: LLM_MODEL
+              value: {{ .Values.model.llmModel | quote }}
+          volumeMounts:
+            - name: lichess-config
+              mountPath: /config/config.yaml
+              subPath: config.yaml
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: lichess-config
+          secret:
+            secretName: {{ include "chess-potato-ai-3000-lichess.configSecretName" . }}

@@ -57,7 +57,8 @@ ENV PATH="/app/.venv/bin:/usr/games:$PATH"
 # Install chess-potato-ai-3000
 COPY --from=builder /app/ /app/
 # create chess-potato-ai-3000 script
-RUN echo '#!/bin/sh\ncd /app && exec /app/.venv/bin/python main.py' > /usr/games/chess-potato-ai-3000 && chmod +x /usr/games/chess-potato-ai-3000
+RUN printf '%s\n' '#!/bin/sh' 'export STOCKFISH_EXECUTABLE=/usr/games/stockfish' 'cd /app && exec /app/.venv/bin/python main.py "$@"' > /usr/games/chess-potato-ai-3000 \
+    && chmod +x /usr/games/chess-potato-ai-3000
 
 # Install lichess-bot
 COPY --from=lichessbot_builder /lichess-bot /lichess-bot/

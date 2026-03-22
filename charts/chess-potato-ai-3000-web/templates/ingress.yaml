@@ -1,0 +1,35 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "chess-potato-ai-3000-web.fullname" . }}
+  labels:
+    {{- include "chess-potato-ai-3000-web.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{- if eq .path "/mcp" }} {{ include "chess-potato-ai-3000-web.serverName" $ }} {{- else }} {{ include "chess-potato-ai-3000-web.frontendName" $ }} {{- end }}
+                port:
+                  number: {{- if eq .path "/mcp" }} {{ $.Values.server.service.port }} {{- else }} {{ $.Values.frontend.service.port }} {{- end }}
+          {{- end }}
+    {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

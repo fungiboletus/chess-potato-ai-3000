@@ -1,0 +1,43 @@
+nameOverride: ""
+fullnameOverride: ""
+
+imagePullSecrets: []
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/fungiboletus/chess-potato-ai-3000-lichess
+  tag: main
+  pullPolicy: IfNotPresent
+
+model:
+  llmModel: hf.co/undefined2/chess-potato-ai-3000:Q8_0
+
+command: []
+args: []
+
+resources: {}
+
+secrets:
+  lichessToken: ""
+
+config:
+  url: https://lichess.org/
+  engineName: chess-potato-ai-3000
+  workingDir: /app
+  challengeConcurrency: 4
+  challengeVariants:
+    - standard
+  challengeTimeControls:
+    - bullet
+    - blitz
+    - rapid
+    - classical
+  challengeModes:
+    - casual
+    - rated
+  matchmakingEnabled: false
+  greetingHello: Hi! I'm chess-potato-ai-3000. I'm a bit slow and not the best player, but I try my best!
+  greetingGoodbye: Thanks for the game!
+  greetingHelloSpectators: Hi! I'm chess-potato-ai-3000. I'm a bit slow and not the best player, but I try my best!
+  greetingGoodbyeSpectators: Thanks for watching!

@@ -6,6 +6,7 @@ on:
       - ".dockerignore"
       - ".gitmodules"
       - "engines/**"
+      - "frontend/**"
       - "server/**"
       - "uci/**"
       - "lichess/**"
@@ -19,6 +20,7 @@ on:
       - ".dockerignore"
       - ".gitmodules"
       - "engines/**"
+      - "frontend/**"
       - "server/**"
       - "uci/**"
       - "lichess/**"
@@ -41,6 +43,10 @@ jobs:
       fail-fast: false
       matrix:
         image:
+          - name: frontend
+            image_name: chess-potato-ai-3000-frontend
+            context: .
+            dockerfile: frontend/Dockerfile
           - name: server
             image_name: chess-potato-ai-3000-server
             context: .
@@ -146,6 +152,26 @@ jobs:
           docker logs "$container_name"
           exit 1
 
+      - name: Smoke test frontend root page
+        if: env.PUSH_IMAGES != 'true' && matrix.image.name == 'frontend'
+        run: |
+          container_name=cpai3000-frontend-smoke
+          docker run -d --rm --name "$container_name" -p 14173:8080 "${{ steps.smoke-tag.outputs.tag }}" >/dev/null
+          cleanup() {
+            docker rm -f "$container_name" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:14173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs "$container_name"
+          exit 1
+
       - name: Smoke test bundled engine UCI handshakes
         if: env.PUSH_IMAGES != 'true' && matrix.image.name == 'server'
         run: |
@@ -172,6 +198,8 @@ jobs:
       fail-fast: false
       matrix:
         image:
+          - name: frontend
+            image_name: chess-potato-ai-3000-frontend
           - name: server
             image_name: chess-potato-ai-3000-server
           - name: uci

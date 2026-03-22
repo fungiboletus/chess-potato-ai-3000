@@ -1,0 +1,55 @@
+name: Release Helm Charts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+      - ".github/workflows/charts-release.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint charts
+        run: |
+          helm lint charts/chess-potato-ai-3000-web
+          helm lint charts/chess-potato-ai-3000-lichess
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Package and push charts
+        run: |
+          set -euo pipefail
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          mkdir -p .chart-packages
+          mkdir -p /tmp/charts
+
+          for chart in charts/*; do
+            [ -d "$chart" ] || continue
+
+            metadata="$(helm show chart "$chart")"
+            name="$(printf '%s\n' "$metadata" | awk -F': ' '$1 == "name" { print $2 }')"
+            version="$(printf '%s\n' "$metadata" | awk -F': ' '$1 == "version" { print $2 }')"
+
+            if helm pull "oci://ghcr.io/${owner}/charts/${name}" --version "$version" -d /tmp/charts >/dev/null 2>&1; then
+              echo "Skipping ${name}:${version}; already present in GHCR"
+              continue
+            fi
+
+            helm package "$chart" --destination .chart-packages
+            helm push ".chart-packages/${name}-${version}.tgz" "oci://ghcr.io/${owner}/charts"
+          done
