@@ -12,6 +12,11 @@ image:
 
 model:
   llmModel: hf.co/undefined2/chess-potato-ai-3000:Q8_0
+  ollama:
+    endpoint: ""
+    bearerToken: ""
+
+extraEnv: []
 
 command: []
 args: []

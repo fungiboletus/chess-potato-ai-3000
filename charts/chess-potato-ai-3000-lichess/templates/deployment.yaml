@@ -40,6 +40,20 @@ spec:
           env:
             - name: LLM_MODEL
               value: {{ .Values.model.llmModel | quote }}
+            {{- if .Values.model.ollama.endpoint }}
+            - name: OLLAMA_ENDPOINT
+              value: {{ .Values.model.ollama.endpoint | quote }}
+            {{- end }}
+            {{- if .Values.model.ollama.bearerToken }}
+            - name: OLLAMA_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chess-potato-ai-3000-lichess.configSecretName" . }}
+                  key: OLLAMA_BEARER_TOKEN
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - name: lichess-config
               mountPath: /config/config.yaml

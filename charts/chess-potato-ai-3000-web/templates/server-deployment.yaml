@@ -36,9 +36,23 @@ spec:
                   name: {{ include "chess-potato-ai-3000-web.serverSecretName" . }}
                   key: CPAI3000_SECRET_KEY
             {{- end }}
+            {{- if .Values.server.ollama.endpoint }}
+            - name: OLLAMA_ENDPOINT
+              value: {{ .Values.server.ollama.endpoint | quote }}
+            {{- end }}
+            {{- if .Values.server.ollama.bearerToken }}
+            - name: OLLAMA_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chess-potato-ai-3000-web.serverSecretName" . }}
+                  key: OLLAMA_BEARER_TOKEN
+            {{- end }}
             {{- range $name, $value := .Values.server.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}
+            {{- end }}
+            {{- with .Values.server.extraEnv }}
+            {{- toYaml . | nindent 12 }}
             {{- end }}
           readinessProbe:
             httpGet:
