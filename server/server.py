@@ -345,7 +345,13 @@ if __name__ == "__main__":
     )
 
     # Use Config and Server for better control over signal handling
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    config = uvicorn.Config(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="info",
+        ws="wsproto",
+    )
     server = uvicorn.Server(config)
 
     # Override handle_exit to use our aggressive shutdown
