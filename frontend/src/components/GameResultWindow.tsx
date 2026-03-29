@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
@@ -133,12 +133,6 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
   }, [headline, message, isOfflineMode]);
 
   const isFeedbackDirty = enjoyment !== null || authenticity !== null || notes.trim().length > 0;
-
-  useEffect(() => {
-    if (!isFeedbackDirty || isSubmitted) {
-      setShowDiscardConfirmation(false);
-    }
-  }, [isFeedbackDirty, isSubmitted]);
 
   const selectedEngineDisplayName = getEngineDisplayNameByName(selectedEngine, availableEngines);
 
