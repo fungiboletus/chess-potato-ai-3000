@@ -560,6 +560,23 @@ button:disabled {
   min-width: 120px;
 }
 
+.game-result-close-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.game-result-close-message {
+  font-size: 12px;
+  text-align: center;
+}
+
+.game-result-close-secondary {
+  min-width: 120px;
+}
+
 @media (max-width: 480px) {
   .game-result-window {
     min-width: auto;

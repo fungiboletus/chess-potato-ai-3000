@@ -141,6 +141,9 @@
     "submit": "Enviar opinión",
     "submitting": "Enviando...",
     "thank_you": "¡Gracias por tus comentarios!",
-    "submit_error": "No se pudo enviar la opinión en este momento."
+    "submit_error": "No se pudo enviar la opinión en este momento.",
+    "discard_prompt": "¿Descartar tus comentarios sin enviar?",
+    "keep_editing": "Seguir editando",
+    "discard": "Descartar"
   }
 }

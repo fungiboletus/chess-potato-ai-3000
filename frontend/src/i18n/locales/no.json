@@ -148,6 +148,9 @@
     "submit": "Send tilbakemelding",
     "submitting": "Sender...",
     "thank_you": "Takk for tilbakemeldingen!",
-    "submit_error": "Kunne ikke sende tilbakemeldingen akkurat nå."
+    "submit_error": "Kunne ikke sende tilbakemeldingen akkurat nå.",
+    "discard_prompt": "Forkaste tilbakemeldingen du ikke har sendt?",
+    "keep_editing": "Fortsett å redigere",
+    "discard": "Forkast"
   }
 }

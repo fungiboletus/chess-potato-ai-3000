@@ -148,6 +148,9 @@
     "submit": "Envoyer le retour",
     "submitting": "Envoi...",
     "thank_you": "Merci pour votre retour !",
-    "submit_error": "Impossible d'envoyer le retour pour le moment."
+    "submit_error": "Impossible d'envoyer le retour pour le moment.",
+    "discard_prompt": "Supprimer votre retour non envoyé ?",
+    "keep_editing": "Continuer la saisie",
+    "discard": "Supprimer"
   }
 }

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
@@ -117,6 +117,7 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [hasSubmitError, setHasSubmitError] = useState(false);
+  const [showDiscardConfirmation, setShowDiscardConfirmation] = useState(false);
   const moveHistory = useChessStore(state => state.moveHistory);
   const playerColor = useChessStore(state => state.playerColor);
   const selectedEngine = useChessStore(state => state.selectedEngine);
@@ -131,10 +132,17 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
     }
   }, [headline, message, isOfflineMode]);
 
+  const isFeedbackDirty = enjoyment !== null || authenticity !== null || notes.trim().length > 0;
+
+  useEffect(() => {
+    if (!isFeedbackDirty || isSubmitted) {
+      setShowDiscardConfirmation(false);
+    }
+  }, [isFeedbackDirty, isSubmitted]);
+
   const selectedEngineDisplayName = getEngineDisplayNameByName(selectedEngine, availableEngines);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submitFeedback = async () => {
     if (isSubmitting || isSubmitted) {
       return;
     }
@@ -189,10 +197,29 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
       await mcpClient.submitGameFeedback(payload);
       setIsSubmitting(false);
       setIsSubmitted(true);
+      setShowDiscardConfirmation(false);
     } catch {
       setIsSubmitting(false);
       setHasSubmitError(true);
     }
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await submitFeedback();
+  };
+
+  const handleRequestClose = () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    if (!isFeedbackDirty || isSubmitted) {
+      onClose();
+      return;
+    }
+
+    setShowDiscardConfirmation(true);
   };
 
   const disabled = isSubmitting || isSubmitted;
@@ -239,7 +266,10 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
                       name="game-enjoyment"
                       value={option.value}
                       checked={enjoyment === option.value}
-                      onChange={() => setEnjoyment(option.value)}
+                      onChange={() => {
+                        setEnjoyment(option.value);
+                        setShowDiscardConfirmation(false);
+                      }}
                     />
                     <label htmlFor={`game-enjoyment-${option.value}`}>
                       {option.label}
@@ -258,7 +288,10 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
                       name="game-authenticity"
                       value={option.value}
                       checked={authenticity === option.value}
-                      onChange={() => setAuthenticity(option.value)}
+                      onChange={() => {
+                        setAuthenticity(option.value);
+                        setShowDiscardConfirmation(false);
+                      }}
                     />
                     <label htmlFor={`game-authenticity-${option.value}`}>
                       {option.label}
@@ -276,7 +309,10 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
                 id="game-feedback-notes"
                 rows={3}
                 value={notes}
-                onChange={event => setNotes(event.target.value)}
+                onChange={event => {
+                  setNotes(event.target.value);
+                  setShowDiscardConfirmation(false);
+                }}
                 maxLength={MAX_FEEDBACK_NOTES_LENGTH}
                 disabled={disabled}
               />
@@ -308,13 +344,36 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
         </>
       )}
 
-      <button
-        onClick={onClose}
-        className="game-result-close"
-        type="button"
-      >
-        {t('game.close')}
-      </button>
+      <div className="game-result-close-row">
+        {showDiscardConfirmation ? (
+          <>
+            <span className="game-result-close-message">{t('feedback.discard_prompt')}</span>
+            <button
+              onClick={() => setShowDiscardConfirmation(false)}
+              className="game-result-close-secondary"
+              type="button"
+            >
+              {t('feedback.keep_editing')}
+            </button>
+            <button
+              onClick={onClose}
+              className="game-result-close"
+              type="button"
+            >
+              {t('feedback.discard')}
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={handleRequestClose}
+            className="game-result-close"
+            type="button"
+            disabled={isSubmitting}
+          >
+            {t('game.close')}
+          </button>
+        )}
+      </div>
     </div>
   );
 };

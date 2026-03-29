@@ -117,7 +117,10 @@
     "submit": "Submit feedback",
     "submitting": "Submitting...",
     "thank_you": "Thanks for your feedback!",
-    "submit_error": "Could not submit feedback right now."
+    "submit_error": "Could not submit feedback right now.",
+    "discard_prompt": "Discard your unsent feedback?",
+    "keep_editing": "Keep editing",
+    "discard": "Discard"
   },
   "status": {
     "initializing": "Initializing...",
