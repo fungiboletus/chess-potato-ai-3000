@@ -7,11 +7,15 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      injectRegister: null,
       registerType: 'autoUpdate',
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Chess Potato AI 3000',
         short_name: 'CPAI 3000',
         description: 'Another chess game.',
+        start_url: '/',
+        scope: '/',
         theme_color: '#008080',
         background_color: '#008080',
         display: 'standalone',

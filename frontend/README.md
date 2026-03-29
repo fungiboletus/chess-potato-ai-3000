@@ -12,6 +12,7 @@ A retro-styled chess game built with React, TypeScript, and Vite, featuring the 
 - **Move History**: Track all moves in algebraic notation
 - **Game Status**: Real-time game state updates in the status bar
 - **Progress Indicator**: Visual feedback when AI is thinking
+- **PWA Support**: Installable app shell with offline-capable static assets
 
 ## Technologies Used
 
@@ -60,6 +61,15 @@ Preview the production build:
 ```bash
 npm run preview
 ```
+
+## PWA Notes
+
+- The app exposes a web app manifest at `/manifest.webmanifest`
+- The service worker is registered from `src/main.tsx` via `vite-plugin-pwa` in production builds only
+- Development mode intentionally does not run a service worker, to avoid stale caches and generated `dev-dist` noise
+- In Chromium-based browsers, you should see an install prompt or install action once the app has loaded successfully
+- Offline support is limited to the frontend app shell and bundled static assets; network-backed chess engine calls still require the server
+- To test installability locally, use `npm run build` and `npm run preview`
 
 ## How to Play
 

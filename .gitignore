@@ -14,3 +14,7 @@ settings.local.json
 
 # Various Temp files
 .ruff_cache/
+
+# Frontend build artifacts
+frontend/dist/
+frontend/dev-dist/
