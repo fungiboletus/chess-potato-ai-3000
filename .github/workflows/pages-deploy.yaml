@@ -57,6 +57,7 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         env:
+          VITE_BASE_PATH: ./
           VITE_MCP_SERVER_URL: ${{ secrets['PAGES_MCP_SERVER_URL'] }}
         run: npm run build
 

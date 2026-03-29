@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import hljs from 'highlight.js';
 import MarkdownIt from 'markdown-it';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,6 +13,8 @@ const outputDir = path.join(repoRoot, 'site', 'article');
 const articleSourcePath = path.join(articleDir, 'article.md');
 const templatePath = path.join(articleDir, 'template.html');
 const outputHtmlPath = path.join(outputDir, 'index.html');
+const articleFontsDir = path.join(articleDir, 'fonts');
+const outputFontsDir = path.join(outputDir, 'fonts');
 
 const assetExtensions = new Set([
   '.png',
@@ -22,6 +25,13 @@ const assetExtensions = new Set([
   '.gif',
   '.apng',
   '.avif',
+]);
+
+const fontExtensions = new Set([
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.otf',
 ]);
 
 const articleMeta = {
@@ -38,6 +48,19 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
+  highlight(code, language) {
+    const normalizedLanguage = language ? language.trim().toLowerCase() : '';
+
+    if (normalizedLanguage && hljs.getLanguage(normalizedLanguage)) {
+      return `<pre class="hljs"><code>${hljs.highlight(code, { language: normalizedLanguage }).value}</code></pre>`;
+    }
+
+    if (normalizedLanguage) {
+      return `<pre class="hljs"><code>${hljs.highlightAuto(code).value}</code></pre>`;
+    }
+
+    return `<pre class="hljs"><code>${md.utils.escapeHtml(code)}</code></pre>`;
+  },
 });
 
 function extractTitle(markdown) {
@@ -74,6 +97,15 @@ function escapeHtmlAttribute(value) {
     .replaceAll('>', '&gt;');
 }
 
+function formatDisplayTitle(title) {
+  const quotedBreak = title.match(/^(["“][^"”]+["”])\s+(—\s+.+)$/u);
+  if (!quotedBreak) {
+    return escapeHtmlAttribute(title);
+  }
+
+  return `${escapeHtmlAttribute(quotedBreak[1])}<br />${escapeHtmlAttribute(quotedBreak[2])}`;
+}
+
 function decorateExternalLinks(html) {
   return html.replace(/<a href="https?:\/\//g, '<a target="_blank" rel="noreferrer" href="https://');
 }
@@ -93,6 +125,22 @@ async function copyArticleAssets() {
 
     await cp(path.join(articleDir, entry.name), path.join(outputDir, entry.name));
   }));
+
+  await mkdir(outputFontsDir, { recursive: true });
+
+  const fontEntries = await readdir(articleFontsDir, { withFileTypes: true });
+  await Promise.all(fontEntries.map(async (entry) => {
+    if (!entry.isFile()) {
+      return;
+    }
+
+    const ext = path.extname(entry.name).toLowerCase();
+    if (!fontExtensions.has(ext)) {
+      return;
+    }
+
+    await cp(path.join(articleFontsDir, entry.name), path.join(outputFontsDir, entry.name));
+  }));
 }
 
 async function buildArticle() {
@@ -102,6 +150,7 @@ async function buildArticle() {
   ]);
 
   const title = extractTitle(markdown);
+  const displayTitle = formatDisplayTitle(title);
   const description = extractDescription(markdown);
   const contentHtml = decorateExternalLinks(md.render(stripFirstHeading(markdown)));
 
@@ -113,6 +162,7 @@ async function buildArticle() {
     .replaceAll('{{TITLE_ATTR}}', escapeHtmlAttribute(title))
     .replaceAll('{{DESCRIPTION_ATTR}}', escapeHtmlAttribute(description))
     .replaceAll('{{TITLE}}', title)
+    .replaceAll('{{DISPLAY_TITLE}}', displayTitle)
     .replaceAll('{{DESCRIPTION}}', description)
     .replaceAll('{{AUTHOR}}', articleMeta.author)
     .replaceAll('{{PUBLISHED_DATE}}', articleMeta.publishedDate)
