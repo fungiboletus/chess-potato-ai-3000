@@ -99,11 +99,78 @@
   margin: 0;
   padding: 8px;
   max-height: 80dvh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.help-window .window-body .field-border {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .help-window h3 {
-  font-size: 1.2rem;
+  margin: 0 0 10px;
+  font-family: Arial, "Helvetica Neue", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.help-heading:not(:first-child) {
+  margin-top: 18px;
+}
+
+.help-content {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help-scroll-area {
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 12px 12px 12px;
+  line-height: 1.35;
+}
+
+.help-section {
+  margin: 0;
+}
+
+.help-blog-section {
+  margin-bottom: 12px;
+}
+
+.help-link-list {
+  margin: 6px 0 0 18px;
+  padding: 0;
+  line-height: 1.45;
+}
+
+.help-link-list li {
+  margin: 0 0 4px;
+}
+
+.help-window a,
+.help-window a:visited {
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+.help-window a:hover,
+.help-window a:focus-visible {
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+.buy-house-button {
+  align-self: center;
+  flex-shrink: 0;
 }
 
 .eval-chart {

@@ -5,6 +5,7 @@ import { DraggableWindow } from './DraggableWindow';
 import { MoveHistoryActions } from './MoveHistoryActions';
 import { getEvaluationAttributes } from '../utils/evaluationFormatter';
 import type { MoveRecord } from '../stores/chessStore';
+import { getEngineDisplayNameByName } from '../utils/engineI18n';
 
 const MOVE_HISTORY_STORAGE_KEY = 'moveHistory.showEvaluations';
 
@@ -73,11 +74,14 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     if (moveRecord.playerKey === 'human') {
       return t('player.human');
     }
-    if (moveRecord.engineDisplayName) {
-      return moveRecord.engineDisplayName;
-    }
-    const engine = availableEngines.find(e => e.name === moveRecord.engineName || e.name === moveRecord.playerKey);
-    return engine?.display_name || moveRecord.engineName || moveRecord.playerKey;
+
+    return (
+      getEngineDisplayNameByName(
+        moveRecord.engineName || moveRecord.playerKey,
+        availableEngines,
+        moveRecord.engineDisplayName
+      ) || moveRecord.playerKey
+    );
   };
 
 

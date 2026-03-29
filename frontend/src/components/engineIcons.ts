@@ -14,15 +14,17 @@ export const getEngineIcon = (engineName: string | null | undefined): string => 
 
   switch (engineName) {
     case 'chess-potato-ai-3000':
-      return './icons/engine-potato.png';
-    case 'alphabet':
-      return './icons/engine-alphabet.png';
+      return './engines/potato.png';
     case 'badfish':
       return './engines/stockfish-goldfish.png';
     case 'worstfish':
       return './engines/stockfish-pirana.png';
     case 'stockfish_level_0':
       return './engines/stockfish_level_0.png';
+    case 'random':
+      return './engines/random.png';
+    case 'alphabet':
+      return './engines/alphabet.png';
     case OFFLINE_ENGINE:
       return './engines/offline.png';
     default:

@@ -18,6 +18,7 @@ export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'err
 export interface EngineInfo {
   name: string;
   display_name: string;
+  description_i18n?: Record<string, string>;
   description: string;
   default: boolean;
 }
@@ -48,6 +49,7 @@ const ListEnginesStructuredContentSchema = z.object({
   engines: z.array(z.object({
     name: z.string(),
     display_name: z.string(),
+    description_i18n: z.record(z.string(), z.string()).optional(),
     description: z.string(),
     default: z.boolean()
   }))

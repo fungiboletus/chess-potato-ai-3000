@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
 import useChessStore, { selectIsOfflineMode } from '../stores/chessStore';
 import { getEngineIcon } from './engineIcons';
+import { getEngineDescription, getEngineDisplayName } from '../utils/engineI18n';
 
 interface GameEnginesWindowProps {
   isOpen: boolean;
@@ -104,10 +105,10 @@ export const GameEnginesWindow: React.FC<GameEnginesWindowProps> = ({
                   </div>
                   <div className="engine-info">
                     <label htmlFor={`engine-${engine.name}`} className="engine-name">
-                      {engine.display_name}
+                      {getEngineDisplayName(engine)}
                     </label>
                     <label htmlFor={`engine-${engine.name}`} className="engine-description">
-                      {engine.description}
+                      {getEngineDescription(engine)}
                     </label>
                   </div>
                 </div>

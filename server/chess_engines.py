@@ -28,6 +28,10 @@ class EngineProfile(BaseModel):
     key: str = Field(..., description="Unique identifier for this engine profile")
     path: str = Field(..., description="Path to the UCI engine executable")
     display_name: str = Field(..., description="Human-readable name for the engine")
+    description_i18n: dict[str, str] = Field(
+        default_factory=dict,
+        description="Localized descriptions keyed by language code",
+    )
     description: str = Field(
         ..., description="Brief description of the engine's characteristics"
     )
@@ -49,6 +53,17 @@ class EngineProfile(BaseModel):
                     "Must be int, bool, or str."
                 )
         return v
+
+    @field_validator("description_i18n")
+    @classmethod
+    def validate_i18n_maps(cls, value: dict[str, Any]) -> dict[str, str]:
+        """Validate that i18n maps contain only string language keys and values."""
+        validated: dict[str, str] = {}
+        for language, text in value.items():
+            if not isinstance(language, str) or not isinstance(text, str):
+                raise ValueError("Engine i18n entries must use string keys and values.")
+            validated[language] = text
+        return validated
 
 
 class EngineConfigFile(BaseModel):

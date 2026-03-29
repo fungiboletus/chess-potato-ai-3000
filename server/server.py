@@ -15,7 +15,7 @@ import chess
 import pyseto
 import uvicorn
 from fastmcp import FastMCP
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -137,6 +137,7 @@ class EngineInfoModel(BaseModel):
 
     name: str
     display_name: str
+    description_i18n: dict[str, str] = Field(default_factory=dict)
     description: str
     default: bool
 
@@ -244,6 +245,7 @@ async def list_engines() -> EngineListResponse:
         EngineInfoModel(
             name=profile.key,
             display_name=profile.display_name,
+            description_i18n=profile.description_i18n,
             description=profile.description,
             default=profile.default,
         )

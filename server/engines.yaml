@@ -7,6 +7,9 @@
 #   display_name: Human-readable name shown to users
 #   description: Brief description of the engine's characteristics
 #
+# Optional localization fields:
+#   description_i18n: Localized descriptions keyed by language code
+#
 # Optional settings:
 #   depth: Search depth limit (integer, e.g., 12, 18, 24)
 #   time_limit: Time limit in seconds (float, e.g., 1.5, 2.0, 5.0)
@@ -24,7 +27,12 @@ engines:
   - key: chess-potato-ai-3000
     path: /usr/local/bin/chess-potato-ai-3000
     display_name: Chess Potato AI 3000
-    description: The flagship hybrid engine built from this repository's UCI project.
+    description: The flagship hybrid engine.
+    description_i18n:
+      "en": The flagship hybrid engine.
+      "fr": Le moteur hybride phare.
+      "es": El motor híbrido insignia.
+      "no": Flaggskipet blant hybridmotorene.
     time_limit: 30
     default: true
     options: {}
@@ -33,6 +41,11 @@ engines:
     path: /usr/local/bin/potato-alphabet-3000
     display_name: Potato Alphabet 3000
     description: A humourously weak chess engine that plays the move in the middle of the alphabetical list of legal moves.
+    description_i18n:
+      "en": A humorously weak chess engine that plays the move in the middle of the alphabetical list of legal moves.
+      "fr": Un moteur d'échecs volontairement faible qui joue le coup situé au milieu de la liste alphabétique des coups légaux.
+      "es": Un motor de ajedrez humorísticamente débil que juega la jugada situada en medio de la lista alfabética de movimientos legales.
+      "no": En humoristisk svak sjakkmotor som spiller trekket midt i den alfabetiske listen over lovlige trekk.
     time_limit: 10
     options: {}
 
@@ -40,6 +53,11 @@ engines:
     path: /usr/local/bin/chess-potato-random
     display_name: Random
     description: Plays a random legal move each turn.
+    description_i18n:
+      "en": Plays a random legal move each turn.
+      "fr": Joue un coup légal aléatoire à chaque tour.
+      "es": Juega un movimiento legal aleatorio en cada turno.
+      "no": Spiller et tilfeldig lovlig trekk hver tur.
     time_limit: 10
     options: {}
 
@@ -47,6 +65,11 @@ engines:
     path: /usr/local/bin/badfish
     display_name: Badfish
     description: A modified Stockfish engine designed to play bad moves, somewhat worse than random.
+    description_i18n:
+      "en": A modified Stockfish engine designed to play bad moves, somewhat worse than random.
+      "fr": Une version modifiée de Stockfish conçue pour jouer de mauvais coups, légèrement pire que l'aléatoire.
+      "es": Una versión modificada de Stockfish diseñada para jugar malas jugadas, algo peor que el azar.
+      "no": En modifisert Stockfish-motor laget for å spille dårlige trekk, litt verre enn tilfeldig.
     depth: 8
     time_limit: 1.0
     options: {}
@@ -55,6 +78,11 @@ engines:
     path: /usr/local/bin/worstfish
     display_name: Worstfish
     description: A modified Stockfish engine designed to play very poorly, showing a mix of good and terrible moves.
+    description_i18n:
+      "en": A modified Stockfish engine designed to play very poorly, showing a mix of good and terrible moves.
+      "fr": Une version modifiée de Stockfish conçue pour jouer très mal, avec un mélange de bons et de terribles coups.
+      "es": Una versión modificada de Stockfish diseñada para jugar muy mal, mostrando una mezcla de buenas y terribles jugadas.
+      "no": En modifisert Stockfish-motor laget for å spille svært dårlig, med en blanding av gode og elendige trekk.
     depth: 8
     time_limit: 1.0
     options: {}
@@ -63,6 +91,11 @@ engines:
     path: /usr/games/stockfish
     display_name: Stockfish (Level 0)
     description: Stockfish with minimum strength for casual play.
+    description_i18n:
+      "en": Stockfish with minimum strength for casual play.
+      "fr": Stockfish à sa force minimale pour une partie décontractée.
+      "es": Stockfish con fuerza mínima para juego casual.
+      "no": Stockfish med minimumsstyrke for uformelt spill.
     depth: 5
     time_limit: 1.5
     options:
@@ -72,6 +105,11 @@ engines:
     path: /usr/games/stockfish
     display_name: Stockfish (ELO 1320)
     description: Stockfish pretending to be a 1320 ELO player.
+    description_i18n:
+      "en": Stockfish pretending to be a 1320 ELO player.
+      "fr": Stockfish qui se fait passer pour un joueur à 1320 ELO.
+      "es": Stockfish fingiendo ser un jugador de 1320 ELO.
+      "no": Stockfish som later som den er en spiller på 1320 ELO.
     depth: 8
     time_limit: 1.5
     options:
@@ -82,11 +120,21 @@ engines:
     path: /usr/games/stockfish
     display_name: Stockfish (Default)
     description: Stockfish using its default strength configuration.
+    description_i18n:
+      "en": Stockfish using its default strength configuration.
+      "fr": Stockfish avec sa configuration de force par défaut.
+      "es": Stockfish usando su configuración de fuerza predeterminada.
+      "no": Stockfish med standard styrkeinnstillinger.
 
   - key: stockfish_unbeatable
     path: /usr/games/stockfish
     display_name: Stockfish (Unbeatable)
     description: Stockfish tuned to beat any human.
+    description_i18n:
+      "en": Stockfish tuned to beat any human.
+      "fr": Stockfish réglé pour battre n'importe quel humain.
+      "es": Stockfish ajustado para vencer a cualquier humano.
+      "no": Stockfish justert for å slå ethvert menneske.
     depth: 24
     time_limit: 5.0
     options:

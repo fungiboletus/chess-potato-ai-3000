@@ -1,10 +1,11 @@
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field as PydanticField, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import Field as PydanticField
 from sqlalchemy import Column, Text
 from sqlmodel import Field, Session, SQLModel, create_engine
 
@@ -56,22 +57,34 @@ class GameSection(BaseModel):
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
     result: GameResultSection
-    playerColor: Literal["white", "black"] | None = None
-    selectedEngine: str | None = PydanticField(default=None, max_length=MAX_GENERIC_TEXT_LENGTH)
-    selectedEngineDisplayName: str | None = PydanticField(
-        default=None, max_length=MAX_DISPLAY_NAME_LENGTH
+    player_color: Literal["white", "black"] | None = PydanticField(
+        default=None, alias="playerColor"
     )
-    engineWasOffline: bool = False
-    usedTakeback: bool = False
-    finalFen: str = PydanticField(min_length=1, max_length=MAX_FEN_LENGTH)
+    selected_engine: str | None = PydanticField(
+        default=None,
+        alias="selectedEngine",
+        max_length=MAX_GENERIC_TEXT_LENGTH,
+    )
+    selected_engine_display_name: str | None = PydanticField(
+        default=None,
+        alias="selectedEngineDisplayName",
+        max_length=MAX_DISPLAY_NAME_LENGTH,
+    )
+    engine_was_offline: bool = PydanticField(default=False, alias="engineWasOffline")
+    used_takeback: bool = PydanticField(default=False, alias="usedTakeback")
+    final_fen: str = PydanticField(alias="finalFen", min_length=1, max_length=MAX_FEN_LENGTH)
 
 
 class MetadataSection(BaseModel):
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
     source: Literal["web"] = "web"
-    clientName: str = PydanticField(min_length=1, max_length=MAX_GENERIC_TEXT_LENGTH)
-    clientVersion: str = PydanticField(min_length=1, max_length=MAX_GENERIC_TEXT_LENGTH)
+    client_name: str = PydanticField(
+        alias="clientName", min_length=1, max_length=MAX_GENERIC_TEXT_LENGTH
+    )
+    client_version: str = PydanticField(
+        alias="clientVersion", min_length=1, max_length=MAX_GENERIC_TEXT_LENGTH
+    )
     locale: str | None = PydanticField(default=None, max_length=16)
 
 
@@ -79,14 +92,30 @@ class HistoryMoveSection(BaseModel):
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
     san: str = PydanticField(min_length=1, max_length=MAX_SAN_LENGTH)
-    playerKey: str = PydanticField(min_length=1, max_length=MAX_PLAYER_KEY_LENGTH)
-    engineName: str | None = PydanticField(default=None, max_length=MAX_GENERIC_TEXT_LENGTH)
-    engineDisplayName: str | None = PydanticField(
-        default=None, max_length=MAX_DISPLAY_NAME_LENGTH
+    player_key: str = PydanticField(
+        alias="playerKey", min_length=1, max_length=MAX_PLAYER_KEY_LENGTH
+    )
+    engine_name: str | None = PydanticField(
+        default=None,
+        alias="engineName",
+        max_length=MAX_GENERIC_TEXT_LENGTH,
+    )
+    engine_display_name: str | None = PydanticField(
+        default=None,
+        alias="engineDisplayName",
+        max_length=MAX_DISPLAY_NAME_LENGTH,
     )
     fen: str = PydanticField(min_length=1, max_length=MAX_FEN_LENGTH)
-    evaluationToken: str | None = PydanticField(default=None, max_length=1024)
-    continuationToken: str | None = PydanticField(default=None, max_length=1024)
+    evaluation_token: str | None = PydanticField(
+        default=None,
+        alias="evaluationToken",
+        max_length=1024,
+    )
+    continuation_token: str | None = PydanticField(
+        default=None,
+        alias="continuationToken",
+        max_length=1024,
+    )
     timestamp: int = PydanticField(ge=0)
     from_square: str = PydanticField(alias="from", pattern=BOARD_SQUARE_PATTERN)
     to: str = PydanticField(pattern=BOARD_SQUARE_PATTERN)
@@ -106,7 +135,7 @@ class FeedbackSubmissionPayload(BaseModel):
 
 class GameFeedbackRecord(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), index=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), index=True)
     submission_id: str = Field(index=True, unique=True)
     source: str = Field(default="web")
     client_name: str | None = None

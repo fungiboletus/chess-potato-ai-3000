@@ -5,6 +5,7 @@ import type { Key } from 'chessground/types';
 import type { Api } from 'chessground/api';
 import { mcpClient, type EngineInfo, type PositionEvaluation } from '../services/mcpClient';
 import { computeRandomMove } from '../utils/offlineEngine';
+import { getEngineDisplayNameByName } from '../utils/engineI18n';
 
 // Game states following a state machine pattern
 export type GameState =
@@ -185,11 +186,7 @@ const getEngineDisplayName = (engineName: string | null, availableEngines: Engin
     return null;
   }
 
-  if (engineName === OFFLINE_ENGINE) {
-    return 'Offline (Random)';
-  }
-
-  return availableEngines.find(engine => engine.name === engineName)?.display_name ?? engineName;
+  return getEngineDisplayNameByName(engineName, availableEngines);
 };
 
 const useChessStore = create<ChessGameStore>()(
@@ -900,6 +897,12 @@ const useChessStore = create<ChessGameStore>()(
         const offlineEngineInfo: EngineInfo = {
           name: OFFLINE_ENGINE,
           display_name: 'Offline (Random)',
+          description_i18n: {
+            en: 'A simple offline engine that plays random moves. Fallback when the server is unavailable.',
+            fr: 'Un moteur hors ligne simple qui joue des coups aleatoires. Utilise quand le serveur est indisponible.',
+            es: 'Un motor sin conexion sencillo que juega movimientos aleatorios. Se usa cuando el servidor no esta disponible.',
+            no: 'En enkel frakoblet motor som spiller tilfeldige trekk. Brukes nar serveren ikke er tilgjengelig.'
+          },
           description: 'A simple offline engine that plays random moves. Fallback when server is unavailable.',
           default: false
         };
@@ -970,8 +973,7 @@ const useChessStore = create<ChessGameStore>()(
 
       getSelectedEngineDisplayName: () => {
         const { selectedEngine, availableEngines } = get();
-        const engineInfo = availableEngines.find(e => e.name === selectedEngine);
-        return engineInfo?.display_name || 'Untitled Engine';
+        return getEngineDisplayNameByName(selectedEngine, availableEngines, 'Untitled Engine') || 'Untitled Engine';
       }
     }),
     {

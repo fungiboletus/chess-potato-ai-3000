@@ -10,19 +10,19 @@ import pytest
 from sqlmodel import Session, create_engine, select
 
 import server
-from feedback_store import (
-    FeedbackValidationError,
-    GameFeedbackRecord,
-    MAX_FEEDBACK_NOTES_LENGTH,
-    MAX_RESULT_MESSAGE_LENGTH,
-    normalize_feedback_submission,
-    save_feedback_submission,
-)
 from chess_engines import (
     compute_all_transitions,
     ensure_fen_is_in_transitions,
     ensure_valid_transition,
     get_available_engines,
+)
+from feedback_store import (
+    MAX_FEEDBACK_NOTES_LENGTH,
+    MAX_RESULT_MESSAGE_LENGTH,
+    FeedbackValidationError,
+    GameFeedbackRecord,
+    normalize_feedback_submission,
+    save_feedback_submission,
 )
 
 
@@ -336,50 +336,52 @@ def test_normalize_feedback_submission_accepts_longer_feedback_fields() -> None:
     assert normalized["game"]["result"]["message"] == "y" * MAX_RESULT_MESSAGE_LENGTH
 
 
-def test_save_feedback_submission_persists_record(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_save_feedback_submission_persists_record(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     database_path = tmp_path / "feedback.db"
     test_engine = create_engine(f"sqlite:///{database_path}", echo=False)
 
     monkeypatch.setattr("feedback_store.engine", test_engine)
 
     raw_payload = {
-            "feedback": {
-                "enjoyment": "loved_it",
-                "authenticity": "very_human",
-                "notes": "Great game",
+        "feedback": {
+            "enjoyment": "loved_it",
+            "authenticity": "very_human",
+            "notes": "Great game",
+        },
+        "game": {
+            "result": {
+                "type": "win",
+                "reason": "checkmate",
+                "message": "Congratulations! You won!",
             },
-            "game": {
-                "result": {
-                    "type": "win",
-                    "reason": "checkmate",
-                    "message": "Congratulations! You won!",
-                },
-                "playerColor": "white",
-                "selectedEngine": "chess-potato-ai-3000",
-                "selectedEngineDisplayName": "Chess Potato AI 3000",
-                "engineWasOffline": False,
-                "usedTakeback": False,
-                "finalFen": chess.Board().fen(),
-            },
-            "metadata": {
-                "source": "web",
-                "clientName": "chess-potato-ai-3000",
-                "clientVersion": "1.0.0",
-                "locale": "en",
-            },
-            "history": [
-                {
-                    "san": "e4",
-                    "playerKey": "human",
-                    "engineName": None,
-                    "engineDisplayName": None,
-                    "fen": chess.Board().fen(),
-                    "timestamp": 123,
-                    "from": "e2",
-                    "to": "e4",
-                }
-            ],
-        }
+            "playerColor": "white",
+            "selectedEngine": "chess-potato-ai-3000",
+            "selectedEngineDisplayName": "Chess Potato AI 3000",
+            "engineWasOffline": False,
+            "usedTakeback": False,
+            "finalFen": chess.Board().fen(),
+        },
+        "metadata": {
+            "source": "web",
+            "clientName": "chess-potato-ai-3000",
+            "clientVersion": "1.0.0",
+            "locale": "en",
+        },
+        "history": [
+            {
+                "san": "e4",
+                "playerKey": "human",
+                "engineName": None,
+                "engineDisplayName": None,
+                "fen": chess.Board().fen(),
+                "timestamp": 123,
+                "from": "e2",
+                "to": "e4",
+            }
+        ],
+    }
 
     normalized = normalize_feedback_submission(raw_payload)
     record = save_feedback_submission(

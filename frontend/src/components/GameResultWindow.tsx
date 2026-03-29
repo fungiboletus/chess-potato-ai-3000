@@ -10,6 +10,7 @@ import {
 } from '../services/feedbackPayload';
 import useChessStore, { OFFLINE_ENGINE, selectIsOfflineMode, type GameResult } from '../stores/chessStore';
 import { getGameResultMessage } from '../utils/gameResultI18n';
+import { getEngineDisplayNameByName } from '../utils/engineI18n';
 
 const RESULT_WINDOW_WIDTH = 440;
 const RESULT_WINDOW_HEIGHT = 470;
@@ -130,9 +131,7 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
     }
   }, [headline, message, isOfflineMode]);
 
-  const selectedEngineDisplayName = useMemo(() => {
-    return availableEngines.find(engine => engine.name === selectedEngine)?.display_name ?? null;
-  }, [availableEngines, selectedEngine]);
+  const selectedEngineDisplayName = getEngineDisplayNameByName(selectedEngine, availableEngines);
 
   const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -169,7 +168,11 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
         san: move.san,
         playerKey: move.playerKey,
         engineName: move.engineName ?? null,
-        engineDisplayName: move.engineDisplayName ?? null,
+        engineDisplayName: getEngineDisplayNameByName(
+          move.engineName ?? move.playerKey,
+          availableEngines,
+          move.engineDisplayName
+        ) ?? null,
         fen: move.fen,
         evaluationToken: move.evaluationToken ?? null,
         continuationToken: move.continuationToken ?? null,
