@@ -2,6 +2,8 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const DEFAULT_SITE_URL = 'https://fungiboletus.github.io/chess-potato-ai-3000/'
+
 function normalizeBase(rawBase: string | undefined): string {
   const base = rawBase?.trim()
 
@@ -26,14 +28,31 @@ function joinBase(base: string, assetPath: string): string {
   return `${base}${assetPath}`
 }
 
+function normalizeSiteUrl(rawSiteUrl: string | undefined): string {
+  const siteUrl = rawSiteUrl?.trim() || DEFAULT_SITE_URL
+  return siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`
+}
+
+function toAbsoluteAssetUrl(siteUrl: string, assetPath: string): string {
+  return `${siteUrl}${assetPath.replace(/^\//, '')}`
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '')
   const base = normalizeBase(env.VITE_BASE_PATH)
+  const siteUrl = normalizeSiteUrl(env.VITE_SITE_URL)
+  const ogImageUrl = toAbsoluteAssetUrl(siteUrl, 'social-preview.webp')
 
   return {
     base,
     plugins: [
+      {
+        name: 'inject-social-meta-urls',
+        transformIndexHtml(html) {
+          return html.replaceAll('%VITE_OG_IMAGE_URL%', ogImageUrl)
+        },
+      },
       react(),
       VitePWA({
         injectRegister: null,

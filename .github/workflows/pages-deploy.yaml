@@ -57,11 +57,14 @@ jobs:
         working-directory: frontend
         env:
           VITE_BASE_PATH: ./
+          VITE_SITE_URL: https://fungiboletus.github.io/chess-potato-ai-3000/
           VITE_MCP_SERVER_URL: ${{ secrets['PAGES_MCP_SERVER_URL'] }}
         run: npm run build
 
       - name: Build article
         working-directory: article
+        env:
+          SITE_URL: https://fungiboletus.github.io/chess-potato-ai-3000/
         run: npm run build
 
       - name: Assemble Pages site

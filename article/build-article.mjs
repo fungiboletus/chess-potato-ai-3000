@@ -17,6 +17,7 @@ const articleFontsDir = path.join(articleDir, 'fonts');
 const outputFontsDir = path.join(outputDir, 'fonts');
 const frontendFaviconPath = path.join(repoRoot, 'frontend', 'public', 'favicon.png');
 const outputFaviconPath = path.join(outputDir, 'favicon.png');
+const DEFAULT_SITE_URL = 'https://fungiboletus.github.io/chess-potato-ai-3000/';
 
 const assetExtensions = new Set([
   '.png',
@@ -36,14 +37,21 @@ const fontExtensions = new Set([
   '.otf',
 ]);
 
+function normalizeSiteUrl(rawSiteUrl) {
+  const siteUrl = rawSiteUrl?.trim() || DEFAULT_SITE_URL;
+  return siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+}
+
+const siteUrl = normalizeSiteUrl(process.env.SITE_URL);
+
 const articleMeta = {
   author: 'Antoine Pultier',
   publishedDate: '2026-03-29',
   repoUrl: 'https://github.com/fungiboletus/chess-potato-ai-3000',
   licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
   appUrl: '../',
-  canonicalUrl: 'https://chesspotatoai3000.sct.sintef.no/article/',
-  ogImage: './premium-screenshot.webp',
+  canonicalUrl: new URL('article/', siteUrl).toString(),
+  ogImage: new URL('article/premium-screenshot.webp', siteUrl).toString(),
 };
 
 const md = new MarkdownIt({
