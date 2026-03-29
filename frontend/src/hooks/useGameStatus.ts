@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import useChessStore from '../stores/chessStore';
+import { getGameStatusText } from '../utils/gameResultI18n';
 
 export const useGameStatus = () => {
   const { t } = useTranslation();
@@ -24,12 +25,7 @@ export const useGameStatus = () => {
         return t('status.ai_thinking');
 
       case 'game_over':
-        if (gameResult) {
-          return gameResult.type === 'win' ? t('status.checkmate_you_win') :
-            gameResult.type === 'lose' ? t('status.checkmate_ai_wins') :
-              t('status.draw');
-        }
-        return t('status.draw');
+        return getGameStatusText(t, gameResult);
 
       default:
         return t('status.initializing');

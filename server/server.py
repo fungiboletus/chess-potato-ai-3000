@@ -7,7 +7,9 @@ import logging
 import os
 import secrets
 import time
-from types import FrameType
+import uuid
+from contextlib import asynccontextmanager
+from typing import Any
 
 import chess
 import pyseto
@@ -29,6 +31,12 @@ from chess_engines import (
     compute_next_move_cached as engine_compute_move,
 )
 from chess_evaluation import evaluate_position, shutdown_evaluator
+from feedback_store import (
+    FeedbackValidationError,
+    ensure_feedback_database,
+    normalize_feedback_submission,
+    save_feedback_submission,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -70,21 +78,41 @@ if isinstance(SECRET_KEY, str):
     # Decode from hex if provided as a string
     secret_key_bytes = bytes.fromhex(SECRET_KEY)
 else:
-    print("No CPAI3000_SECRET_KEY provided - generating a random key")
+    logger.warning("No CPAI3000_SECRET_KEY provided - generating a random key")
     secret_key_bytes = secrets.token_bytes(32)
 
 key = pyseto.Key.new(version=4, purpose="local", key=secret_key_bytes)
 
 
+async def shutdown_all() -> None:
+    """Gracefully shutdown all engines and evaluator."""
+    await shutdown_engines()
+    await shutdown_evaluator()
+
+
 def shutdown_all_sync():
     """Synchronously shutdown all engines and evaluator with timeout."""
 
-    async def shutdown_all():
-        await shutdown_engines()
-        await shutdown_evaluator()
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        pass
+    else:
+        logger.debug("Skipping synchronous shutdown because an event loop is already running")
+        return
 
     try:
         asyncio.run(asyncio.wait_for(shutdown_all(), timeout=2.0))
+    except TimeoutError:
+        logger.warning("Shutdown timed out after 2 seconds")
+    except Exception as e:
+        logger.warning(f"Error during shutdown: {e}")
+
+
+async def on_shutdown() -> None:
+    """Run async cleanup on the active server event loop."""
+    try:
+        await asyncio.wait_for(shutdown_all(), timeout=2.0)
     except TimeoutError:
         logger.warning("Shutdown timed out after 2 seconds")
     except Exception as e:
@@ -237,6 +265,64 @@ class EvaluationResponse(BaseModel):
     evaluations: dict[str, PositionEvaluation]  # FEN -> evaluation data
 
 
+class FeedbackSubmissionResponse(BaseModel):
+    """Response returned after storing post-game feedback."""
+
+    submission_id: str
+    stored: bool
+
+
+def validate_feedback_tokens(
+    raw_feedback: dict[str, Any], normalized_feedback: dict[str, Any]
+) -> tuple[bool, list[str]]:
+    issues: list[str] = []
+    previous_fen = chess.Board().fen()
+    raw_history = raw_feedback.get("history")
+    history = normalized_feedback.get("history", [])
+    engine_was_offline = bool(normalized_feedback.get("game", {}).get("engineWasOffline", False))
+    saw_token = False
+
+    if not isinstance(raw_history, list) or len(raw_history) != len(history):
+        return False, ["feedback history did not match normalized payload"]
+
+    for index, move in enumerate(history):
+        current_fen = move["fen"]
+        try:
+            ensure_valid_transition(previous_fen, current_fen)
+        except ValueError:
+            issues.append(f"history[{index}] has an invalid transition")
+
+        raw_move = raw_history[index]
+        move_tokens: list[str] = []
+        if isinstance(raw_move, dict):
+            for token_key in ("evaluationToken", "continuationToken"):
+                token_value = raw_move.get(token_key)
+                if isinstance(token_value, str) and token_value:
+                    move_tokens.append(token_value)
+
+        if move_tokens:
+            saw_token = True
+            for token in move_tokens:
+                try:
+                    token_fen = check_token(token, evaluation=True)
+                except ValueError:
+                    issues.append(f"history[{index}] has an invalid token")
+                    continue
+
+                if token_fen != current_fen:
+                    issues.append(f"history[{index}] token does not match move FEN")
+        elif move["playerKey"] != "human" and not engine_was_offline:
+            issues.append(f"history[{index}] is missing a validation token")
+
+        previous_fen = current_fen
+
+    final_fen = normalized_feedback.get("game", {}).get("finalFen")
+    if history and final_fen != history[-1]["fen"]:
+        issues.append("game.finalFen does not match the final move FEN")
+
+    return saw_token and not issues, issues
+
+
 @mcp.tool
 async def evaluate_fens(
     fens: list[str],
@@ -280,14 +366,11 @@ async def evaluate_fens(
     fens_from_tokens = [check_token(t, evaluation=True) for t in tokens]
     # add start position too
     fens_from_tokens.append(chess.Board().fen())
-    print("Computed FENs from tokens for validation.")
-    for f in fens_from_tokens:
-        print(f)
+    logger.debug("Computed %d FENs from tokens for validation", len(fens_from_tokens))
     all_valid_transitions = compute_all_transitions(fens_from_tokens)
 
     # validate each fen against the valid transitions
     for fen in fens:
-        print("Validating FEN against transitions:", fen)
         ensure_fen_is_in_transitions(fen, all_valid_transitions)
 
     evaluations: dict[str, PositionEvaluation] = {}
@@ -315,24 +398,52 @@ async def evaluate_fens(
     return EvaluationResponse(evaluations=evaluations)
 
 
-def force_exit_handler(signum: int, frame: FrameType | None) -> None:
-    """Aggressive shutdown - no waiting for graceful cleanup."""
-    logger.info("Received interrupt signal - forcing immediate exit")
-    # Attempt graceful shutdown with timeout
-    shutdown_all_sync()
-    # Hard exit
-    os._exit(0)
+@mcp.tool
+async def submit_game_feedback(feedback: dict[str, Any]) -> FeedbackSubmissionResponse:
+    """Store post-game feedback and associated game metadata in SQLite."""
+    submission_id = str(uuid.uuid7())
+    try:
+        normalized_feedback = normalize_feedback_submission(feedback)
+        tokens_validated, validation_issues = validate_feedback_tokens(
+            feedback, normalized_feedback
+        )
+        record = save_feedback_submission(
+            submission_id,
+            normalized_feedback,
+            tokens_validated=tokens_validated,
+            validation_issues=validation_issues,
+        )
+    except FeedbackValidationError as exc:
+        logger.info("Rejected feedback submission: %s", exc)
+        raise ValueError("Feedback submission rejected") from exc
+    except Exception as exc:
+        logger.exception("Failed to store feedback submission")
+        raise RuntimeError("Feedback submission failed") from exc
 
+    return FeedbackSubmissionResponse(
+        submission_id=record.submission_id,
+        stored=True,
+    )
 
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request: Request):
     """Health check endpoint."""
     return JSONResponse({"status": "healthy", "service": "mcp-server"})
-    return JSONResponse({"status": "healthy", "service": "mcp-server"})
 
 
 if __name__ == "__main__":
+    ensure_feedback_database()
     app = mcp.http_app(stateless_http=True)
+
+    existing_lifespan = app.lifespan
+
+    @asynccontextmanager
+    async def app_lifespan(starlette_app):
+        async with existing_lifespan(starlette_app):
+            yield
+        await on_shutdown()
+
+    app.router.lifespan_context = app_lifespan
 
     app.add_middleware(
         CORSMiddleware,
@@ -344,7 +455,6 @@ if __name__ == "__main__":
         max_age=86400,
     )
 
-    # Use Config and Server for better control over signal handling
     config = uvicorn.Config(
         app,
         host="0.0.0.0",
@@ -354,10 +464,7 @@ if __name__ == "__main__":
     )
     server = uvicorn.Server(config)
 
-    # Override handle_exit to use our aggressive shutdown
-    def handle_exit_override(sig: int, frame: FrameType | None) -> None:
-        force_exit_handler(sig, frame)
-
-    server.handle_exit = handle_exit_override  # type: ignore[method-assign]
-
-    server.run()
+    try:
+        server.run()
+    except KeyboardInterrupt:
+        logger.info("Server shutdown requested")

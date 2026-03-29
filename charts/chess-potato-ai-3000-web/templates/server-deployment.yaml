@@ -47,6 +47,19 @@ spec:
                   name: {{ include "chess-potato-ai-3000-web.serverSecretName" . }}
                   key: OLLAMA_BEARER_TOKEN
             {{- end }}
+            {{- if .Values.server.feedback.databaseUrl }}
+            - name: CPAI3000_FEEDBACK_DATABASE_URL
+              value: {{ .Values.server.feedback.databaseUrl | quote }}
+            {{- else if .Values.server.persistence.enabled }}
+            - name: CPAI3000_FEEDBACK_DATABASE_URL
+              value: {{ printf "sqlite:////%s/%s" (trimPrefix "/" .Values.server.persistence.mountPath) .Values.server.feedback.databaseFilename | quote }}
+            {{- end }}
+            - name: CPAI3000_FEEDBACK_MAX_BYTES
+              value: {{ .Values.server.feedback.maxBytes | quote }}
+            - name: CPAI3000_FEEDBACK_MAX_HISTORY
+              value: {{ .Values.server.feedback.maxHistory | quote }}
+            - name: CPAI3000_FEEDBACK_MAX_NOTES
+              value: {{ .Values.server.feedback.maxNotes | quote }}
             {{- range $name, $value := .Values.server.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}
@@ -54,6 +67,14 @@ spec:
             {{- with .Values.server.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+          {{- if .Values.server.persistence.enabled }}
+          volumeMounts:
+            - name: server-data
+              mountPath: {{ .Values.server.persistence.mountPath }}
+              {{- with .Values.server.persistence.subPath }}
+              subPath: {{ . | quote }}
+              {{- end }}
+          {{- end }}
           readinessProbe:
             httpGet:
               path: /health
@@ -68,3 +89,9 @@ spec:
             periodSeconds: 20
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
+      {{- if .Values.server.persistence.enabled }}
+      volumes:
+        - name: server-data
+          persistentVolumeClaim:
+            claimName: {{ default (include "chess-potato-ai-3000-web.serverPersistenceName" .) .Values.server.persistence.existingClaim }}
+      {{- end }}

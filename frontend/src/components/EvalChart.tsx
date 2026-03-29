@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useChessStore, { selectIsOfflineMode } from '../stores/chessStore';
 
-const CANVAS_WIDTH = 220;
-const CANVAS_HEIGHT = 120;
+const CANVAS_WIDTH = 320;
+const CANVAS_HEIGHT = 112;
 const CHART_PADDING = 4;
 const CHART_WIDTH = CANVAS_WIDTH - CHART_PADDING * 2;
 const CHART_HEIGHT = CANVAS_HEIGHT - CHART_PADDING * 2;
@@ -479,7 +479,13 @@ export const EvalChart: React.FC = () => {
   ]);
 
   return (
-    <div className="eval-chart">
+    <div
+      className="eval-chart"
+      style={{
+        '--eval-chart-width': `${CANVAS_WIDTH}px`,
+        '--eval-chart-height': `${CANVAS_HEIGHT}px`
+      } as React.CSSProperties}
+    >
       <div className="eval-chart__header">
         <span className="eval-chart__axis-title eval-chart__axis-title--win">
           {t('eval_chart.win_probability')}

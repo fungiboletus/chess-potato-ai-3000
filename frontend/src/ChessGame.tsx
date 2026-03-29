@@ -61,8 +61,7 @@ export const ChessGame: React.FC = () => {
       <GameResultWindow
         isOpen={!!gameResult}
         onClose={closeGameResult}
-        result={gameResult?.type || 'draw'}
-        message={gameResult?.message || ''}
+        gameResult={gameResult}
         windowId="gameResult"
         zIndex={getZIndex('gameResult')}
       />

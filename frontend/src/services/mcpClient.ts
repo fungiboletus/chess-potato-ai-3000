@@ -3,10 +3,13 @@
  * Provides a singleton client for computing AI chess moves
  */
 
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { Client } from '@modelcontextprotocol/sdk/client';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import {
+  type GameFeedbackPayload,
+  validateGameFeedbackPayload,
+} from './feedbackPayload';
 
 // Connection states
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -30,11 +33,16 @@ export interface PositionEvaluation {
   score: number;
 }
 
+export interface FeedbackSubmissionResult {
+  submission_id: string;
+  stored: boolean;
+}
+
 const NextMoveStructuredContentSchema = z.object({
   move: z.string(),
   fen: z.string().nullable().optional(),
   token: z.string().nullable().optional()
-}).passthrough();
+});
 
 const ListEnginesStructuredContentSchema = z.object({
   engines: z.array(z.object({
@@ -43,14 +51,19 @@ const ListEnginesStructuredContentSchema = z.object({
     description: z.string(),
     default: z.boolean()
   }))
-}).passthrough();
+});
 
 const EvaluateFensStructuredContentSchema = z.object({
   evaluations: z.record(z.string(), z.object({
     expectation: z.number(),
     score: z.number()
   }))
-}).passthrough();
+});
+
+const FeedbackSubmissionStructuredContentSchema = z.object({
+  submission_id: z.string(),
+  stored: z.boolean()
+});
 
 /**
  * Singleton MCP Client Service for chess engine
@@ -304,7 +317,7 @@ class MCPClientService {
             engine_name: engineName,
             ...(this.currentToken && { token: this.currentToken })
           }
-        }, CallToolResultSchema);
+        });
 
         const rawContent = result.structuredContent;
 
@@ -389,7 +402,7 @@ class MCPClientService {
             tokens,
             ...(typeof playerIsWhite === 'boolean' ? { player_is_white: playerIsWhite } : {})
           }
-        }, CallToolResultSchema);
+        });
 
         const rawContent = result.structuredContent;
 
@@ -469,7 +482,7 @@ class MCPClientService {
       const result = await client.callTool({
         name: 'list_engines',
         arguments: {}
-      }, CallToolResultSchema);
+      });
 
       const rawContent = result.structuredContent;
 
@@ -492,6 +505,47 @@ class MCPClientService {
 
       throw new Error(`Failed to list engines: ${errorMsg}`);
     }
+  }
+
+  async submitGameFeedback(payload: GameFeedbackPayload): Promise<FeedbackSubmissionResult> {
+    return this.retryOperation(async () => {
+      if (this.connectionState !== 'connected') {
+        console.log('[MCP] Establishing connection before submitting feedback...');
+      }
+
+      const client = await this.ensureClient();
+      const validatedPayload = validateGameFeedbackPayload(payload);
+
+      try {
+        console.log('[MCP] Submitting post-game feedback...');
+
+        const result = await client.callTool({
+          name: 'submit_game_feedback',
+          arguments: {
+            feedback: validatedPayload
+          }
+        });
+
+        const rawContent = result.structuredContent;
+
+        if (!rawContent) {
+          throw new Error('Empty response from MCP server');
+        }
+
+        const content = FeedbackSubmissionStructuredContentSchema.parse(rawContent);
+
+        return content;
+      } catch (error) {
+        const errorMsg = this.getErrorMessage(error);
+        console.error('[MCP] Error submitting feedback:', error);
+
+        if (this.isConnectionIssue(errorMsg)) {
+          this.handleConnectionDrop('submit_game_feedback', error);
+        }
+
+        throw new Error('Feedback submission failed');
+      }
+    }, 'submit_game_feedback');
   }
 }
 

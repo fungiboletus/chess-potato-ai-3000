@@ -12,7 +12,6 @@ export const ChessGameProvider: React.FC<ChessGameProviderProps> = ({ children }
   const initializeGame = useChessStore(state => state.initializeGame);
   const fetchEngines = useChessStore(state => state.fetchEngines);
   const engineFetchState = useChessStore(state => state.engineFetchState);
-  const setSelectedEngine = useChessStore(state => state.setSelectedEngine);
   const setEngineLocked = useChessStore(state => state.setEngineLocked);
   const availableEngines = useChessStore(state => state.availableEngines);
 
@@ -78,7 +77,7 @@ export const ChessGameProvider: React.FC<ChessGameProviderProps> = ({ children }
         setEngineLocked(true);
       }
     }
-  }, [engineFetchState, availableEngines, setSelectedEngine, setEngineLocked]);
+  }, [engineFetchState, availableEngines, setEngineLocked]);
 
   // Initialize game only after engines are loaded (success or error)
   useEffect(() => {

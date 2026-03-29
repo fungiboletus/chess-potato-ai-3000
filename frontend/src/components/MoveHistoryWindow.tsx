@@ -69,13 +69,15 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
     }
   }, [moveHistory]);
 
-  const getPlayerDisplayName = (playerKey: string): string => {
-    if (playerKey === 'human') {
+  const getPlayerDisplayName = (moveRecord: MoveRecord): string => {
+    if (moveRecord.playerKey === 'human') {
       return t('player.human');
     }
-    // Look up engine display name
-    const engine = availableEngines.find(e => e.name === playerKey);
-    return engine?.display_name || playerKey;
+    if (moveRecord.engineDisplayName) {
+      return moveRecord.engineDisplayName;
+    }
+    const engine = availableEngines.find(e => e.name === moveRecord.engineName || e.name === moveRecord.playerKey);
+    return engine?.display_name || moveRecord.engineName || moveRecord.playerKey;
   };
 
 
@@ -211,7 +213,7 @@ export const MoveHistoryWindow: React.FC<MoveHistoryWindowProps> = ({
       const isHighlighted = index === highlightedIndex;
       const className = isHighlighted ? 'highlighted' : '';
       const evaluation = reallyShowEvaluations ? getEvaluationAttributes(moveRecord.fen, positionEvaluations, t) : null;
-      const playerName = getPlayerDisplayName(moveRecord.playerKey);
+      const playerName = getPlayerDisplayName(moveRecord);
 
       return (
         <tr

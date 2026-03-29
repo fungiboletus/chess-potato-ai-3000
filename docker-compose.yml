@@ -5,8 +5,14 @@ services:
       dockerfile: server/Dockerfile
     environment:
       CPAI3000_ALLOWED_ORIGINS: http://localhost:4173,http://localhost:5173,http://localhost:3000
+      CPAI3000_FEEDBACK_DATABASE_URL: sqlite:////app/data/feedback.db
+      CPAI3000_FEEDBACK_MAX_BYTES: 16384
+      CPAI3000_FEEDBACK_MAX_HISTORY: 256
+      CPAI3000_FEEDBACK_MAX_NOTES: 1000
     ports:
       - "8000:8000"
+    volumes:
+      - server_feedback_data:/app/data
     healthcheck:
       test:
         - CMD
@@ -36,3 +42,4 @@ services:
 
 volumes:
   frontend_node_modules:
+  server_feedback_data:

@@ -79,7 +79,17 @@
   "result": {
     "victory_headline": "Well played!",
     "defeat_headline": "Game over",
-    "draw_headline": "A balanced battle"
+    "draw_headline": "A balanced battle",
+    "messages": {
+      "checkmate_win": "Congratulations! You won!",
+      "checkmate_lose": "Better luck next time!",
+      "draw": "It's a draw! Well played!",
+      "stalemate": "Draw by stalemate.",
+      "threefold_repetition": "Draw by threefold repetition.",
+      "insufficient_material": "Draw by insufficient material.",
+      "fifty_move_rule": "Draw by the fifty-move rule.",
+      "resignation": "You resigned the game!"
+    }
   },
   "language": {
     "title": "Langue | Language | Språk | Idioma",
@@ -106,7 +116,8 @@
     "notes_label": "Additional notes",
     "submit": "Submit feedback",
     "submitting": "Submitting...",
-    "thank_you": "Thanks for your feedback!"
+    "thank_you": "Thanks for your feedback!",
+    "submit_error": "Could not submit feedback right now."
   },
   "status": {
     "initializing": "Initializing...",

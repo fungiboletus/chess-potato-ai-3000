@@ -79,7 +79,17 @@
   "result": {
     "victory_headline": "Sterk seier!",
     "defeat_headline": "Spillet er over",
-    "draw_headline": "Jevn remis"
+    "draw_headline": "Jevn remis",
+    "messages": {
+      "checkmate_win": "Gratulerer! Du vant!",
+      "checkmate_lose": "Lykke til neste gang!",
+      "draw": "Det er remis! Godt spilt!",
+      "stalemate": "Remis ved patt.",
+      "threefold_repetition": "Remis ved trekkgjentakelse.",
+      "insufficient_material": "Remis på grunn av utilstrekkelig materiell.",
+      "fifty_move_rule": "Remis etter femti-trekksregelen.",
+      "resignation": "Du ga opp spillet!"
+    }
   },
   "language": {
     "title": "Langue | Language | Språk | Idioma",
@@ -137,6 +147,7 @@
     "notes_label": "Ekstra notater",
     "submit": "Send tilbakemelding",
     "submitting": "Sender...",
-    "thank_you": "Takk for tilbakemeldingen!"
+    "thank_you": "Takk for tilbakemeldingen!",
+    "submit_error": "Kunne ikke sende tilbakemeldingen akkurat nå."
   }
 }

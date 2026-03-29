@@ -1,13 +1,15 @@
 # Chess MCP Server
 
-A Model Context Protocol (MCP) server that provides chess move computation using UCI engines (Stockfish by default).
+A Model Context Protocol (MCP) server that provides chess move computation and board evaluation using multiple UCI engines.
 
 ## Features
 
-- **Single Tool**: `compute_next_move(fen: str) -> str`
-  - Takes a chess position in FEN format
-  - Returns the best move in UCI format (e.g., "e2e4")
-  - Uses Stockfish engine with configurable depth (default: 10)
+- `compute_next_move(fen: str, token: str | None = None, engine_name: str = "chess-potato-ai-3000")`
+- `list_engines()`
+- `evaluate_fens(fens: list[str], tokens: list[str], player_is_white: bool | None = None, invert_turns: list[bool] | None = None)`
+- Signed move tokens for transition validation between requests
+- Multiple bundled engine profiles configured through `engines.yaml`
+- Health endpoint at `/health` and MCP endpoint at `/mcp`
 
 ## Requirements
 
@@ -35,6 +37,14 @@ uv sync
 ```bash
 # Run the MCP server
 uv run server.py
+```
+
+For local verification after dependency changes:
+
+```bash
+uv sync --dev
+uv run pytest
+uv run ruff check .
 ```
 
 ## Docker Build
@@ -74,8 +84,6 @@ uv run ruff check --fix .
 ## Example
 
 ```python
-# The tool accepts FEN notation
 fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-move = compute_next_move(fen)
-# Returns: "e2e4" (or another strong opening move)
+move = compute_next_move(fen, engine_name="stockfish")
 ```

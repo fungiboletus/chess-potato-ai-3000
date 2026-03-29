@@ -1,15 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
 import { EvalChart } from './EvalChart';
-import useChessStore, { selectIsOfflineMode } from '../stores/chessStore';
+import { mcpClient } from '../services/mcpClient';
+import {
+  MAX_FEEDBACK_NOTES_LENGTH,
+  type GameFeedbackPayload,
+} from '../services/feedbackPayload';
+import useChessStore, { OFFLINE_ENGINE, selectIsOfflineMode, type GameResult } from '../stores/chessStore';
+import { getGameResultMessage } from '../utils/gameResultI18n';
+
+const RESULT_WINDOW_WIDTH = 440;
+const RESULT_WINDOW_HEIGHT = 470;
 
 interface GameResultWindowProps {
   isOpen: boolean;
   onClose: () => void;
-  result: 'win' | 'lose' | 'draw';
-  message: string;
+  gameResult: GameResult | null;
   windowId?: string;
   zIndex?: number;
 }
@@ -17,15 +25,15 @@ interface GameResultWindowProps {
 export const GameResultWindow: React.FC<GameResultWindowProps> = ({
   isOpen,
   onClose,
-  result,
-  message,
+  gameResult,
   windowId,
   zIndex,
 }) => {
   const { t } = useTranslation();
+  const message = useMemo(() => getGameResultMessage(t, gameResult), [gameResult, t]);
 
   const config = useMemo(() => {
-    switch (result) {
+    switch (gameResult?.type) {
       case 'win':
         return {
           title: t('game.victory'),
@@ -47,17 +55,15 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
           headline: t('result.draw_headline'),
         };
     }
-  }, [result, t]);
+  }, [gameResult?.type, t]);
 
   const getCenterPosition = useCallback(() => {
     if (typeof window === 'undefined') {
       return { x: 0, y: 0 };
     }
-    const windowWidth = 380;
-    const windowHeight = 430;
     return {
-      x: Math.max(0, (window.innerWidth - windowWidth) / 2),
-      y: Math.max(0, (window.innerHeight - windowHeight) / 2)
+      x: Math.max(0, (window.innerWidth - RESULT_WINDOW_WIDTH) / 2),
+      y: Math.max(0, (window.innerHeight - RESULT_WINDOW_HEIGHT) / 2)
     };
   }, []);
 
@@ -74,6 +80,7 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
       zIndex={zIndex}
     >
       <GameResultContent
+        gameResult={gameResult}
         headline={config.headline}
         message={message}
         onClose={onClose}
@@ -84,6 +91,7 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
 };
 
 interface GameResultContentProps {
+  gameResult: GameResult | null;
   headline: string;
   message: string;
   onClose: () => void;
@@ -93,41 +101,96 @@ interface GameResultContentProps {
 type EnjoymentValue = 'loved_it' | 'it_was_okay' | 'not_really';
 type AuthenticityValue = 'very_human' | 'somewhat_human' | 'not_human';
 
-const SUBMIT_TIMEOUT_MS = 900;
-
 const GameResultContent: React.FC<GameResultContentProps> = ({
+  gameResult,
   headline,
   message,
   onClose,
   isOfflineMode,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const contentRef = useRef<HTMLDivElement>(null);
   const [enjoyment, setEnjoyment] = useState<EnjoymentValue | null>(null);
   const [authenticity, setAuthenticity] = useState<AuthenticityValue | null>(null);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const submitTimeoutRef = useRef<number | null>(null);
+  const [hasSubmitError, setHasSubmitError] = useState(false);
+  const moveHistory = useChessStore(state => state.moveHistory);
+  const playerColor = useChessStore(state => state.playerColor);
+  const selectedEngine = useChessStore(state => state.selectedEngine);
+  const availableEngines = useChessStore(state => state.availableEngines);
+  const hasUsedTakeback = useChessStore(state => state.hasUsedTakeback);
+  const chess = useChessStore(state => state.chess);
 
-  useEffect(() => {
-    return () => {
-      if (submitTimeoutRef.current !== null) {
-        window.clearTimeout(submitTimeoutRef.current);
-      }
-    };
-  }, []);
+  useLayoutEffect(() => {
+    const scrollContainer = contentRef.current?.closest('.window-body');
+    if (scrollContainer instanceof HTMLElement) {
+      scrollContainer.scrollTop = 0;
+    }
+  }, [headline, message, isOfflineMode]);
 
-  const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
+  const selectedEngineDisplayName = useMemo(() => {
+    return availableEngines.find(engine => engine.name === selectedEngine)?.display_name ?? null;
+  }, [availableEngines, selectedEngine]);
+
+  const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting || isSubmitted) {
       return;
     }
+
+    const payload: GameFeedbackPayload = {
+      feedback: {
+        enjoyment,
+        authenticity,
+        notes,
+      },
+      game: {
+        result: {
+          type: gameResult?.type ?? null,
+          reason: gameResult?.reason ?? null,
+          message,
+        },
+        playerColor,
+        selectedEngine,
+        selectedEngineDisplayName,
+        engineWasOffline: isOfflineMode || selectedEngine === OFFLINE_ENGINE,
+        usedTakeback: hasUsedTakeback,
+        finalFen: chess.fen(),
+      },
+      metadata: {
+        source: 'web',
+        clientName: 'chess-potato-ai-3000',
+        clientVersion: '1.0.0',
+        locale: i18n.resolvedLanguage ?? i18n.language ?? null,
+      },
+      history: moveHistory.map(move => ({
+        san: move.san,
+        playerKey: move.playerKey,
+        engineName: move.engineName ?? null,
+        engineDisplayName: move.engineDisplayName ?? null,
+        fen: move.fen,
+        evaluationToken: move.evaluationToken ?? null,
+        continuationToken: move.continuationToken ?? null,
+        timestamp: move.timestamp,
+        from: move.from,
+        to: move.to,
+      })),
+    };
+
+    setHasSubmitError(false);
     setIsSubmitting(true);
-    submitTimeoutRef.current = window.setTimeout(() => {
+
+    try {
+      await mcpClient.submitGameFeedback(payload);
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, SUBMIT_TIMEOUT_MS);
-  }, [isSubmitting, isSubmitted]);
+    } catch {
+      setIsSubmitting(false);
+      setHasSubmitError(true);
+    }
+  }, [authenticity, chess, gameResult, hasUsedTakeback, i18n, isOfflineMode, isSubmitted, isSubmitting, enjoyment, message, moveHistory, notes, playerColor, selectedEngine, selectedEngineDisplayName]);
 
   const disabled = isSubmitting || isSubmitted;
 
@@ -150,7 +213,7 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
   );
 
   return (
-    <div className="game-result-content">
+    <div className="game-result-content" ref={contentRef}>
       <div className="game-result-headline">
         {headline}
       </div>
@@ -208,14 +271,20 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
               </label>
               <textarea
                 id="game-feedback-notes"
-                rows={5}
+                rows={3}
                 value={notes}
                 onChange={event => setNotes(event.target.value)}
+                maxLength={MAX_FEEDBACK_NOTES_LENGTH}
                 disabled={disabled}
               />
             </div>
 
             <div className="game-feedback-submit">
+              {hasSubmitError && (
+                <div className="game-feedback-status game-feedback-error" role="alert">
+                  {t('feedback.submit_error')}
+                </div>
+              )}
               <button
                 type="submit"
                 className={`game-feedback-submit-button${isSubmitted ? ' game-feedback-submit-button-submitted' : ''}`}

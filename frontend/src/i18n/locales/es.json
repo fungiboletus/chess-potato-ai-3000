@@ -72,7 +72,17 @@
   "result": {
     "victory_headline": "¡Gran partida!",
     "defeat_headline": "Partida terminada",
-    "draw_headline": "Empate equilibrado"
+    "draw_headline": "Empate equilibrado",
+    "messages": {
+      "checkmate_win": "¡Felicidades! ¡Ganaste!",
+      "checkmate_lose": "Más suerte la próxima vez.",
+      "draw": "¡Es un empate! ¡Bien jugado!",
+      "stalemate": "Empate por ahogado.",
+      "threefold_repetition": "Empate por triple repetición.",
+      "insufficient_material": "Empate por material insuficiente.",
+      "fifty_move_rule": "Empate por la regla de las cincuenta jugadas.",
+      "resignation": "¡Abandonaste la partida!"
+    }
   },
   "language": {
     "title": "Langue | Language | Språk | Idioma",
@@ -130,6 +140,7 @@
     "notes_label": "Notas adicionales",
     "submit": "Enviar opinión",
     "submitting": "Enviando...",
-    "thank_you": "¡Gracias por tus comentarios!"
+    "thank_you": "¡Gracias por tus comentarios!",
+    "submit_error": "No se pudo enviar la opinión en este momento."
   }
 }

@@ -39,6 +39,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- printf "%s-server-secret" (include "chess-potato-ai-3000-web.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "chess-potato-ai-3000-web.serverPersistenceName" -}}
+{{- default (printf "%s-server-feedback" (include "chess-potato-ai-3000-web.fullname" .)) .Values.server.persistence.claimName | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "chess-potato-ai-3000-web.nginxConfigName" -}}
 {{- printf "%s-frontend-nginx" (include "chess-potato-ai-3000-web.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

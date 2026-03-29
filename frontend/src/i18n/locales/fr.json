@@ -79,7 +79,17 @@
   "result": {
     "victory_headline": "Belle victoire !",
     "defeat_headline": "Partie terminée",
-    "draw_headline": "Match équilibré"
+    "draw_headline": "Match équilibré",
+    "messages": {
+      "checkmate_win": "Félicitations ! Vous avez gagné !",
+      "checkmate_lose": "Plus de chance la prochaine fois !",
+      "draw": "C'est un match nul ! Bien joué !",
+      "stalemate": "Match nul par pat.",
+      "threefold_repetition": "Match nul par répétition triple.",
+      "insufficient_material": "Match nul pour matériel insuffisant.",
+      "fifty_move_rule": "Match nul selon la règle des cinquante coups.",
+      "resignation": "Vous avez abandonné la partie !"
+    }
   },
   "language": {
     "title": "Langue | Language | Språk | Idioma",
@@ -137,6 +147,7 @@
     "notes_label": "Notes supplémentaires",
     "submit": "Envoyer le retour",
     "submitting": "Envoi...",
-    "thank_you": "Merci pour votre retour !"
+    "thank_you": "Merci pour votre retour !",
+    "submit_error": "Impossible d'envoyer le retour pour le moment."
   }
 }

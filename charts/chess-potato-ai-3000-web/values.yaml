@@ -15,6 +15,26 @@ server:
   ollama:
     endpoint: ""
     bearerToken: ""
+  feedback:
+    databaseUrl: ""
+    databaseFilename: feedback.db
+    maxBytes: 16384
+    maxHistory: 256
+    maxNotes: 1000
+  persistence:
+    enabled: true
+    existingClaim: ""
+    claimName: ""
+    annotations: {}
+    labels: {}
+    selector: {}
+    volumeName: ""
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    mountPath: /app/data
+    subPath: ""
   env: {}
   extraEnv: []
   secretKey: ""

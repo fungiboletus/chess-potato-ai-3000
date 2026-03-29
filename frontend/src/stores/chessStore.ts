@@ -15,18 +15,27 @@ export type GameState =
   | 'game_over';
 
 export type PlayerColor = 'white' | 'black';
+export type GameResultType = 'win' | 'lose' | 'draw';
+export type GameResultReason =
+  | 'checkmate'
+  | 'stalemate'
+  | 'threefold_repetition'
+  | 'insufficient_material'
+  | 'fifty_move_rule'
+  | 'resignation';
 
 export type EngineFetchState = 'idle' | 'loading' | 'success' | 'error';
 
 export interface GameResult {
-  type: 'win' | 'lose' | 'draw';
-  message: string;
-  reason: string;
+  type: GameResultType;
+  reason: GameResultReason;
 }
 
 export interface MoveRecord {
   san: string;        // Standard Algebraic Notation (e.g., "e4")
   playerKey: string;  // Engine key or "human"
+  engineName?: string | null;
+  engineDisplayName?: string | null;
   fen: string;        // Position after this move
   evaluationToken?: string | null; // Token associated with the position for MCP evaluations
   timestamp: number;  // Unix timestamp (ms) when the move was recorded
@@ -169,6 +178,18 @@ const createPersistStorage = (): StateStorage => {
     setItem: (name: string, value: string) => window.localStorage.setItem(name, value),
     removeItem: (name: string) => window.localStorage.removeItem(name)
   };
+};
+
+const getEngineDisplayName = (engineName: string | null, availableEngines: EngineInfo[]): string | null => {
+  if (!engineName) {
+    return null;
+  }
+
+  if (engineName === OFFLINE_ENGINE) {
+    return 'Offline (Random)';
+  }
+
+  return availableEngines.find(engine => engine.name === engineName)?.display_name ?? engineName;
 };
 
 const useChessStore = create<ChessGameStore>()(
@@ -321,7 +342,6 @@ const useChessStore = create<ChessGameStore>()(
 
           return {
             type: isPlayerWin ? 'win' : 'lose',
-            message: isPlayerWin ? 'Congratulations! You won!' : 'Better luck next time!',
             reason: 'checkmate'
           } as GameResult;
         }
@@ -329,10 +349,9 @@ const useChessStore = create<ChessGameStore>()(
         if (chess.isDraw()) {
           return {
             type: 'draw',
-            message: "It's a draw! Well played!",
             reason: chess.isStalemate() ? 'stalemate' :
-              chess.isThreefoldRepetition() ? 'threefold repetition' :
-                chess.isInsufficientMaterial() ? 'insufficient material' : 'fifty-move rule'
+              chess.isThreefoldRepetition() ? 'threefold_repetition' :
+                chess.isInsufficientMaterial() ? 'insufficient_material' : 'fifty_move_rule'
           } as GameResult;
         }
 
@@ -459,6 +478,8 @@ const useChessStore = create<ChessGameStore>()(
             const moveRecord: MoveRecord = {
               san: move.san,
               playerKey: 'human',
+              engineName: null,
+              engineDisplayName: null,
               fen: chess.fen(), // Store FEN after move
               evaluationToken: null,
               timestamp,
@@ -540,11 +561,6 @@ const useChessStore = create<ChessGameStore>()(
             if (engineToUse === OFFLINE_ENGINE) {
               console.log('[AI] Using offline random engine');
               uciMove = computeRandomMove(currentState.chess);
-              // Lock engine selection once offline engine is used
-              if (!currentState.engineLocked) {
-                console.log('[AI] Locking engine selection - offline engine in use');
-                set({ engineLocked: true });
-              }
             } else {
               // Call MCP service to get the best move
               try {
@@ -556,11 +572,6 @@ const useChessStore = create<ChessGameStore>()(
                 console.warn('[AI] MCP failed, falling back to offline engine:', mcpError);
                 uciMove = computeRandomMove(currentState.chess);
                 evaluationToken = null;
-                // Lock engine selection when falling back to offline engine
-                if (!currentState.engineLocked) {
-                  console.log('[AI] Locking engine selection - fallback to offline engine');
-                  set({ engineLocked: true });
-                }
               }
             }
 
@@ -587,9 +598,15 @@ const useChessStore = create<ChessGameStore>()(
               console.log('[AI] Move executed:', move.san);
               const timestamp = Date.now();
               const continuationToken = evaluationToken ?? null;
+              const moveEngineName = evaluationToken ? engineToUse : OFFLINE_ENGINE;
               const moveRecord: MoveRecord = {
                 san: move.san,
-                playerKey: engineToUse,
+                playerKey: moveEngineName,
+                engineName: moveEngineName,
+                engineDisplayName: getEngineDisplayName(
+                  moveEngineName,
+                  stateAfterMCP.availableEngines
+                ),
                 fen: stateAfterMCP.chess.fen(), // Store FEN after move
                 evaluationToken,
                 timestamp,
@@ -635,6 +652,11 @@ const useChessStore = create<ChessGameStore>()(
                 const moveRecord: MoveRecord = {
                   san: move.san,
                   playerKey: OFFLINE_ENGINE,
+                  engineName: OFFLINE_ENGINE,
+                  engineDisplayName: getEngineDisplayName(
+                    OFFLINE_ENGINE,
+                    currentState.availableEngines
+                  ),
                   fen: currentState.chess.fen(), // Store FEN after move
                   evaluationToken: null,
                   timestamp: Date.now(),
@@ -768,7 +790,6 @@ const useChessStore = create<ChessGameStore>()(
           gameState: 'game_over',
           gameResult: {
             type: 'lose',
-            message: 'You resigned the game!',
             reason: 'resignation'
           },
           isPlayerTurn: false,

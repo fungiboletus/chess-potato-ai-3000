@@ -107,15 +107,18 @@
 }
 
 .eval-chart {
+  --eval-chart-width: 220px;
+  --eval-chart-height: 120px;
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-top: 8px;
+  margin-top: 4px;
+  width: 100%;
 }
 
 .eval-chart__header {
   display: grid;
-  grid-template-columns: minmax(0, auto) 220px minmax(0, auto);
+  grid-template-columns: minmax(0, auto) var(--eval-chart-width) minmax(0, auto);
   align-items: end;
   gap: 0;
   width: 100%;
@@ -128,7 +131,7 @@
 
 .eval-chart__row {
   display: grid;
-  grid-template-columns: minmax(0, auto) 220px minmax(0, auto);
+  grid-template-columns: minmax(0, auto) var(--eval-chart-width) minmax(0, auto);
   align-items: start;
   gap: 0px;
 }
@@ -138,7 +141,7 @@
   display: flex;
   justify-content: center;
   align-items: stretch;
-  height: 120px;
+  height: var(--eval-chart-height);
 }
 
 .eval-chart__axis-container--left {
@@ -216,8 +219,8 @@
 }
 
 .eval-chart__canvas-cell {
-  width: 220px;
-  height: 120px;
+  width: var(--eval-chart-width);
+  height: var(--eval-chart-height);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -239,7 +242,7 @@
   gap: 0px;
   margin-top: 0px;
   margin-bottom: 2px;
-  width: 220px;
+  width: var(--eval-chart-width);
   font-size: 8px;
   align-self: center;
 }
@@ -403,19 +406,28 @@ button:disabled {
 
 .game-result-window {
   position: absolute;
-  width: 380px;
+  width: min(440px, calc(100dvw - 32px));
+  min-width: min(430px, calc(100dvw - 32px));
   max-width: 90dvw;
-  max-height: 90dvh;
+  max-height: 98dvh;
 }
 
 .game-result-window .window-body {
+  margin: 0;
   padding: 12px;
+  box-sizing: border-box;
+  max-height: calc(98dvh - 34px);
+  overflow-y: auto;
 }
 
 .game-result-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+}
+
+.game-result-message {
+  text-align: center;
 }
 
 .game-result-headline {
@@ -426,13 +438,13 @@ button:disabled {
 .game-feedback-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .game-feedback-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .game-feedback-grid fieldset {
@@ -450,12 +462,25 @@ button:disabled {
 .game-feedback-notes textarea {
   width: 100%;
   resize: vertical;
+  min-height: 60px;
 }
 
 .game-feedback-submit {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
   min-height: 32px;
+}
+
+.game-feedback-status {
+  flex: 1 1 100%;
+  font-size: 12px;
+}
+
+.game-feedback-error {
+  color: #a80000;
 }
 
 .game-feedback-submit-button {
@@ -471,6 +496,7 @@ button:disabled {
 .game-result-chart {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 .game-result-close {
@@ -479,6 +505,10 @@ button:disabled {
 }
 
 @media (max-width: 480px) {
+  .game-result-window {
+    min-width: auto;
+  }
+
   .game-feedback-grid {
     grid-template-columns: 1fr;
   }
