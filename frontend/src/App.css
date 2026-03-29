@@ -6,6 +6,11 @@
   left: 0;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0);
+  padding-right: env(safe-area-inset-right, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
   overflow: hidden;
 }
 
@@ -20,9 +25,7 @@
   justify-content: center;
   box-sizing: border-box;
   overflow: auto;
-  background-image: url('/clouds_perso.webp');
-  background-size: cover;
-  background-position: center;
+  background: transparent;
 }
 
 /* In case we want to feel modern */
@@ -399,31 +402,33 @@ img.pixel-theme .cg-wrapated {
 .chess-board-wrapper {
   width: 100%;
   aspect-ratio: 1;
-  /*box-sizing: border-box;*/
-  padding: 2px;
 }
 
 /*.chess-board-wrapper * {
   box-sizing: border-box;
 }*/
 .chess-board-container {
-  box-shadow: inset -1px -1px #fff, inset 1px 1px gray, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
-}
-
-.chess-board-container,
-.chess-board {
-  box-sizing: border-box;
+  position: relative;
+  width: 100%;
   height: 100%;
 }
 
-.chess-board cg-container {
-  /*top: 2px;*/
-  top: 2px;
-  left: 2px;
-  right: 2px;
-  bottom: 2px;
-  height: calc(100% - 4px) !important;
-  width: calc(100% - 4px) !important;
+.chess-board-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px gray, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.chess-board {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .progress-container {

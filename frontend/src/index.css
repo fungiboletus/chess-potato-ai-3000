@@ -6,13 +6,30 @@
 @import 'chessground/assets/chessground.brown.css';
 @import 'chessground/assets/chessground.cburnett.css';
 
+html {
+  min-height: 100%;
+  min-height: -webkit-fill-available;
+  background-color: #c0c0c0;
+  background-image: url('/clouds_perso.webp');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 /* Override some 98.css defaults for better mobile support */
 body {
   margin: 0;
   padding: 0;
-  background-color: #c0c0c0;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  background: transparent;
+}
+
+#root,
+.app {
+  min-height: inherit;
 }
 
 /* Pixelated rendering for retro look */
