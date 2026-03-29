@@ -15,6 +15,8 @@ const templatePath = path.join(articleDir, 'template.html');
 const outputHtmlPath = path.join(outputDir, 'index.html');
 const articleFontsDir = path.join(articleDir, 'fonts');
 const outputFontsDir = path.join(outputDir, 'fonts');
+const frontendFaviconPath = path.join(repoRoot, 'frontend', 'public', 'favicon.png');
+const outputFaviconPath = path.join(outputDir, 'favicon.png');
 
 const assetExtensions = new Set([
   '.png',
@@ -141,6 +143,8 @@ async function copyArticleAssets() {
 
     await cp(path.join(articleFontsDir, entry.name), path.join(outputFontsDir, entry.name));
   }));
+
+  await cp(frontendFaviconPath, outputFaviconPath);
 }
 
 async function buildArticle() {
