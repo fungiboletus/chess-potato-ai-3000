@@ -12,16 +12,28 @@
     <meta property="og:url" content="https://chesspotatoai3000.sct.sintef.no/article/" />
     <meta property="og:image" content="./premium-screenshot.webp" />
     <style>
+      @font-face {
+        font-family: "IBM Plex Sans";
+        src: url("./fonts/IBM Plex Sans Var-Roman.woff2") format("woff2");
+        font-weight: 100 900;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "IBM Plex Sans";
+        src: url("./fonts/IBM Plex Sans Var-Italic.woff2") format("woff2");
+        font-weight: 100 900;
+        font-style: italic;
+      }
+
       :root {
-        --bg: #f3efe3;
-        --surface: #fffdf8;
-        --surface-alt: #fff3d1;
-        --text: #1c1a17;
-        --muted: #5d5547;
-        --accent: #c4602e;
-        --accent-strong: #8b2f16;
-        --outline: #1c1a17;
-        --link: #0e4e84;
+        --bg: #f6f6f6;
+        --surface: #ffffff;
+        --text: #151515;
+        --muted: #4a4a4a;
+        --accent: #ffea00;
+        --outline: #111111;
+        --link: #0d57b3;
         --panel-shadow: 8px 8px 0 var(--outline);
         --button-shadow: 4px 4px 0 var(--outline);
       }
@@ -39,22 +51,15 @@
       body {
         min-height: 100vh;
         min-height: 100dvh;
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: "IBM Plex Sans", sans-serif;
         color: var(--text);
-        background:
-          radial-gradient(circle at top left, rgb(255 244 214 / 0.92), transparent 32%),
-          repeating-linear-gradient(
-            135deg,
-            rgb(196 96 46 / 0.08),
-            rgb(196 96 46 / 0.08) 12px,
-            transparent 12px,
-            transparent 26px
-          ),
-          var(--bg);
+        background: var(--bg);
+        background-image: radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.14) 1px, transparent 0);
+        background-size: 10px 10px;
       }
 
       .app {
-        width: min(1040px, 100%);
+        width: min(980px, 100%);
         margin: 0 auto;
         padding: 18px 14px 80px;
       }
@@ -68,30 +73,29 @@
 
       .topbar {
         display: grid;
-        gap: 14px;
+        gap: 12px;
         align-items: start;
-        padding: 16px;
+        padding: 12px 14px;
         margin-bottom: 14px;
-        background:
-          linear-gradient(135deg, var(--surface-alt), var(--surface));
       }
 
       .titleBlock h1 {
         margin: 0;
-        font-size: clamp(1.5rem, 3vw, 2.5rem);
-        line-height: 1.05;
+        font-size: clamp(1.25rem, 2.4vw, 2rem);
+        line-height: 1.1;
         text-transform: uppercase;
-        letter-spacing: 0.03em;
-        color: var(--accent-strong);
-        text-shadow: 2px 2px 0 rgb(255 245 220 / 0.9);
+        letter-spacing: 0.04em;
+        color: var(--accent);
+        text-shadow: 2px 2px 0 var(--outline);
+        -webkit-text-stroke: 1px var(--outline);
       }
 
       .meta {
-        margin-top: 10px;
+        margin-top: 8px;
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
-        font-size: 0.92rem;
+        font-size: 0.88rem;
         color: var(--text);
         font-weight: 700;
       }
@@ -118,12 +122,12 @@
         border: 2px solid var(--outline);
         box-shadow: var(--button-shadow);
         background: var(--accent);
-        color: #fff7ef;
+        color: var(--outline);
         padding: 7px 10px;
         text-transform: uppercase;
         letter-spacing: 0.04em;
         font-size: 0.78rem;
-        font-family: Arial, sans-serif;
+        font-family: "IBM Plex Sans", sans-serif;
         font-weight: 800;
       }
 
@@ -134,48 +138,42 @@
       }
 
       .articlePanel {
-        padding: clamp(18px, 2.5vw, 34px);
+        padding: clamp(16px, 2.4vw, 30px);
       }
 
       .articlePanel > p,
       .articlePanel li,
       .articlePanel blockquote {
-        line-height: 1.68;
-        font-size: clamp(1rem, 1.15vw, 1.1rem);
-      }
-
-      .articlePanel > p:first-of-type::first-letter {
-        float: left;
-        font-size: 3.2rem;
-        line-height: 0.9;
-        padding-right: 8px;
-        color: var(--accent-strong);
-        font-weight: 700;
+        line-height: 1.58;
+        font-size: clamp(1rem, 1.2vw, 1.08rem);
       }
 
       h2,
       h3,
       h4 {
-        margin-top: 30px;
+        margin-top: 28px;
         margin-bottom: 12px;
-        font-family: Arial, sans-serif;
         text-transform: uppercase;
         letter-spacing: 0.04em;
       }
 
       h2 {
-        font-size: clamp(1.08rem, 1.95vw, 1.42rem);
+        font-size: clamp(1.04rem, 1.9vw, 1.35rem);
       }
 
       h3 {
-        font-size: clamp(0.98rem, 1.5vw, 1.14rem);
+        font-size: clamp(0.96rem, 1.5vw, 1.1rem);
+      }
+
+      h4 {
+        font-size: clamp(0.92rem, 1.35vw, 1rem);
       }
 
       p code,
       li code {
         padding: 0.12rem 0.34rem;
-        border: 1px solid rgb(28 26 23 / 0.25);
-        background: rgb(255 243 209 / 0.7);
+        border: 1px solid rgb(17 17 17 / 0.22);
+        background: rgb(255 234 0 / 0.22);
         font-size: 0.92em;
       }
 
@@ -183,27 +181,87 @@
         overflow-x: auto;
         padding: 14px;
         border: 2px solid var(--outline);
-        background: #1e1c18;
-        color: #f6ead2;
-        box-shadow: 4px 4px 0 rgb(28 26 23 / 0.8);
+        background: #151515;
+        color: #f5f5f5;
+        box-shadow: 4px 4px 0 rgb(17 17 17 / 0.9);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
 
       pre code {
         border: 0;
         background: transparent;
         padding: 0;
+        white-space: inherit;
+      }
+
+      .hljs {
+        color: #f5f5f5;
+      }
+
+      .hljs-comment,
+      .hljs-quote {
+        color: #9aa0a6;
+        font-style: italic;
+      }
+
+      .hljs-keyword,
+      .hljs-selector-tag,
+      .hljs-subst {
+        color: #ffea00;
+        font-weight: 700;
+      }
+
+      .hljs-string,
+      .hljs-attr,
+      .hljs-selector-attr,
+      .hljs-selector-class,
+      .hljs-template-variable {
+        color: #97e48a;
+      }
+
+      .hljs-number,
+      .hljs-literal,
+      .hljs-variable,
+      .hljs-symbol,
+      .hljs-bullet {
+        color: #ffb870;
+      }
+
+      .hljs-title,
+      .hljs-title.class_,
+      .hljs-title.function_,
+      .hljs-function,
+      .hljs-section {
+        color: #7fc8ff;
+      }
+
+      .hljs-built_in,
+      .hljs-type,
+      .hljs-class,
+      .hljs-tag,
+      .hljs-name {
+        color: #ff8f8f;
+      }
+
+      .hljs-meta,
+      .hljs-meta .hljs-keyword,
+      .hljs-doctag {
+        color: #c9a7ff;
       }
 
       blockquote {
         margin: 18px 0;
         padding: 12px 16px;
         border-left: 6px solid var(--accent);
-        background: rgb(255 243 209 / 0.55);
+        background: rgb(255 234 0 / 0.16);
       }
 
       img {
         width: auto;
-        max-width: min(100%, 860px);
+        max-width: min(100%, 760px);
+        max-height: min(72vh, 820px);
         height: auto;
         display: block;
       }
@@ -212,6 +270,10 @@
       .articlePanel > a img,
       .articlePanel img:not([style*="float:left"]) {
         margin-inline: auto;
+      }
+
+      .articlePanel img[src$="art.apng"] {
+        width: 32px;
       }
 
       figure {
@@ -233,8 +295,12 @@
 
       hr {
         border: 0;
-        border-top: 2px solid rgb(28 26 23 / 0.18);
+        border-top: 2px solid rgb(17 17 17 / 0.18);
         margin: 28px 0;
+      }
+
+      .articlePanel > p:first-of-type::first-letter {
+        font-weight: 700;
       }
 
       @media (max-width: 700px) {
@@ -247,10 +313,6 @@
           width: 100%;
           max-width: 100%;
         }
-
-        .articlePanel > p:first-of-type::first-letter {
-          font-size: 2.6rem;
-        }
       }
     </style>
   </head>
@@ -258,7 +320,7 @@
     <main class="app">
       <header class="topbar">
         <div class="titleBlock">
-          <h1>"I feel a strong dislike for chess" — Said my Homemade Chess Engine</h1>
+          <h1>&quot;I feel a strong dislike for chess&quot;<br />— Said my Homemade Chess Engine</h1>
           <div class="meta">
             <span>Antoine Pultier</span>
             <span>2026-03-29</span>
@@ -328,12 +390,12 @@ I had never made a chess engine until now. It's a very common software hobby pro
 <p>So I decided to create a dataset of prompts and answers. The prompt contains a lot of information about the current chess game, and the answer is a reflection from the chess engine about what to do next, including the selected move.</p>
 <p>The training dataset consists of many chess puzzles looking like this:</p>
 <p>Prompt:</p>
-<pre><code class="language-text">*description of the task: find the best chess move*
+<pre class="hljs"><code>*description of the task: find the best chess move*
 *board information*
 *list of Checks, Captures, and Threats (CCT)*
 </code></pre>
 <p>Answer:</p>
-<pre><code class="language-text">*alright I will find the best move*
+<pre class="hljs"><code>*alright I will find the best move*
 *thoughts and reflections about the current position*
 *selected move*
 </code></pre>
@@ -373,7 +435,7 @@ I had never made a chess engine until now. It's a very common software hobby pro
 <li>Fullmove Number: the number of full moves in the game, incremented after black plays, starting at 1.</li>
 </ul>
 <p>This is neat, but I don’t find it very readable. Instead, I made a text board using Unicode chess pieces. It looks like this:</p>
-<pre><code class="language-text">8 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+<pre class="hljs"><code>8 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 7 ♟ ♟ · ♟ ♟ ♟ ♟ ♟
 6 · · · · · · · ·
 5 · · ♟ · · · · ·
@@ -393,19 +455,19 @@ I had never made a chess engine until now. It's a very common software hobby pro
 <p>It’s a very naive context, and far from what a good chess player would have in mind. However, I think it’s enough to make the LLM play like a beginner.</p>
 <p>I decided to not include the past moves of the game, only show the current board and the situation. The reason for this is that I was worried that including the game’s history would make the LLM memorize previous games from the training datasets and parrot the moves, without focusing on the context instead. That would make the chess engine excellent at playing the common openings, but it would probably repeat the same old moves even when the situation is different. And it would potentially suggest non-legal moves.</p>
 <p>Here is an example of a prompt:</p>
-<pre><code class="language-markdown"># Chess Game Analysis
+<pre class="hljs"><code><span class="hljs-section"># Chess Game Analysis</span>
 
 You are playing a chess game against an opponent. You have
 analysed the game carefully and wrote some notes and reflections
 about your next move. Your notes can be short or pretty long.
 You always select a legal move, and you play as humans do.
 
-## Player's Elo
+<span class="hljs-section">## Player&#x27;s Elo</span>
 
 white: Serious (1600)
 black: Serious (1600)
 
-## Board before move
+<span class="hljs-section">## Board before move</span>
 
 8 ♜ · · · · · · ♜
 7 ♟ ♟ · · · ♚ ♟ ♟
@@ -417,92 +479,92 @@ black: Serious (1600)
 1 · · · · ♖ ♖ ♔ ·
   a b c d e f g h
 
-## Current Turn: Black
+<span class="hljs-section">## Current Turn: Black</span>
 
-## Pieces Under Threat
+<span class="hljs-section">## Pieces Under Threat</span>
 
-- king at f7 is under threat from: pawn at e6 (undefended)
-- pawn at b7 is under threat from: queen at b5 (undefended)
-- pawn at f5 is under threat from: queen at b5 (undefended)
+<span class="hljs-bullet">-</span> king at f7 is under threat from: pawn at e6 (undefended)
+<span class="hljs-bullet">-</span> pawn at b7 is under threat from: queen at b5 (undefended)
+<span class="hljs-bullet">-</span> pawn at f5 is under threat from: queen at b5 (undefended)
 
-## Legal Moves Analysis
+<span class="hljs-section">## Legal Moves Analysis</span>
 
-### Defensive Moves
+<span class="hljs-section">### Defensive Moves</span>
 
-`f7f6` - king from f7 to f6
-`f7g6` - king from f7 to g6
-`f7g8` - king from f7 to g8
+<span class="hljs-code">`f7f6`</span> - king from f7 to f6
+<span class="hljs-code">`f7g6`</span> - king from f7 to g6
+<span class="hljs-code">`f7g8`</span> - king from f7 to g8
 </code></pre>
 <p>And here is an example of the corresponding answer:</p>
-<pre><code class="language-markdown">Alright, I am pretending to be a human chess player,
+<pre class="hljs"><code>Alright, I am pretending to be a human chess player,
 and I will think and reflect on the current position, and my next move.
 I will write down my thoughts and reflections, and then I will select a legal move and write it down.
 
-## Thoughts and Reflections
+<span class="hljs-section">## Thoughts and Reflections</span>
 
-Now Black's only viable option is to seek refuge. His king won't move off that position for at least a few moves, and black can use this opportunity to regroup and counter.
+Now Black&#x27;s only viable option is to seek refuge. His king won&#x27;t move off that position for at least a few moves, and black can use this opportunity to regroup and counter.
 
-## Selected legal move
+<span class="hljs-section">## Selected legal move</span>
 
-`f7f6`
+<span class="hljs-code">`f7f6`</span>
 </code></pre>
 <p>Now, repeat this prompt and answer generation about 300,000 times, and you have the training dataset. I saved it in <a target="_blank" rel="noreferrer" href="https://parquet.apache.org/">Parquet</a> format with GZIP compression, which is about 112 MB. Not really big data.</p>
 <h3>Here comes the Python code</h3>
 <p>The implementation is written in Python using the <a target="_blank" rel="noreferrer" href="https://python-chess.readthedocs.io/en/latest/">chess</a> library. The development was somewhat straightforward, as I used AI to implement the boring parts. I don’t remember how we maintained motivation to write and refactor boring code before coding agents. The Python chess library is pleasing to use; it almost feels like it is a Ruby library.</p>
-<pre><code class="language-python">import chess
+<pre class="hljs"><code><span class="hljs-keyword">import</span> chess
 
-board = chess.Board('rnbqkbnr/pp2pppp/3p4/2p5/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 3')
+board = chess.Board(<span class="hljs-string">&#x27;rnbqkbnr/pp2pppp/3p4/2p5/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 3&#x27;</span>)
 
-# or from UCI moves
+<span class="hljs-comment"># or from UCI moves</span>
 board = chess.Board()
-moves = ['e2e4', 'c7c5', 'g1f3', 'd7d6', 'd2d4']
-for move in moves:
+moves = [<span class="hljs-string">&#x27;e2e4&#x27;</span>, <span class="hljs-string">&#x27;c7c5&#x27;</span>, <span class="hljs-string">&#x27;g1f3&#x27;</span>, <span class="hljs-string">&#x27;d7d6&#x27;</span>, <span class="hljs-string">&#x27;d2d4&#x27;</span>]
+<span class="hljs-keyword">for</span> move <span class="hljs-keyword">in</span> moves:
   board.push(chess.Move.from_uci(move))
 
 board
 </code></pre>
 <p><img src="./board.svg" alt="Board visualization"></p>
 <p>The core logic is code looking like the following, it’s naive:</p>
-<pre><code class="language-python">piece_values = {
-    chess.PAWN: 1,
-    chess.KNIGHT: 3,
-    chess.BISHOP: 3,
-    chess.ROOK: 5,
-    chess.QUEEN: 9,
-    chess.KING: 1000,
+<pre class="hljs"><code>piece_values = {
+    chess.PAWN: <span class="hljs-number">1</span>,
+    chess.KNIGHT: <span class="hljs-number">3</span>,
+    chess.BISHOP: <span class="hljs-number">3</span>,
+    chess.ROOK: <span class="hljs-number">5</span>,
+    chess.QUEEN: <span class="hljs-number">9</span>,
+    chess.KING: <span class="hljs-number">1000</span>,
 }
 
-for move in board.legal_moves:
-    if board.is_capture(move):
+<span class="hljs-keyword">for</span> move <span class="hljs-keyword">in</span> board.legal_moves:
+    <span class="hljs-keyword">if</span> board.is_capture(move):
         capturing_piece = board.piece_at(move.from_square)
         captured_piece = board.piece_at(move.to_square)
-        # Handle en passant capture
-        if board.is_en_passant(move):
-            captured_piece = chess.Piece(chess.PAWN, not board.turn)
+        <span class="hljs-comment"># Handle en passant capture</span>
+        <span class="hljs-keyword">if</span> board.is_en_passant(move):
+            captured_piece = chess.Piece(chess.PAWN, <span class="hljs-keyword">not</span> board.turn)
 
         capturing_value = piece_values[capturing_piece.piece_type]
         captured_value = piece_values[captured_piece.piece_type]
 
-        # Make the move on a copy board to analyze the aftermath
+        <span class="hljs-comment"># Make the move on a copy board to analyze the aftermath</span>
         temp_board = board.copy()
         temp_board.push(move)
 
-        # Check if the capturing piece is at risk after the move
-        is_at_risk = bool(temp_board.attackers(not board.turn, move.to_square))
+        <span class="hljs-comment"># Check if the capturing piece is at risk after the move</span>
+        is_at_risk = <span class="hljs-built_in">bool</span>(temp_board.attackers(<span class="hljs-keyword">not</span> board.turn, move.to_square))
 
-        capture_category = &quot;&quot;
-        if not is_at_risk:
-            capture_category = &quot;free grab&quot;
-        elif captured_value &gt; capturing_value:
-            capture_category = &quot;worth the investment&quot;
-        elif captured_value == capturing_value:
-            capture_category = &quot;exchange&quot;
-        else:
-            capture_category = &quot;sacrifice&quot;
+        capture_category = <span class="hljs-string">&quot;&quot;</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> is_at_risk:
+            capture_category = <span class="hljs-string">&quot;free grab&quot;</span>
+        <span class="hljs-keyword">elif</span> captured_value &gt; capturing_value:
+            capture_category = <span class="hljs-string">&quot;worth the investment&quot;</span>
+        <span class="hljs-keyword">elif</span> captured_value == capturing_value:
+            capture_category = <span class="hljs-string">&quot;exchange&quot;</span>
+        <span class="hljs-keyword">else</span>:
+            capture_category = <span class="hljs-string">&quot;sacrifice&quot;</span>
 
         uci = move.uci()
-        print(f&quot;{uci}: capturing {capturing_piece}, captured {captured_piece} &quot;
-              f&quot;- {capture_category}&quot;)
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{uci}</span>: capturing <span class="hljs-subst">{capturing_piece}</span>, captured <span class="hljs-subst">{captured_piece}</span> &quot;</span>
+              <span class="hljs-string">f&quot;- <span class="hljs-subst">{capture_category}</span>&quot;</span>)
 </code></pre>
 <h2>Select a LLM you Like because the Perfect LLM is Hard to Identify</h2>
 <p>I decided to use a small Google <a target="_blank" rel="noreferrer" href="https://gemma.ai/">Gemma 3</a> model for this project. The main requirement was to run fast on my not so recent laptops (one has an Apple M1 with 16 GB of ram, and one has an Nvidia RTX 2070 with 8 GB of GPU ram). The second LLM requirement was that the selected LLM shouldn’t be too useless.</p>
@@ -527,27 +589,27 @@ for move in board.legal_moves:
 <p>If the fine-tuning is successful, you should get a <a target="_blank" rel="noreferrer" href="https://github.com/ggml-org/ggml/blob/master/docs/gguf.md">GGUF model file</a>. Mine was 3.8 GB; it can fit on a DVD from 1995, which is nice.</p>
 <p>You can use your favourite LLM tool to run GGUF models. My personal favourite is <a target="_blank" rel="noreferrer" href="https://ollama.com/">Ollama</a>, which I describe as the Docker for LLMs. It’s heavily based on the <a target="_blank" rel="noreferrer" href="https://github.com/ggml-org/llama.cpp">llama.cpp</a> project, which can also be used directly. I prefer Ollama because of its user experience. It can also run multiple models in parallel, and load and unload them automatically. However, the selected tool isn’t very important as long as it works. For high-performance, vLLM is probably better if your hardware is compatible.</p>
 <p>If you go with Ollama, you will need a <code>Modelfile</code> to tell Ollama how to use the model. Starting from the Gemma3 Modelfile is a good idea, since we have only done a fine-tune to make it worse at everything except playing some kind of chess.</p>
-<pre><code class="language-bash">ollama show --modelfile gemma3
+<pre class="hljs"><code>ollama show --modelfile gemma3
 </code></pre>
 <p>Here is how mine looks like:</p>
-<pre><code class="language-dockerfile">FROM gemma-3-chess.Q8_0.gguf
-TEMPLATE &quot;&quot;&quot;{{- range $i, $_ := .Messages }}
+<pre class="hljs"><code><span class="hljs-keyword">FROM</span> gemma-<span class="hljs-number">3</span>-chess.Q8_0.gguf
+TEMPLATE <span class="hljs-string">&quot;&quot;</span><span class="hljs-string">&quot;{{- range $i, $_ := .Messages }}
 {{- $last := eq (len (slice $.Messages $i)) 1 }}
-{{- if or (eq .Role &quot;user&quot;) (eq .Role &quot;system&quot;) }}&lt;start_of_turn&gt;user
+{{- if or (eq .Role &quot;</span><span class="hljs-keyword">user</span><span class="hljs-string">&quot;) (eq .Role &quot;</span>system<span class="hljs-string">&quot;) }}&lt;start_of_turn&gt;user
 {{ .Content }}&lt;end_of_turn&gt;
 {{ if $last }}&lt;start_of_turn&gt;model
 {{ end }}
-{{- else if eq .Role &quot;assistant&quot; }}&lt;start_of_turn&gt;model
+{{- else if eq .Role &quot;</span>assistant<span class="hljs-string">&quot; }}&lt;start_of_turn&gt;model
 {{ .Content }}{{ if not $last }}&lt;end_of_turn&gt;
 {{ end }}
 {{- end }}
-{{- end }}&quot;&quot;&quot;
-PARAMETER temperature 1
-PARAMETER top_k 64
-PARAMETER top_p 0.95
+{{- end }}&quot;</span><span class="hljs-string">&quot;&quot;</span>
+PARAMETER temperature <span class="hljs-number">1</span>
+PARAMETER top_k <span class="hljs-number">64</span>
+PARAMETER top_p <span class="hljs-number">0.95</span>
 PARAMETER stop &lt;end_of_turn&gt;
 </code></pre>
-<pre><code class="language-bash">ollama create gemma-3-chess -f Modelfile
+<pre class="hljs"><code>ollama create gemma-3-chess -f Modelfile
 ollama run gemma-3-chess
 </code></pre>
 <p>And voilà.</p>
@@ -580,29 +642,29 @@ ollama run gemma-3-chess
 <h3>Let’s Go Deeper into the UCI Protocol</h3>
 <p>This section isn’t a complete documentation of the UCI protocol, but rather a quick start guide to making a good-enough UCI chess engine.</p>
 <p>It starts with a handshake:</p>
-<pre><code class="language-text">&gt;&gt;&gt; uci
+<pre class="hljs"><code>&gt;&gt;&gt; uci
 id name name-of-the-engine
 id author your-name
 uciok
 </code></pre>
 <p>The client will then send a command <code>isready</code> and wait for <code>readyok</code>. It’s probably there to let the engine load. It’s instant on most engines, but this can be used to load the LLM weights into memory for example.</p>
 <p>Anyway:</p>
-<pre><code class="language-text">&gt;&gt;&gt; isready
+<pre class="hljs"><code>&gt;&gt;&gt; isready
 readyok
 </code></pre>
 <p>Now, the engine can receive other commands.</p>
 <p><code>position</code> is used to set the current chess board. It can use either the classic chess starting position, specified as <code>startpos</code>, or a FEN notation of the current board, specified as <code>fen &lt;FEN&gt;</code>. Then, additional moves in UCI notation can be specified with <code>moves &lt;move1&gt; &lt;move2&gt; …</code>.</p>
 <p>Example:</p>
-<pre><code class="language-text">&gt;&gt;&gt; position startpos moves e2e4 e7e5 g1f3
+<pre class="hljs"><code>&gt;&gt;&gt; position startpos moves e2e4 e7e5 g1f3
 </code></pre>
 <p>The <code>go</code> command is used to start computing the best move. It can take additional parameters such as <code>depth</code> to limit the search depth, or <code>movetime</code> to limit the time spent on computing the move.</p>
 <p>Example to compute the best move with a depth of 16 and a maximum time of 5000 milliseconds:</p>
-<pre><code class="language-text">&gt;&gt;&gt; go depth 16 movetime 5000
+<pre class="hljs"><code>&gt;&gt;&gt; go depth 16 movetime 5000
 </code></pre>
 <p>My bad chess engine has no concept of depth, so I ignore the <code>depth</code> parameter. However, I respect the <code>movetime</code> as failing to compute the best move within the time budget will result in a lost game on some chess platforms.</p>
 <p>Once the engine has finished computing the best move, it will reply with the <code>bestmove [uci_move]</code> output. A UCI chess engine cannot resign; it must answer with a legal move. However, if there are no legal moves left, it will reply with <code>bestmove (none)</code>.</p>
 <p>Example of a reply:</p>
-<pre><code class="language-text">bestmove e7e5
+<pre class="hljs"><code>bestmove e7e5
 </code></pre>
 <p>To exit, you can send the <code>quit</code> command, but an end-of-file (EOF) is also accepted (the <code>Ctrl-D</code> shortcut in a common terminal).</p>
 <p>the UCI protocol is a good protocol in my opinion. It would be a lot more complicated if designed nowadays, perhaps with JSON-RPC over HTTP like MCP. But simple text-based protocols like this are neat.</p>
@@ -610,19 +672,19 @@ readyok
 <p><a target="_blank" rel="noreferrer" href="https://lichess.org/">Lichess</a> is a free and open source chess platform. It has a <a target="_blank" rel="noreferrer" href="https://lichess.org/api#tag/Bots">bot API</a> that allows you to play against bots such as Stockfish or GAIA Chess, and to also make your own bot.</p>
 <p>If you made the right decision to make your engine UCI compatible, you can easily create a Lichess bot using the crazily-named <a target="_blank" rel="noreferrer" href="https://github.com/lichess-bot-devs/lichess-bot">lichess-bot</a> project.</p>
 <p>The configuration is somewhat simple: you need to specify the folder where the UCI chess engine executable is located and the name of the executable. You also need to specify a Lichess Bot API token.</p>
-<pre><code class="language-yaml">url: &quot;https://lichess.org/&quot;
-token: &quot;YOUR_LICHESS_BOT_API_TOKEN&quot;
-engine:
-  dir: &quot;./engines/&quot; # Directory containing the engine. This can be an absolute path or one relative to lichess-bot/.
-  name: &quot;llm-chess-bot-3000&quot; # Binary name of the engine to use.
-  # interpreter: &quot;java&quot;
-  # interpreter_options:
-  #   - &quot;-jar&quot;
-  working_dir:
-    &quot;&quot; # Directory where the chess engine will read and write files. If blank or missing, the current directory is used.
-    # NOTE: If working_dir is set, the engine will look for files and directories relative to this directory, not where lichess-bot was launched. Absolute paths are unaffected.
-  protocol: &quot;uci&quot; # &quot;uci&quot;, &quot;xboard&quot; or &quot;homemade&quot;
-  ponder: false # Think on opponent's time.
+<pre class="hljs"><code><span class="hljs-attr">url:</span> <span class="hljs-string">&quot;https://lichess.org/&quot;</span>
+<span class="hljs-attr">token:</span> <span class="hljs-string">&quot;YOUR_LICHESS_BOT_API_TOKEN&quot;</span>
+<span class="hljs-attr">engine:</span>
+  <span class="hljs-attr">dir:</span> <span class="hljs-string">&quot;./engines/&quot;</span> <span class="hljs-comment"># Directory containing the engine. This can be an absolute path or one relative to lichess-bot/.</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">&quot;llm-chess-bot-3000&quot;</span> <span class="hljs-comment"># Binary name of the engine to use.</span>
+  <span class="hljs-comment"># interpreter: &quot;java&quot;</span>
+  <span class="hljs-comment"># interpreter_options:</span>
+  <span class="hljs-comment">#   - &quot;-jar&quot;</span>
+  <span class="hljs-attr">working_dir:</span>
+    <span class="hljs-string">&quot;&quot;</span> <span class="hljs-comment"># Directory where the chess engine will read and write files. If blank or missing, the current directory is used.</span>
+    <span class="hljs-comment"># <span class="hljs-doctag">NOTE:</span> If working_dir is set, the engine will look for files and directories relative to this directory, not where lichess-bot was launched. Absolute paths are unaffected.</span>
+  <span class="hljs-attr">protocol:</span> <span class="hljs-string">&quot;uci&quot;</span> <span class="hljs-comment"># &quot;uci&quot;, &quot;xboard&quot; or &quot;homemade&quot;</span>
+  <span class="hljs-attr">ponder:</span> <span class="hljs-literal">false</span> <span class="hljs-comment"># Think on opponent&#x27;s time.</span>
 </code></pre>
 <p>Note that <code>lichess-bot</code>’s <code>lib/engine_wrapper.py</code> file has a hardcoded timeout of 10-seconds for the first move, defined in the <code>first_move_time</code> function. If your chess engine takes longer than 10 seconds to compute the first move (which can happen on slow hardware), you may need to patch this file to increase the timeout. Note that this timeout is passed through the <code>movetime</code> parameter of the <code>go</code> command.</p>
 <h2>The First Games Against the Bot were Disappointing</h2>
@@ -657,25 +719,25 @@ engine:
 <p>You provide a chess board, and Stockfish computes a score that represents the win probability for the current player. The score is a WDL (win-draw-loss) score, which is a number between -1 and 1, where -1 means a 100% loss, 0 means a 50% chance of winning, and 1 means a 100% win.</p>
 <p>For a given move, I compute the WDL score of the board before and after the move, and then I compute the difference between the two scores. If the difference is negative, it means that the move is making things worse. A difference of -0.1 isn’t very bad and often acceptable, a difference of -0.5 starts to be quite bad, and a difference of -1 is a big blunder.</p>
 <p>As Stockfish is a ‘best move’ engine, it expects both players to play the best move at every turn, a good move will have a difference close to 0. The win probability of the board before the move already takes into account that the best move will be played. However, it happens that the difference is above zero, meaning that the move is even better than anticipated, according to Stockfish’s neural network.</p>
-<pre><code class="language-python">import chess
-import chess.engine
+<pre class="hljs"><code><span class="hljs-keyword">import</span> chess
+<span class="hljs-keyword">import</span> chess.engine
 
-stockfish = chess.engine.SimpleEngine.popen_uci(&quot;stockfish&quot;)
+stockfish = chess.engine.SimpleEngine.popen_uci(<span class="hljs-string">&quot;stockfish&quot;</span>)
 
 board_before = chess.Board()
-board_before.push(chess.Move.from_uci(&quot;e2e4&quot;))
-board_before.push(chess.Move.from_uci(&quot;e7e5&quot;))
+board_before.push(chess.Move.from_uci(<span class="hljs-string">&quot;e2e4&quot;</span>))
+board_before.push(chess.Move.from_uci(<span class="hljs-string">&quot;e7e5&quot;</span>))
 
 board_after = board_before.copy()
-board_after.push(chess.Move.from_uci(&quot;g1f3&quot;))
+board_after.push(chess.Move.from_uci(<span class="hljs-string">&quot;g1f3&quot;</span>))
 
-def evaluate_board(board, inverse_turn=False):
-    info = stockfish.analyse(board, chess.engine.Limit(depth=12))
-    wdl = info[&quot;score&quot;].wdl(ply=board.ply()).pov(board.turn ^ inverse_turn)
-    return wdl.expectation()
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">evaluate_board</span>(<span class="hljs-params">board, inverse_turn=<span class="hljs-literal">False</span></span>):
+    info = stockfish.analyse(board, chess.engine.Limit(depth=<span class="hljs-number">12</span>))
+    wdl = info[<span class="hljs-string">&quot;score&quot;</span>].wdl(ply=board.ply()).pov(board.turn ^ inverse_turn)
+    <span class="hljs-keyword">return</span> wdl.expectation()
 
 expectation_before = evaluate_board(board_before)
-expectation_after = evaluate_board(board_after, inverse_turn=True)
+expectation_after = evaluate_board(board_after, inverse_turn=<span class="hljs-literal">True</span>)
 diff = expectation_after - expectation_before
 </code></pre>
 <h2>Science Says that Low-Elo Chess Players are Perhaps Not the Best Chess Players</h2>
@@ -704,36 +766,36 @@ diff = expectation_after - expectation_before
 <p>In such situations, I decided to skip the neural network evaluation and use the classic centipawn evaluation instead. The centipawn evaluation is a simpler number that represents the potential material advantage of a player. Losing a pawn is -100, losing a knight is -300, and losing a queen is -900; conversely, gaining a pawn is +100, and gaining a queen is +900. I also decided that losing the game is -10,000 and winning the game is +10,000. It’s not perfect, but it’s better than nothing.</p>
 <p>However, I haven’t conducted a statistical analysis of the centipawn evaluation of my engine versus human players, so when this issue occurs, I just take the best out of all the attempts. In practice, it means that the bad chess engine may play slightly slower and better for a few moves. You can definitely notice it when you play against it, but it’s not a major issue.</p>
 <p>The updated code looks like this:</p>
-<pre><code class="language-python">def evaluate_board(board, inverse_turn=False):
-    info = stockfish.analyse(board, chess.engine.Limit(depth=12))
-    score = info[&quot;score&quot;].pov(board.turn ^ inverse_turn)
+<pre class="hljs"><code><span class="hljs-keyword">def</span> <span class="hljs-title function_">evaluate_board</span>(<span class="hljs-params">board, inverse_turn=<span class="hljs-literal">False</span></span>):
+    info = stockfish.analyse(board, chess.engine.Limit(depth=<span class="hljs-number">12</span>))
+    score = info[<span class="hljs-string">&quot;score&quot;</span>].pov(board.turn ^ inverse_turn)
     wdl = score.wdl(ply=board.ply())
-    return wdl.expectation(), score.score(mate_score=10_000)
+    <span class="hljs-keyword">return</span> wdl.expectation(), score.score(mate_score=<span class="hljs-number">10_000</span>)
 
-EXPECTATION_SATURATION = 0.95
-EXPECTATION_SATURATION_EPSILON = 0.01
-EXPECTATION_DIFF_EPSILON = 0.05
-CENTIPAWN_DIFF_THRESHOLD = 1
+EXPECTATION_SATURATION = <span class="hljs-number">0.95</span>
+EXPECTATION_SATURATION_EPSILON = <span class="hljs-number">0.01</span>
+EXPECTATION_DIFF_EPSILON = <span class="hljs-number">0.05</span>
+CENTIPAWN_DIFF_THRESHOLD = <span class="hljs-number">1</span>
 
-def is_evaluation_saturated(expectation_before, expectation_diff, score_diff):
-    &quot;&quot;&quot;Check if evaluation is saturated based on thresholds.&quot;&quot;&quot;
-    return (
-        abs(expectation_before) &gt; EXPECTATION_SATURATION and
-        abs(expectation_diff) &lt; EXPECTATION_DIFF_EPSILON and
-        abs(score_diff) &gt; CENTIPAWN_DIFF_THRESHOLD
-    ) or (
-        abs(expectation_before) &lt; EXPECTATION_SATURATION_EPSILON and
-        abs(expectation_diff) &lt; EXPECTATION_SATURATION_EPSILON and
-        abs(score_diff) &gt; CENTIPAWN_DIFF_THRESHOLD
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">is_evaluation_saturated</span>(<span class="hljs-params">expectation_before, expectation_diff, score_diff</span>):
+    <span class="hljs-string">&quot;&quot;&quot;Check if evaluation is saturated based on thresholds.&quot;&quot;&quot;</span>
+    <span class="hljs-keyword">return</span> (
+        <span class="hljs-built_in">abs</span>(expectation_before) &gt; EXPECTATION_SATURATION <span class="hljs-keyword">and</span>
+        <span class="hljs-built_in">abs</span>(expectation_diff) &lt; EXPECTATION_DIFF_EPSILON <span class="hljs-keyword">and</span>
+        <span class="hljs-built_in">abs</span>(score_diff) &gt; CENTIPAWN_DIFF_THRESHOLD
+    ) <span class="hljs-keyword">or</span> (
+        <span class="hljs-built_in">abs</span>(expectation_before) &lt; EXPECTATION_SATURATION_EPSILON <span class="hljs-keyword">and</span>
+        <span class="hljs-built_in">abs</span>(expectation_diff) &lt; EXPECTATION_SATURATION_EPSILON <span class="hljs-keyword">and</span>
+        <span class="hljs-built_in">abs</span>(score_diff) &gt; CENTIPAWN_DIFF_THRESHOLD
     )
 </code></pre>
 <h2>Is the LLM Actually Useful?</h2>
 <p>Now that we have a hybrid chess engine using Stockfish, perhaps the LLM is unnecessary weight after all. In engineering, it’s important to remove unnecessary complexity. Even when you have put a lot of love and effort into it.</p>
 <p>So, I implemented the <code>NoLLM</code> option in the chess engine. Instead of asking the LLM to think, reflect, and then select a legal move, it only picks a random legal move and uses Stockfish to decide whether it’s a good move or not. I also increased the number of attempts to find a good move to 16, using the <code>MaxAttempts</code> option. It shouldn’t be too high, because at some point, you just have a very contrived way of playing with Stockfish. The number of attempts shouldn’t also be too low, because it’s truly terrible when low.</p>
 <p>Configuration for lichess-bot:</p>
-<pre><code class="language-yaml">  uci_options:
-    NoLLM: true
-    MaxAttempts: 16
+<pre class="hljs"><code>  <span class="hljs-attr">uci_options:</span>
+    <span class="hljs-attr">NoLLM:</span> <span class="hljs-literal">true</span>
+    <span class="hljs-attr">MaxAttempts:</span> <span class="hljs-number">16</span>
 </code></pre>
 <p>A few games show that the LLM is indeed useful. With 16 attempts, the engine without using the LLM plays at a decent low-Elo level, but it doesn’t feel like a beginner. Many unrealistic and unlikely blunders occur. The behaviour is that of a common bad chess engine that is pretty good, except occasionally when it plays a terrible random move.</p>
 <p>I haven’t taken the time to capture this with numbers, so I suggest a qualitative analysis with a sample size of one instead (me). I played a few games against the engine without the LLM, and I enjoyed none of them. I feel that the LLM is actually succeeding at making the engine play more like a human beginner. Of course, I have some bias. It would be better to have more human beginner players test it eventually.</p>
