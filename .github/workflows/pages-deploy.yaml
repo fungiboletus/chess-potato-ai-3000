@@ -1,0 +1,81 @@
+name: Deploy Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "article/**"
+      - "frontend/**"
+      - ".github/workflows/pages-deploy.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  SITE_DIR: site
+  PUBLIC_SITE_HOST: chesspotatoai3000.sct.sintef.no
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            article/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install article dependencies
+        working-directory: article
+        run: npm ci
+
+      - name: Validate Pages MCP endpoint secret
+        env:
+          VITE_MCP_SERVER_URL: ${{ secrets['PAGES_MCP_SERVER_URL'] }}
+        run: |
+          if [ -z "$VITE_MCP_SERVER_URL" ]; then
+            echo "Missing GitHub secret: PAGES_MCP_SERVER_URL" >&2
+            exit 1
+          fi
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_MCP_SERVER_URL: ${{ secrets['PAGES_MCP_SERVER_URL'] }}
+        run: npm run build
+
+      - name: Build article
+        working-directory: article
+        run: npm run build
+
+      - name: Assemble Pages site
+        run: |
+          mkdir -p "$SITE_DIR"
+          rsync -a frontend/dist/ "$SITE_DIR/"
+          touch "$SITE_DIR/.nojekyll"
+          printf '%s\n' "$PUBLIC_SITE_HOST" > "$SITE_DIR/CNAME"
+
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./site
+          force_orphan: false
+          cname: ${{ env.PUBLIC_SITE_HOST }}

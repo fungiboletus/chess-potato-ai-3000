@@ -1,0 +1,12 @@
+{
+  "name": "chess-potato-ai-3000-article",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build-article.mjs"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0"
+  }
+}

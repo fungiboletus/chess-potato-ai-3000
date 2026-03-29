@@ -86,9 +86,9 @@ class MCPClientService {
 
   // Configuration
   private readonly SERVER_URL = (() => {
-    // Use environment variable if provided at build time
-    if (import.meta.env.VITE_MCP_SERVER_URL) {
-      return import.meta.env.VITE_MCP_SERVER_URL;
+    const configuredServerUrl = import.meta.env.VITE_MCP_SERVER_URL?.trim();
+    if (configuredServerUrl) {
+      return configuredServerUrl;
     }
 
     // Smart fallback based on environment
@@ -99,7 +99,7 @@ class MCPClientService {
       // Development mode: use localhost with explicit port
       return 'http://localhost:8000/mcp';
     } else {
-      // Production mode: use relative path (assumes same origin)
+      // Non-local builds should provide the endpoint through Vite env configuration.
       return '/mcp';
     }
   })();

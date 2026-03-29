@@ -1,5 +1,6 @@
 # Editor directories and files
 .idea
+.vscode/
 .DS_Store
 *.suo
 *.ntvs*
@@ -18,3 +19,5 @@ settings.local.json
 # Frontend build artifacts
 frontend/dist/
 frontend/dev-dist/
+article/node_modules/
+site/
