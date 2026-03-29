@@ -25,12 +25,6 @@
   background-position: center;
 }
 
-.chess-game-main-window {
-  /*width: 512px;
-  max-width: 100vw;
-  margin: 0 auto;*/
-}
-
 /* In case we want to feel modern */
 /*.window {
   box-shadow: inset -1px -1px #0a0a0a,inset 1px 1px #dfdfdf,inset -2px -2px gray,inset 2px 2px #fff, 0 5px 10px rgba(0,0,0,0.2), 0 15px 40px rgba(0,0,0,0.1)
@@ -420,11 +414,6 @@ img.pixel-theme .cg-wrapated {
 .chess-board {
   box-sizing: border-box;
   height: 100%;
-}
-
-.chess-board {
-  /*position: relative;*/
-
 }
 
 .chess-board cg-container {

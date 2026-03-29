@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
@@ -58,7 +58,7 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
     }
   }, [gameResult?.type, t]);
 
-  const getCenterPosition = useCallback(() => {
+  const getCenterPosition = () => {
     if (typeof window === 'undefined') {
       return { x: 0, y: 0 };
     }
@@ -66,7 +66,7 @@ export const GameResultWindow: React.FC<GameResultWindowProps> = ({
       x: Math.max(0, (window.innerWidth - RESULT_WINDOW_WIDTH) / 2),
       y: Math.max(0, (window.innerHeight - RESULT_WINDOW_HEIGHT) / 2)
     };
-  }, []);
+  };
 
   const isOfflineMode = useChessStore(selectIsOfflineMode);
 
@@ -133,7 +133,7 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
 
   const selectedEngineDisplayName = getEngineDisplayNameByName(selectedEngine, availableEngines);
 
-  const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting || isSubmitted) {
       return;
@@ -193,7 +193,7 @@ const GameResultContent: React.FC<GameResultContentProps> = ({
       setIsSubmitting(false);
       setHasSubmitError(true);
     }
-  }, [authenticity, chess, gameResult, hasUsedTakeback, i18n, isOfflineMode, isSubmitted, isSubmitting, enjoyment, message, moveHistory, notes, playerColor, selectedEngine, selectedEngineDisplayName]);
+  };
 
   const disabled = isSubmitting || isSubmitted;
 

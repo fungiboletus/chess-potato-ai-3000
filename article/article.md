@@ -5,7 +5,7 @@ I had never made a chess engine until now. It's a very common software hobby pro
 
 
 
-[![Potato Chess AI 3000 Screenshot](./premium-screenshot.webp)](https://example.net)
+[![Potato Chess AI 3000 Screenshot](./premium-screenshot.webp)](https://fungiboletus.github.io/chess-potato-ai-3000/)
 
 ## Highlights
 
@@ -17,7 +17,7 @@ I had never made a chess engine until now. It's a very common software hobby pro
 - It works better than I hoped, but it's far from perfect.
 - I enjoyed making this bad chess engine more than playing chess.
 - You can play against it on [Lichess](https://lichess.org/@/nittedal).
-- You can also [try it in your web browser](https://example.net).
+- You can also [try it in your web browser](https://fungiboletus.github.io/chess-potato-ai-3000/).
 
 ## The Art of Making Bad Chess Engines
 
