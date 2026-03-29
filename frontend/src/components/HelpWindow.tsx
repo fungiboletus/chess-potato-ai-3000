@@ -5,7 +5,7 @@ import { publicAssetUrl } from '../utils/publicAssetUrl';
 
 const REPOSITORY_URL = 'https://github.com/fungiboletus/chess-potato-ai-3000';
 const AUTHOR_URL = 'https://github.com/fungiboletus';
-const BLOG_POST_URL = REPOSITORY_URL;
+const BLOG_POST_URL = 'https://fungiboletus.github.io/chess-potato-ai-3000/article/';
 
 const OPEN_SOURCE_LINKS = [
   {
