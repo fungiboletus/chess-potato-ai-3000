@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import useChessStore from '../stores/chessStore';
+import { publicAssetUrl } from '../utils/publicAssetUrl';
 
 export const GameControls: React.FC = () => {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ export const GameControls: React.FC = () => {
         title={t('language.select')}
         className="language-button"
       >
-        <img src="/world.png" alt="" height="16" width="16" />
+        <img src={publicAssetUrl('world.png')} alt="" height="16" width="16" />
         {t('language.lang')}
       </button>
     </div>

@@ -19,7 +19,6 @@ concurrency:
 
 env:
   SITE_DIR: site
-  PUBLIC_SITE_HOST: chesspotatoai3000.sct.sintef.no
 
 jobs:
   deploy:
@@ -70,7 +69,6 @@ jobs:
           mkdir -p "$SITE_DIR"
           rsync -a frontend/dist/ "$SITE_DIR/"
           touch "$SITE_DIR/.nojekyll"
-          printf '%s\n' "$PUBLIC_SITE_HOST" > "$SITE_DIR/CNAME"
 
       - name: Publish to gh-pages
         uses: peaceiris/actions-gh-pages@v4
@@ -79,4 +77,3 @@ jobs:
           publish_branch: gh-pages
           publish_dir: ./site
           force_orphan: false
-          cname: ${{ env.PUBLIC_SITE_HOST }}

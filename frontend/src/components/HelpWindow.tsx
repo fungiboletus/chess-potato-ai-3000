@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
+import { publicAssetUrl } from '../utils/publicAssetUrl';
 
 const REPOSITORY_URL = 'https://github.com/fungiboletus/chess-potato-ai-3000';
 const AUTHOR_URL = 'https://github.com/fungiboletus';
@@ -173,7 +174,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
             );
           }}
         >
-          <img src="/house2.png" alt="" height="16" width="16" />
+          <img src={publicAssetUrl('house2.png')} alt="" height="16" width="16" />
           {t('help.buy_me_a_house')}
         </button>
       </div>

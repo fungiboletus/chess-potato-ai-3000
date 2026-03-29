@@ -39,6 +39,11 @@ export default defineConfig(({ mode }) => {
         injectRegister: null,
         registerType: 'autoUpdate',
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
+        workbox: {
+          navigateFallbackDenylist: [
+            /^\/article(?:\/.*)?$/,
+          ],
+        },
         manifest: {
           name: 'Chess Potato AI 3000',
           short_name: 'CPAI 3000',

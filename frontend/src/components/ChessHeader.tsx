@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { GameEngineButton } from './GameEngineButton';
 import { AnimatedProgressBar } from './AnimatedProgressBar';
 import useChessStore from '../stores/chessStore';
+import { publicAssetUrl } from '../utils/publicAssetUrl';
 
 export const ChessHeader: React.FC = () => {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ export const ChessHeader: React.FC = () => {
       />
       <div className="top-right-buttons">
         <button className="change-theme-button" onClick={() => setShowThemeWindow(true)}>
-          <img src="/pawn2.png" height="16" width="16" alt="" className="theme-icon" />
+          <img src={publicAssetUrl('pawn2.png')} height="16" width="16" alt="" className="theme-icon" />
           {t('game.change_theme')}
         </button>
       </div>
