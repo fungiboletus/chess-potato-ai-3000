@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DraggableWindow } from './DraggableWindow';
 import useChessStore from '../stores/chessStore';
+import { publicAssetUrl } from '../utils/publicAssetUrl';
 
 interface ThemeWindowProps {
   isOpen: boolean;
@@ -103,7 +104,7 @@ export const ThemeWindow: React.FC<ThemeWindowProps> = ({
                 title={theme}
               >
                 <img
-                  src={`/pieces/${theme}/bP.svg`}
+                  src={publicAssetUrl(`pieces/${theme}/bP.svg`)}
                   alt={theme}
                   className="piece-preview"
                 />
@@ -123,7 +124,7 @@ export const ThemeWindow: React.FC<ThemeWindowProps> = ({
                 title={board.name}
               >
                 <img
-                  src={`/boards/${board.thumbnail}`}
+                  src={publicAssetUrl(`boards/${board.thumbnail}`)}
                   alt={board.name}
                   className="board-preview"
                 />
