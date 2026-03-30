@@ -710,7 +710,7 @@ My company, [SINTEF](https://www.sintef.no/), is hosting the bot so anyone can p
 - You can play against it on Lichess at [https://lichess.org/@/nittedal](https://lichess.org/@/nittedal).
 - You can also [play it in your web browser.](https://fungiboletus.github.io/chess-potato-ai-3000/)
 
-If you're interested in self-hosting, the complete source code is available on GitHub at [https://github.com/fungiboletus/chess-potato-ai-3000](https://github.com/fungiboletus/chess-potato-ai-3000). The source code is open-source under the Apache 2.0 licence, so you're free to use, modify, and host it yourself.
+If you're interested in self-hosting, the complete source code is available on GitHub at [https://github.com/fungiboletus/chess-potato-ai-3000](https://github.com/fungiboletus/chess-potato-ai-3000). The source code is open-source under the GPL3 licence, so you're free to use, modify, and host it yourself.
 
 I also provide the model weights, but those are "open-weights" rather than "open-source" as I "lost" the training dataset. Providing a binary with no sources is a common practice in the AI community, and I feel dirty about it. I'm sorry. Next time, I will use an open-source training dataset, because open source values and respecting the authors are somewhat important to me. Nethertheless, the open-weights are available on HuggingFace at [https://huggingface.co/undefined2/chess-potato-ai-3000](https://huggingface.co/undefined2/chess-potato-ai-3000). Under a Gemma license this time.
 
