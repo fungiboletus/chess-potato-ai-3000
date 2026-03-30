@@ -87,21 +87,25 @@ class MCPClientService {
   // Configuration
   private readonly SERVER_URL = (() => {
     const configuredServerUrl = import.meta.env.VITE_MCP_SERVER_URL?.trim();
+    let serverUrl: string;
+
     if (configuredServerUrl) {
-      return configuredServerUrl;
-    }
-
-    // Smart fallback based on environment
-    const isLocalhost = window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1';
-
-    if (isLocalhost) {
-      // Development mode: use localhost with explicit port
-      return 'http://localhost:8000/mcp';
+      serverUrl = configuredServerUrl;
     } else {
-      // Non-local builds should provide the endpoint through Vite env configuration.
-      return '/mcp';
+      // Smart fallback based on environment
+      const isLocalhost = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
+
+      if (isLocalhost) {
+        // Development mode: use localhost with explicit port
+        serverUrl = 'http://localhost:8000/mcp';
+      } else {
+        // Production fallback: use the current origin unless a dedicated endpoint is configured.
+        serverUrl = '/mcp';
+      }
     }
+
+    return new URL(serverUrl, window.location.href);
   })();
   private readonly CLIENT_NAME = 'chess-potato-ai-3000';
   private readonly CLIENT_VERSION = '1.0.0';
@@ -150,7 +154,7 @@ class MCPClientService {
     this.connectionState = 'connecting';
     this.connectionError = null;
 
-    const transport = new StreamableHTTPClientTransport(new URL(this.SERVER_URL));
+    const transport = new StreamableHTTPClientTransport(this.SERVER_URL);
     const client = new Client({
       name: this.CLIENT_NAME,
       version: this.CLIENT_VERSION
@@ -160,7 +164,7 @@ class MCPClientService {
       await client.connect(transport);
       this.client = client;
       this.connectionState = 'connected';
-      console.log('[MCP] Connected to server at', this.SERVER_URL);
+      console.log('[MCP] Connected to server at', this.SERVER_URL.href);
       return client;
     } catch (error) {
       const message = this.getErrorMessage(error);

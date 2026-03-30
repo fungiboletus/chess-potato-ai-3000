@@ -19,7 +19,7 @@ This package contains the browser client for Chess Potato AI 3000. It is a React
 
 For local development, the frontend expects the server at `http://localhost:8000/mcp` when the app itself is running on localhost.
 
-Production builds read `VITE_MCP_SERVER_URL` through the environment. The GitHub Pages workflow expects a repository secret named `PAGES_MCP_SERVER_URL`. For other deployments, provide `VITE_MCP_SERVER_URL` through your own CI or shell environment.
+Outside localhost, the frontend defaults to the current origin's `/mcp` endpoint. You only need to set `VITE_MCP_SERVER_URL` when the MCP server lives on a different origin or path. The GitHub Pages workflow expects a repository secret named `PAGES_MCP_SERVER_URL` because that deployment cannot use the same-origin fallback.
 
 ## Development
 
