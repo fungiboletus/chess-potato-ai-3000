@@ -127,6 +127,8 @@ def create_hybrid_engine(
 
     # Some jitters in the Stockfish evaluation
     ENGINE_EVAL_EPSILON = 0.01
+    NB_TURNS_STOCKFISH_FAILBACK_MODE = 8
+    FAILBACK_MODE_DIFF_THRESHOLD = -5000
 
     def eval_board(
         board: chess.Board,
@@ -210,6 +212,16 @@ def create_hybrid_engine(
                 board, next_move, expectation_before, score_before
             )
             score_diffs.append(score_diff)
+
+            if score_diff < FAILBACK_MODE_DIFF_THRESHOLD and board.fullmove_number <= NB_TURNS_STOCKFISH_FAILBACK_MODE:
+                print(f"info string Stockfish fallback mode activated due to low score_diff ({score_diff}) "
+                      f"at move {board.fullmove_number}")
+                best_move = stockfish_engine.play(board, chess.engine.Limit(time=2.5)).move
+                if best_move is None:
+                    print("info string Stockfish did not return a move, fallback to best candidate")
+                    continue
+                print(f"info time {elapsed_time} pv {best_move.uci()}")
+                return best_move.uci()
 
             if has_saturated_at_least_once:
                 continue
