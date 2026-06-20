@@ -1,12 +1,13 @@
 import os
 import random
 import re
+import sys
 from typing import Any, Dict, List, Match, Optional, Sequence
 
 import requests
 
 # Configure AI endpoint and model from environment variables
-url = os.environ.get("OLLAMA_ENDPOINT", "http://localhost:11434/api/generate")
+url = os.environ.get("OLLAMA_ENDPOINT", "http://127.0.0.1:11434/api/generate")
 ollama_bearer_token: Optional[str] = os.environ.get("OLLAMA_BEARER_TOKEN")
 if ollama_bearer_token is not None:
     ollama_headers = {"Authorization": f"Bearer {ollama_bearer_token}"}
@@ -104,7 +105,19 @@ def ask_ai(prompt: str) -> str:
         url, json=payload, headers=ollama_headers
     )
     response.raise_for_status()
-    answer: str = response.json()["response"]
+    try:
+        response_data: Dict[str, Any] = response.json()
+    except requests.exceptions.JSONDecodeError as exc:
+        content_type: str = response.headers.get("content-type", "unknown")
+        body_preview: str = response.text[:2000]
+        error_message: str = (
+            "AI endpoint returned a non-JSON response "
+            f"(status {response.status_code}, content-type {content_type}):\n"
+            f"{body_preview}"
+        )
+        print(f"error: {error_message}", file=sys.stderr)
+        raise ValueError(error_message) from exc
+    answer: str = response_data["response"]
     return answer
 
 
