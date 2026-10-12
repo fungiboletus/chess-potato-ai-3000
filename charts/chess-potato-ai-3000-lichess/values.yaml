@@ -8,7 +8,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/fungiboletus/chess-potato-ai-3000-lichess
   tag: main
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 model:
   llmModel: hf.co/undefined2/chess-potato-ai-3000:Q8_0
