@@ -11,7 +11,10 @@ def _build_engine(monkeypatch) -> main.ChessEngine:
         board: chess.Board,
         compute_next_move: Callable[[], str],
         max_attempts: int = 5,
+        stockfish_only_time: float | None = None,
     ) -> str:
+        if stockfish_only_time is not None:
+            return "stockfish-move"
         return compute_next_move()
 
     monkeypatch.setattr(
@@ -69,3 +72,16 @@ def test_set_option_updates_engine_flags(monkeypatch, capsys) -> None:
     assert engine.no_llm is True
     assert engine.panic_mode_threshold == 12.0
     assert "MaxAttempts set to 7" in output
+
+
+def test_select_move_uses_stockfish_with_little_time_in_early_game(monkeypatch) -> None:
+    engine = _build_engine(monkeypatch)
+
+    assert engine.select_move(time_left=5.0) == "stockfish-move"
+
+
+def test_select_move_alphabetical_with_little_time_in_late_game(monkeypatch) -> None:
+    engine = _build_engine(monkeypatch)
+    engine.board = chess.Board("r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 20")
+
+    assert engine.select_move(time_left=2.0) == "a2a3"

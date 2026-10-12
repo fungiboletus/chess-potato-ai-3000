@@ -24,6 +24,7 @@ ComputeNextMove = Callable[[], str]
 DEFAULT_EVAL_POINTS_PATH = "./data/eval_points.csv"
 EVAL_POINTS_CSV_PATH = os.environ.get("EVAL_POINTS_CSV", DEFAULT_EVAL_POINTS_PATH)
 DEFAULT_STOCKFISH_PATH = os.environ.get("STOCKFISH_EXECUTABLE", "stockfish")
+NB_TURNS_STOCKFISH_FAILBACK_MODE = 8
 
 
 class HybridEngine(Protocol):
@@ -32,6 +33,7 @@ class HybridEngine(Protocol):
         board: chess.Board,
         compute_next_move: ComputeNextMove,
         max_attempts: int = 5,
+        stockfish_only_time: float | None = None,
     ) -> str: ...
 
 
@@ -127,7 +129,6 @@ def create_hybrid_engine(
 
     # Some jitters in the Stockfish evaluation
     ENGINE_EVAL_EPSILON = 0.01
-    NB_TURNS_STOCKFISH_FAILBACK_MODE = 8
     FAILBACK_MODE_DIFF_THRESHOLD = -5000
 
     def eval_board(
@@ -185,8 +186,21 @@ def create_hybrid_engine(
         board: chess.Board,
         compute_next_move: ComputeNextMove,
         max_attempts: int = 5,
+        stockfish_only_time: float | None = None,
     ) -> str:
         nonlocal stockfish_engine
+
+        if stockfish_only_time is not None:
+            # Very little clock in the early game: skip the LLM and the
+            # evaluations, and just play Stockfish's move.
+            move = stockfish_engine.play(
+                board, chess.engine.Limit(time=stockfish_only_time)
+            ).move
+            if move is None:
+                raise RuntimeError("Stockfish did not return a move")
+            print(f"info string Stockfish only mode ({stockfish_only_time:.2f}s)")
+            print(f"info pv {move.uci()}")
+            return move.uci()
 
         start_time = time.time()
         candidates: list[str] = []

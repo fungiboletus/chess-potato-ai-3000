@@ -26,7 +26,7 @@ import chess
 
 from ai import ask_for_a_move
 from explain4 import analyze_chess_position
-from hybrid import HybridEngine, create_hybrid_engine
+from hybrid import NB_TURNS_STOCKFISH_FAILBACK_MODE, HybridEngine, create_hybrid_engine
 from utils import board_to_unicode
 
 
@@ -164,6 +164,24 @@ class ChessEngine:
             print(f"info string Only one legal move available: {only_move}")
             print(f"info pv {only_move}")
             return only_move
+
+        # Very little time in the early game: let Stockfish avoid the basic
+        # early checkmates, the LLM is too slow for that clock anyway.
+        EARLY_STOCKFISH_TIME_THRESHOLD: float = 10.0
+        if (
+            time_left <= EARLY_STOCKFISH_TIME_THRESHOLD
+            and self.board.fullmove_number <= NB_TURNS_STOCKFISH_FAILBACK_MODE
+        ):
+            stockfish_time: float = max(0.05, min(0.5, time_left * 0.05))
+            try:
+                return self.hybrid_engine(
+                    self.board,
+                    lambda: "",
+                    max_attempts=self.max_attempts,
+                    stockfish_only_time=stockfish_time,
+                )
+            except Exception as e:
+                print(f"info string Stockfish quick move failed: {e}")
 
         # If we really have very little time left
         CRAZY_PANIC_MODE_THRESHOLD: float = 3.0

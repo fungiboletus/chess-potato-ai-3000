@@ -8,6 +8,9 @@ import requests
 
 # Configure AI endpoint and model from environment variables
 url = os.environ.get("OLLAMA_ENDPOINT", "http://127.0.0.1:11434/api/generate")
+# (connect, read) timeouts in seconds. A move that takes longer than this is
+# useless in a timed game, and a hung request would otherwise block forever.
+request_timeout = (5, 30)
 ollama_bearer_token: Optional[str] = os.environ.get("OLLAMA_BEARER_TOKEN")
 if ollama_bearer_token is not None:
     ollama_headers = {"Authorization": f"Bearer {ollama_bearer_token}"}
@@ -102,7 +105,7 @@ def ask_ai(prompt: str) -> str:
         },
     }
     response: requests.Response = requests.post(
-        url, json=payload, headers=ollama_headers
+        url, json=payload, headers=ollama_headers, timeout=request_timeout
     )
     response.raise_for_status()
     try:
