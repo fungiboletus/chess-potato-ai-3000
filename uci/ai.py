@@ -2,7 +2,9 @@ import os
 import random
 import re
 import sys
-from typing import Any, Dict, List, Match, Optional, Sequence
+from collections.abc import Sequence
+from re import Match
+from typing import Any
 
 import requests
 
@@ -11,7 +13,7 @@ url = os.environ.get("OLLAMA_ENDPOINT", "http://127.0.0.1:11434/api/generate")
 # (connect, read) timeouts in seconds. A move that takes longer than this is
 # useless in a timed game, and a hung request would otherwise block forever.
 request_timeout = (5, 30)
-ollama_bearer_token: Optional[str] = os.environ.get("OLLAMA_BEARER_TOKEN")
+ollama_bearer_token: str | None = os.environ.get("OLLAMA_BEARER_TOKEN")
 if ollama_bearer_token is not None:
     ollama_headers = {"Authorization": f"Bearer {ollama_bearer_token}"}
 else:
@@ -19,7 +21,7 @@ else:
 model: str = os.environ.get("LLM_MODEL", "hf.co/undefined2/chess-potato-ai-3000:Q8_0")
 # model = os.environ.get("LLM_MODEL", "gpt-oss:120b")
 
-introduction_prompts: List[str] = [
+introduction_prompts: list[str] = [
     """You are playing a chess game against an opponent. You have
 analysed the game carefully and wrote some notes and reflections
 about your next move. Your notes can be short or pretty long.
@@ -94,7 +96,7 @@ def ask_ai(prompt: str) -> str:
     Returns:
         str: The AI's response
     """
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "model": model,
         "prompt": prompt,
         "stream": False,
@@ -109,7 +111,7 @@ def ask_ai(prompt: str) -> str:
     )
     response.raise_for_status()
     try:
-        response_data: Dict[str, Any] = response.json()
+        response_data: dict[str, Any] = response.json()
     except requests.exceptions.JSONDecodeError as exc:
         content_type: str = response.headers.get("content-type", "unknown")
         body_preview: str = response.text[:2000]
@@ -157,25 +159,25 @@ def ask_for_a_move(
         # debug_log_file.flush()
 
         # Extract the thoughts and reflections from the answer
-        thoughts_match: Optional[Match[str]] = re.search(
+        thoughts_match: Match[str] | None = re.search(
             r"## Thoughts( and Reflections)?\n\n(.+?)\n\n##",
             answer,
             re.MULTILINE | re.IGNORECASE,
         )
         if thoughts_match:
-            thoughts: List[str] = thoughts_match.group(2).strip().splitlines()
+            thoughts: list[str] = thoughts_match.group(2).strip().splitlines()
             for thought in thoughts:
                 thought = thought.strip()
                 if thought:
                     print(f"info string AI thought: {thought}")
 
         # Extract the move from the answer
-        move_match: Optional[Match[str]] = re.search(
+        move_match: Match[str] | None = re.search(
             r"## Selected legal move\s*`([^`]{4,5})`",
             answer,
             re.MULTILINE | re.IGNORECASE,
         )
-        move: Optional[str] = None
+        move: str | None = None
 
         if move_match:
             move = move_match.group(1).lower()

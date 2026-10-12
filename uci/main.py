@@ -23,7 +23,6 @@ import traceback
 from collections.abc import Callable
 
 import chess
-
 from ai import ask_for_a_move
 from explain4 import analyze_chess_position
 from hybrid import NB_TURNS_STOCKFISH_FAILBACK_MODE, HybridEngine, create_hybrid_engine
@@ -180,7 +179,7 @@ class ChessEngine:
                     max_attempts=self.max_attempts,
                     stockfish_only_time=stockfish_time,
                 )
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 print(f"info string Stockfish quick move failed: {e}")
 
         # If we really have very little time left
@@ -321,7 +320,7 @@ class ChessEngine:
 
             except EOFError:
                 break
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 # Get the last line of the traceback for context
                 error_msg: str = str(e).replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').replace('"', "'")
                 clean_error: str = ''.join(c for c in error_msg if ord(c) >= 32)[:200]

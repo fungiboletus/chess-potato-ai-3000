@@ -1,7 +1,6 @@
 from collections.abc import Callable
 
 import chess
-
 import main
 from utils import board_to_unicode
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from typing import Dict, List, Optional, Set
 
 import chess
 
@@ -10,7 +9,7 @@ class ChessMoveAnalyzer:
     def __init__(self, board: chess.Board) -> None:
         """Initialize with a chess board position."""
         self.board: chess.Board = board
-        self.piece_names: Dict[int, str] = {
+        self.piece_names: dict[int, str] = {
             chess.PAWN: "pawn",
             chess.KNIGHT: "knight",
             chess.BISHOP: "bishop",
@@ -18,7 +17,7 @@ class ChessMoveAnalyzer:
             chess.QUEEN: "queen",
             chess.KING: "king",
         }
-        self.piece_values: Dict[int, int] = {
+        self.piece_values: dict[int, int] = {
             chess.PAWN: 1,
             chess.KNIGHT: 3,
             chess.BISHOP: 3,
@@ -29,7 +28,7 @@ class ChessMoveAnalyzer:
 
     def get_human_readable_move(self, move: chess.Move) -> str:
         """Convert a chess.Move to human-readable text."""
-        moving_piece: Optional[chess.Piece] = self.board.piece_at(move.from_square)
+        moving_piece: chess.Piece | None = self.board.piece_at(move.from_square)
         if moving_piece is None:
             return move.uci()
 
@@ -39,7 +38,7 @@ class ChessMoveAnalyzer:
         description: str = f"{piece_name} from {from_sq} to {to_sq}"
 
         if self.board.is_capture(move):
-            captured: Optional[chess.Piece] = self.board.piece_at(move.to_square)
+            captured: chess.Piece | None = self.board.piece_at(move.to_square)
             if captured:
                 captured_piece_name: str = self.piece_names[captured.piece_type]
                 description = (
@@ -81,8 +80,8 @@ class ChessMoveAnalyzer:
         if not self.board.is_capture(move):
             return ""
 
-        capturing_piece: Optional[chess.Piece] = self.board.piece_at(move.from_square)
-        captured_piece: Optional[chess.Piece] = self.board.piece_at(move.to_square)
+        capturing_piece: chess.Piece | None = self.board.piece_at(move.from_square)
+        captured_piece: chess.Piece | None = self.board.piece_at(move.to_square)
 
         if self.board.is_en_passant(move):
             captured_piece = chess.Piece(chess.PAWN, not self.board.turn)
@@ -115,7 +114,7 @@ class ChessMoveAnalyzer:
         Returns:
             str: "sacrifice", "risky", or an empty string if safe.
         """
-        origin_piece: Optional[chess.Piece] = self.board.piece_at(move.from_square)
+        origin_piece: chess.Piece | None = self.board.piece_at(move.from_square)
         if origin_piece is None:
             return ""
 
@@ -133,11 +132,11 @@ class ChessMoveAnalyzer:
 
         return ""
 
-    def analyze_pieces_at_risk(self) -> List[str]:
+    def analyze_pieces_at_risk(self) -> list[str]:
         """Identify pieces under threat and why."""
-        risks: List[str] = []
+        risks: list[str] = []
         for square in chess.SQUARES:
-            piece: Optional[chess.Piece] = self.board.piece_at(square)
+            piece: chess.Piece | None = self.board.piece_at(square)
             if piece is None or piece.color != self.board.turn:
                 continue
 
@@ -154,7 +153,7 @@ class ChessMoveAnalyzer:
             if square in defenders:
                 defenders.remove(square)
 
-            attacking_pieces: List[str] = []
+            attacking_pieces: list[str] = []
             for attacker_square in attackers:
                 attacker = self.board.piece_at(attacker_square)
                 if attacker is None:
@@ -179,7 +178,7 @@ class ChessMoveAnalyzer:
         """
         Analyze all legal moves and return a markdown-formatted report.
         """
-        moves_by_category: Dict[str, List[str]] = {
+        moves_by_category: dict[str, list[str]] = {
             "Captures": [],
             "Checks": [],
             "Castle": [],
@@ -189,12 +188,15 @@ class ChessMoveAnalyzer:
             "Other Moves": [],
         }
 
-        pieces_under_attack: Set[int] = set()
+        pieces_under_attack: set[int] = set()
         for square in chess.SQUARES:
-            piece: Optional[chess.Piece] = self.board.piece_at(square)
-            if piece and piece.color == self.board.turn:
-                if self.board.attackers(not self.board.turn, square):
-                    pieces_under_attack.add(square)
+            piece: chess.Piece | None = self.board.piece_at(square)
+            if (
+                piece
+                and piece.color == self.board.turn
+                and self.board.attackers(not self.board.turn, square)
+            ):
+                pieces_under_attack.add(square)
 
         for move in self.board.legal_moves:
             uci: str = move.uci()
@@ -227,13 +229,13 @@ class ChessMoveAnalyzer:
                 else:
                     moves_by_category["Other Moves"].append(move_entry)
 
-        md_output: List[str] = []
+        md_output: list[str] = []
 
         md_output.append(
             f"## Current Turn: {'White' if self.board.turn else 'Black'}\n"
         )
 
-        risks: List[str] = self.analyze_pieces_at_risk()
+        risks: list[str] = self.analyze_pieces_at_risk()
         if risks:
             md_output.append("## Pieces Under Threat\n")
             random.shuffle(risks)
@@ -242,7 +244,7 @@ class ChessMoveAnalyzer:
 
         md_output.append("## Legal Moves Analysis\n")
 
-        categories_order: List[str] = [
+        categories_order: list[str] = [
             "Captures",
             "Checks",
             "Castle",
@@ -253,7 +255,7 @@ class ChessMoveAnalyzer:
         ]
 
         for category in categories_order:
-            moves: List[str] = moves_by_category[category]
+            moves: list[str] = moves_by_category[category]
             if moves:
                 md_output.append(f"### {category}\n")
                 random.shuffle(moves)
@@ -264,7 +266,7 @@ class ChessMoveAnalyzer:
 
     def is_developing_move(self, move: chess.Move) -> bool:
         """Check if a move is a developing move (moving a piece from home rank)."""
-        piece: Optional[chess.Piece] = self.board.piece_at(move.from_square)
+        piece: chess.Piece | None = self.board.piece_at(move.from_square)
         if piece is None:
             return False
 
@@ -272,12 +274,9 @@ class ChessMoveAnalyzer:
             return False
 
         from_rank: int = chess.square_rank(move.from_square)
-        if piece.color == chess.WHITE and from_rank == 0:
-            return True
-        if piece.color == chess.BLACK and from_rank == 7:
-            return True
-
-        return False
+        return (piece.color == chess.WHITE and from_rank == 0) or (
+            piece.color == chess.BLACK and from_rank == 7
+        )
 
 
 def analyze_chess_position(board: chess.Board) -> str:
